@@ -1,0 +1,27 @@
+{
+  "total_calls": 500,
+  "successful_calls": 465,
+  "failed_calls": 35,
+  "success_rate": 93.0,
+  "avg_latency_ms": 27468.98,
+  "min_latency_ms": 1464.6,
+  "max_latency_ms": 360858.5,
+  "agent_type_distribution": {
+    "MarketingCopy": 50,
+    "SupplyChain": 55,
+    "FinanceAnalyst": 59,
+    "CustomerSupport": 55,
+    "StoreOps": 57,
+    "PricingOptimization": 67,
+    "HRAssistant": 44,
+    "CatalogEnrichment": 67,
+    "FraudDetection": 46
+  },
+  "model_distribution": {
+    "grok-4-fast-non-reasoning": 80,
+    "grok-4": 103,
+    "gpt-5.1-codex": 109,
+    "gpt-5.2-chat": 88,
+    "gpt-4.1-mini": 120
+  }
+}
