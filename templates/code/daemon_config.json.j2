@@ -1,0 +1,102 @@
+{
+  "description": "Configuration for {{ profile.metadata.name }} agent simulation daemon",
+  "industry": "{{ profile.metadata.id }}",
+  "generated": "{{ generation_timestamp }}",
+  "target_daily_requests": {
+    "min": {{ profile.daemon_config.target_daily_requests.min }},
+    "max": {{ profile.daemon_config.target_daily_requests.max }},
+    "comment": "Total requests per day across all simulations"
+  },
+  "execution_interval_minutes": {{ profile.daemon_config.execution_interval_minutes }},
+  "busy_hours": {
+    "description": "Hours with higher load (business hours)",
+    "weekday": {
+      "enabled": true,
+      "start_hour": 8,
+      "end_hour": 18,
+      "comment": "Monday-Friday 8AM-6PM"
+    },
+    "weekend": {
+      "enabled": true,
+      "start_hour": 10,
+      "end_hour": 16,
+      "comment": "Saturday-Sunday 10AM-4PM"
+    }
+  },
+  "load_profiles": {
+{% if profile.daemon_config.load_profiles %}
+{% for profile_name, settings in profile.daemon_config.load_profiles.items() %}
+    "{{ profile_name }}": {
+      "operations": {
+        "num_calls": {"min": {{ settings.operations.num_calls.min }}, "max": {{ settings.operations.num_calls.max }}},
+        "threads": {"min": {{ settings.operations.threads.min }}, "max": {{ settings.operations.threads.max }}},
+        "delay": {"min": {{ settings.operations.delay.min }}, "max": {{ settings.operations.delay.max }}}
+      },
+      "guardrails": {
+        "num_tests": {"min": {{ settings.guardrails.num_tests.min }}, "max": {{ settings.guardrails.num_tests.max }}},
+        "threads": {"min": {{ settings.guardrails.threads.min }}, "max": {{ settings.guardrails.threads.max }}},
+        "delay": {"min": {{ settings.guardrails.delay.min }}, "max": {{ settings.guardrails.delay.max }}}
+      }
+    }{% if not loop.last %},{% endif %}
+
+{% endfor %}
+{% else %}
+    "busy": {
+      "operations": {
+        "num_calls": {"min": 30, "max": 60},
+        "threads": {"min": 5, "max": 10},
+        "delay": {"min": 0.3, "max": 0.7}
+      },
+      "guardrails": {
+        "num_tests": {"min": 15, "max": 30},
+        "threads": {"min": 2, "max": 4},
+        "delay": {"min": 0.8, "max": 1.5}
+      }
+    },
+    "normal": {
+      "operations": {
+        "num_calls": {"min": 15, "max": 30},
+        "threads": {"min": 3, "max": 6},
+        "delay": {"min": 0.5, "max": 1.0}
+      },
+      "guardrails": {
+        "num_tests": {"min": 8, "max": 15},
+        "threads": {"min": 2, "max": 3},
+        "delay": {"min": 1.0, "max": 2.0}
+      }
+    },
+    "quiet": {
+      "operations": {
+        "num_calls": {"min": 5, "max": 15},
+        "threads": {"min": 2, "max": 4},
+        "delay": {"min": 0.8, "max": 1.5}
+      },
+      "guardrails": {
+        "num_tests": {"min": 3, "max": 8},
+        "threads": {"min": 1, "max": 2},
+        "delay": {"min": 1.5, "max": 2.5}
+      }
+    }
+{% endif %}
+  },
+  "simulation_mix": {
+    "operations_weight": {{ profile.daemon_config.simulation_mix.operations_weight }},
+    "guardrails_weight": {{ profile.daemon_config.simulation_mix.guardrails_weight }},
+    "comment": "{{ profile.daemon_config.simulation_mix.operations_weight }}% operations, {{ profile.daemon_config.simulation_mix.guardrails_weight }}% guardrail testing"
+  },
+  "output": {
+    "base_dir": "daemon_results",
+    "operations_csv": "continuous_operations_metrics.csv",
+    "guardrails_csv": "continuous_guardrail_results.csv",
+    "log_file": "simulation_daemon.log",
+    "daily_summary_dir": "daily_summaries"
+  },
+  "agents": {
+    "csv_path": "{{ agents_csv }}"
+  },
+  "error_handling": {
+    "max_consecutive_failures": 5,
+    "failure_cooldown_minutes": 10,
+    "retry_on_rate_limit": true
+  }
+}

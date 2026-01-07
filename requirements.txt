@@ -1,0 +1,41 @@
+# Azure AI Foundry Agent Creation & Demo Toolkit
+# Install with: pip install -r requirements.txt
+
+# Azure SDK
+azure-ai-projects>=1.0.0b1
+azure-identity>=1.15.0
+
+# Environment management
+python-dotenv>=1.0.0
+
+# Data processing
+pandas>=2.0.0
+
+# Visualization
+matplotlib>=3.7.0
+seaborn>=0.12.0
+plotly>=5.18.0
+
+# UI - Terminal (Textual)
+textual>=0.47.0
+rich>=13.7.0
+
+# UI - Web (Gradio)
+gradio>=4.19.0
+
+# Data validation
+pydantic>=2.5.0
+
+# Template system
+jinja2>=3.1.0
+pyyaml>=6.0.1
+
+# Async/HTTP
+httpx>=0.26.0
+aiofiles>=23.2.0
+
+# Development (optional)
+# pytest>=7.4.0
+# pytest-asyncio>=0.23.0
+# black>=24.0.0
+# ruff>=0.1.0

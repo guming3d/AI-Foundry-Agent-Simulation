@@ -1,0 +1,276 @@
+/* Azure AI Foundry Agent Toolkit - Textual CSS Styles */
+
+/* Global styles */
+Screen {
+    background: $surface;
+}
+
+/* Title styles */
+#title, .screen-title {
+    text-align: center;
+    text-style: bold;
+    color: $primary;
+    padding: 1;
+    margin-bottom: 1;
+}
+
+.description {
+    color: $text-muted;
+    padding: 0 1;
+    margin-bottom: 1;
+}
+
+/* Section titles */
+.section-title {
+    text-style: bold;
+    color: $secondary;
+    margin-top: 1;
+    margin-bottom: 0;
+    padding-left: 1;
+}
+
+/* Home screen */
+#home-container {
+    padding: 1 2;
+}
+
+#logo {
+    text-align: center;
+    color: $primary;
+    padding: 1;
+}
+
+#welcome {
+    text-align: center;
+    color: $text;
+    padding: 1;
+    text-style: bold;
+}
+
+#guide {
+    margin: 1 2;
+    padding: 1;
+    border: solid $primary;
+}
+
+.guide-step {
+    padding-left: 2;
+    color: $text-muted;
+}
+
+#nav-buttons {
+    margin: 2 0;
+    align: center middle;
+}
+
+#nav-buttons Button {
+    margin: 0 1;
+}
+
+#status-panel {
+    margin: 1 2;
+    padding: 1;
+    border: solid $secondary;
+}
+
+/* Model selection screen */
+#model-container {
+    padding: 1 2;
+}
+
+#table-container {
+    height: auto;
+    max-height: 60%;
+    margin: 1 0;
+}
+
+#model-table {
+    height: 100%;
+}
+
+.status-bar {
+    dock: bottom;
+    height: 1;
+    padding: 0 1;
+    background: $primary-darken-2;
+    color: $text;
+}
+
+/* Profile screen */
+#profile-container {
+    padding: 1 2;
+}
+
+#main-content {
+    height: auto;
+    min-height: 20;
+}
+
+#profile-list {
+    width: 40%;
+    padding-right: 1;
+}
+
+#profile-table {
+    height: 100%;
+}
+
+#profile-details-panel {
+    width: 60%;
+    padding-left: 1;
+    border-left: solid $primary;
+}
+
+#profile-details {
+    height: auto;
+    padding: 1;
+}
+
+/* Agent wizard screen */
+#wizard-container {
+    padding: 1 2;
+}
+
+#config-panel {
+    margin: 1 0;
+    padding: 1;
+    border: solid $secondary;
+}
+
+#config-inputs {
+    margin: 1 0;
+}
+
+#config-inputs Vertical {
+    width: 1fr;
+    padding: 0 1;
+}
+
+#config-inputs Input {
+    width: 100%;
+}
+
+.info-text {
+    color: $text-muted;
+    padding: 1;
+}
+
+#progress-panel {
+    margin: 1 0;
+    padding: 1;
+    border: solid $primary;
+}
+
+#agents-panel {
+    margin: 1 0;
+    height: auto;
+    max-height: 40%;
+}
+
+#agents-table {
+    height: 100%;
+}
+
+/* Simulation screen */
+#simulation-container {
+    padding: 1 2;
+}
+
+#settings-row {
+    height: auto;
+    margin: 1 0;
+}
+
+#type-panel {
+    width: 30%;
+    padding: 1;
+    border: solid $secondary;
+}
+
+#config-panel {
+    width: 70%;
+    padding: 1;
+    border: solid $secondary;
+    margin-left: 1;
+}
+
+.input-label {
+    width: 10;
+}
+
+#sim-log {
+    height: 15;
+    margin: 1 0;
+    border: solid $primary;
+}
+
+/* Results screen */
+#results-container {
+    padding: 1 2;
+}
+
+#results-tabs {
+    height: auto;
+    min-height: 25;
+}
+
+#ops-summary, #guard-summary {
+    padding: 1;
+    margin: 1 0;
+    border: solid $secondary;
+}
+
+/* Button bar */
+#button-bar {
+    margin: 1 0;
+    align: center middle;
+    height: auto;
+}
+
+#button-bar Button {
+    margin: 0 1;
+}
+
+/* Labels */
+.label {
+    margin-bottom: 0;
+    color: $text;
+    text-style: bold;
+}
+
+/* Data tables */
+DataTable {
+    height: auto;
+    max-height: 15;
+}
+
+DataTable > .datatable--header {
+    background: $primary-darken-1;
+    color: $text;
+    text-style: bold;
+}
+
+DataTable > .datatable--cursor {
+    background: $primary;
+    color: $text;
+}
+
+/* Progress bars */
+ProgressBar {
+    padding: 1 0;
+}
+
+/* Radio buttons */
+RadioSet {
+    margin: 1 0;
+}
+
+/* Inputs */
+Input {
+    margin: 0 0 1 0;
+}
+
+/* Notifications */
+Toast {
+    width: auto;
+}
