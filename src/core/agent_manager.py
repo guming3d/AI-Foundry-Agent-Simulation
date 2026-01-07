@@ -152,7 +152,8 @@ Please assist users with tasks related to your area of expertise while maintaini
         current = 0
 
         for org_num in range(1, org_count + 1):
-            org_id = f"{profile.organization.prefix}{org_num:02d}"
+            # Use 3-digit org IDs to support up to 999 organizations
+            org_id = f"{profile.organization.prefix}{org_num:03d}"
 
             for agent_type in profile.agent_types:
                 for agent_num in range(1, agent_count + 1):
