@@ -1,0 +1,133 @@
+id: financial_services
+name: Financial Services
+default_org_id: ORG01
+agent_archetypes:
+  - agent_type: CustomerSupport
+    display_name: Customer Support
+    owner: Client Services
+    purpose: Help customers with account access, cards, payments, and general support questions.
+    tools: CRM, AccountLookup, CardServices, Payments, KnowledgeBase
+    query_templates:
+      - "I can't log in to my account. How do I reset my password?"
+      - "How do I dispute a transaction on my card?"
+      - "What's the status of my wire transfer?"
+      - "Help me set up automatic payments for my bill"
+      - "How do I replace a lost card?"
+      - "What are your customer support hours?"
+      - "Explain overdraft protection options"
+      - "How do I update my address on file?"
+      - "Where can I download my statements?"
+      - "How do I change my PIN?"
+  - agent_type: FraudDetection
+    display_name: Fraud Detection
+    owner: Fraud Operations
+    purpose: Detect suspicious transactions, account takeover, and identity fraud patterns.
+    tools: TransactionMonitor, RiskScoring, FraudRules, CaseMgmt
+    query_templates:
+      - "Analyze transaction pattern for account #{} - potential fraud alert"
+      - "Review suspicious payment activity from IP address {}"
+      - "Flag multiple failed login attempts on account #{}"
+      - "Investigate chargeback claim for transaction #{}"
+      - "Detect anomalous transfer pattern: {} transfers in {} minutes"
+      - "Verify identity for account showing unusual location changes"
+      - "Analyze card-not-present transaction risk for order #{}"
+      - "Review account takeover indicators for user #{}"
+      - "Monitor for return/check fraud on case #{}"
+      - "Investigate velocity abuse pattern on payment method #{}"
+  - agent_type: RiskAnalysis
+    display_name: Risk Analysis
+    owner: Enterprise Risk
+    purpose: Summarize portfolio risks, stress scenarios, and operational risk indicators.
+    tools: RiskDashboards, ScenarioLibrary, PolicyDocs
+    query_templates:
+      - "Summarize credit risk drivers for portfolio {}"
+      - "Run a stress scenario: {}% rate increase impact on {}"
+      - "Explain VaR changes week-over-week"
+      - "Identify top operational risk themes this month"
+      - "Create an executive risk summary for the board"
+      - "What are leading indicators for liquidity risk?"
+      - "Summarize model risk management requirements"
+      - "Generate a risk register entry for {} initiative"
+      - "Compare risk appetite vs current exposure for {}"
+      - "Draft remediation actions for high residual risks"
+  - agent_type: ComplianceAdvisor
+    display_name: Compliance Advisor
+    owner: Compliance
+    purpose: Support policy compliance, KYC/AML process guidance, and audit readiness (no legal advice).
+    tools: Policies, KYC, AML, AuditChecklists, TrainingContent
+    query_templates:
+      - "Create a checklist for KYC onboarding for entity type {}"
+      - "Summarize AML suspicious activity reporting steps"
+      - "What documentation is required for enhanced due diligence?"
+      - "Draft training quiz questions for sanctions screening"
+      - "Explain record retention requirements for customer files"
+      - "List common compliance gaps found in audits"
+      - "Generate an internal compliance report outline"
+      - "How do we handle PEP (Politically Exposed Person) cases?"
+      - "Summarize recent policy updates for staff"
+      - "Draft a remediation plan template for audit findings"
+  - agent_type: InvestmentResearch
+    display_name: Investment Research
+    owner: Research
+    purpose: Summarize market news, sector trends, and company fundamentals for internal use.
+    tools: MarketData, NewsFeed, ResearchLibrary
+    query_templates:
+      - "Summarize today's market headlines and key movers"
+      - "Create a sector outlook for {} in Q{}"
+      - "Summarize earnings call highlights for {}"
+      - "Compare valuation multiples across peer group {}"
+      - "Draft an investment thesis outline for {}"
+      - "Summarize macroeconomic indicators relevant to {}"
+      - "Create a risk factors list for {}"
+      - "Summarize analyst consensus changes for {}"
+      - "Draft client-friendly market commentary for this week"
+      - "Generate a due diligence checklist for {}"
+  - agent_type: LoanUnderwriting
+    display_name: Loan Underwriting
+    owner: Credit
+    purpose: Assist with underwriting workflow checklists, document requirements, and decision memos.
+    tools: UnderwritingRules, DocumentChecklist, CreditBureau, PolicyDocs
+    query_templates:
+      - "List required documents for a {} loan application"
+      - "Summarize credit policy requirements for LTV {}%"
+      - "Draft a decision memo outline for applicant profile {}"
+      - "Explain debt-to-income calculation steps"
+      - "Identify missing items in this application package"
+      - "Suggest conditions for approval for case #{}"
+      - "Create a checklist for small business underwriting"
+      - "Summarize collateral valuation considerations"
+      - "Explain adverse action notice requirements"
+      - "Draft underwriting questions for applicant {}"
+  - agent_type: HRAssistant
+    display_name: HR Assistant
+    owner: Human Resources
+    purpose: Answer employee questions about policies, benefits, onboarding, and internal processes.
+    tools: HRIS, PolicyKB, BenefitsPortal, OnboardingChecklist
+    query_templates:
+      - "What are the PTO policies?"
+      - "Explain our code of conduct requirements."
+      - "How do I enroll in benefits?"
+      - "Where can I find the employee handbook?"
+      - "How do I submit an expense reimbursement?"
+      - "What training is required for new employees?"
+      - "How do I change my address in the HR system?"
+      - "Explain the performance review timeline."
+      - "What is our remote work policy?"
+      - "How do I request leave?"
+  - agent_type: FinanceAnalyst
+    display_name: Finance Analyst
+    owner: Finance
+    purpose: Support budgeting, reporting, forecasting, and variance analysis for business leaders.
+    tools: ERP, BI, Forecasting, Budgeting, AccountingPolicies
+    query_templates:
+      - "Generate quarterly revenue report for business line {}"
+      - "Analyze budget variance for department {} in Q{}"
+      - "Forecast cash flow for the next {} weeks"
+      - "Summarize operating expenses by cost center"
+      - "Explain variance drivers for net interest margin this month"
+      - "Create a KPI dashboard summary for executive review"
+      - "Prepare an accounts receivable aging report"
+      - "Generate financial ratios dashboard for executive review"
+      - "Analyze capital expenditure requests for {} project"
+      - "Summarize month-end close status and risks"
+

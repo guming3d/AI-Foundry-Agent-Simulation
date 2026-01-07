@@ -2,6 +2,9 @@
 
 This toolkit simulates realistic agent operations to generate metrics data for AI Foundry agents.
 
+> Note: This file documents the legacy script workflow. For the new generator app (Textual TUI + Gradio UI),
+> start with `README.md`.
+
 ## Overview
 
 The simulation system consists of three main components:

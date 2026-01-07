@@ -8,7 +8,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DAEMON_SCRIPT="$SCRIPT_DIR/simulation_daemon.py"
 PID_FILE="$SCRIPT_DIR/daemon_results/daemon.pid"
 LOG_DIR="$SCRIPT_DIR/daemon_results"
-PYTHON="${SCRIPT_DIR}/.venv/bin/python3"
+PYTHON="${PYTHON:-python3}"
 
 # Colors for output
 GREEN='\033[0;32m'
@@ -29,14 +29,6 @@ function print_error() {
 
 function print_warning() {
     echo -e "${YELLOW}[WARN]${NC} $1"
-}
-
-function check_python() {
-    if [ ! -f "$PYTHON" ]; then
-        print_error "Python virtual environment not found at $PYTHON"
-        print_error "Please create virtual environment: python3 -m venv .venv"
-        exit 1
-    fi
 }
 
 function get_pid() {
@@ -62,8 +54,7 @@ function is_running() {
 
 function start_daemon() {
     print_status "Starting simulation daemon..."
-
-    check_python
+    command -v "$PYTHON" >/dev/null 2>&1 || { print_error "Python not found: $PYTHON"; exit 1; }
 
     if is_running; then
         print_warning "Daemon is already running (PID: $(get_pid))"

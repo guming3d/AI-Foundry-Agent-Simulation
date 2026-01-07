@@ -2,6 +2,9 @@
 
 Get up and running with agent operation simulation in 5 minutes.
 
+> Note: This file documents the legacy script workflow. For the new generator app (Textual TUI + Gradio UI),
+> start with `README.md`.
+
 ## Prerequisites Check
 
 ```bash

@@ -1,0 +1,149 @@
+id: retail
+name: Retail & eCommerce
+default_org_id: ORG01
+agent_archetypes:
+  - agent_type: CustomerSupport
+    display_name: Customer Support
+    owner: Customer Service
+    purpose: Handle customer inquiries about orders, returns, billing, subscriptions, and accounts.
+    tools: CRM, OrderLookup, ReturnsPolicy, Billing, SubscriptionMgmt
+    query_templates:
+      - "How do I track my order #ORDER-{}?"
+      - "I need to return a product I purchased last week. What's the process?"
+      - "My account is locked. Can you help me reset it?"
+      - "What are your customer service hours?"
+      - "I didn't receive a confirmation email for my order. Can you resend it?"
+      - "How can I update my shipping address?"
+      - "What's your refund policy?"
+      - "I have a question about warranty coverage on product #{}"
+      - "Can you help me with a billing issue?"
+      - "How do I cancel my subscription?"
+  - agent_type: CatalogEnrichment
+    display_name: Catalog Enrichment
+    owner: Merchandising
+    purpose: Enrich product catalog content, attributes, SEO fields, and taxonomy classification.
+    tools: PIM, Taxonomy, ImageTagging, SEO, SupplierFeeds
+    query_templates:
+      - "Generate product descriptions for new inventory items in category {}"
+      - "Tag and categorize the following product: [Product Name]"
+      - "Extract features from product images batch #{}"
+      - "Enrich product metadata for SKU range {}-{}"
+      - "Generate SEO-friendly product titles for category {}"
+      - "Classify products into appropriate taxonomy categories"
+      - "Extract and normalize product attributes from supplier data"
+      - "Generate product comparison tables for category {}"
+      - "Identify missing product information in catalog section {}"
+      - "Create product bundles based on purchase patterns"
+  - agent_type: PricingOptimization
+    display_name: Pricing Optimization
+    owner: Revenue Management
+    purpose: Analyze pricing, competitor positioning, elasticity, and promotional recommendations.
+    tools: PricingEngine, CompetitorIntel, DemandForecast, PromotionPlanner
+    query_templates:
+      - "Analyze pricing trends for product category {} over the last 30 days"
+      - "Recommend optimal price point for new product launch in segment {}"
+      - "Calculate price elasticity for top {} products"
+      - "Generate dynamic pricing strategy for promotional period"
+      - "Compare our prices with competitors for category {}"
+      - "Forecast revenue impact of {}% price increase on product line"
+      - "Identify products with suboptimal pricing in region {}"
+      - "Analyze margin optimization opportunities for SKU {}"
+      - "Generate markdown schedule for end-of-season inventory"
+      - "Calculate break-even pricing for new product with {}% margin target"
+  - agent_type: StoreOps
+    display_name: Store Operations
+    owner: Retail Operations
+    purpose: Support store operations using inventory, staffing, IoT telemetry, and incident workflows.
+    tools: POS, Inventory, IoT, WorkforceMgmt, IncidentMgmt
+    query_templates:
+      - "Check inventory levels for store #{} in real-time"
+      - "Report on foot traffic patterns for store #{} today"
+      - "Identify restocking needs for high-traffic stores"
+      - "Analyze temperature anomalies in refrigeration units at store #{}"
+      - "Generate staff scheduling recommendations for store #{} next week"
+      - "Monitor energy consumption patterns across {} stores"
+      - "Alert on unusual activity detected at store #{}"
+      - "Optimize store layout based on customer flow data"
+      - "Track equipment maintenance schedules for region {}"
+      - "Analyze checkout queue times for store #{}"
+  - agent_type: SupplyChain
+    display_name: Supply Chain
+    owner: Logistics
+    purpose: Track shipments, optimize routes, manage inventory planning, and improve supplier performance.
+    tools: WMS, TMS, SupplierScorecards, DemandForecast, ShipmentTracking
+    query_templates:
+      - "Track shipment status for order #{} in transit"
+      - "Optimize delivery routes for region {} this week"
+      - "Forecast inventory needs for next {} days based on demand"
+      - "Analyze supplier performance metrics for vendor #{}"
+      - "Identify supply chain bottlenecks in distribution center {}"
+      - "Calculate optimal reorder points for product category {}"
+      - "Monitor customs clearance status for international shipments"
+      - "Predict potential delays in supply chain for upcoming holiday"
+      - "Optimize warehouse space utilization in facility #{}"
+      - "Analyze transportation costs for route optimization"
+  - agent_type: FraudDetection
+    display_name: Fraud Detection
+    owner: Risk & Fraud
+    purpose: Detect and investigate suspicious transactions, account takeover, and abuse patterns.
+    tools: FraudRules, TransactionMonitor, RiskScoring, CaseMgmt
+    query_templates:
+      - "Analyze transaction pattern for account #{} - potential fraud alert"
+      - "Review suspicious payment activity from IP address {}"
+      - "Flag multiple failed login attempts on account #{}"
+      - "Investigate chargeback claim for order #{}"
+      - "Detect anomalous purchase pattern: {} high-value items in {} minutes"
+      - "Verify identity for account showing unusual location changes"
+      - "Analyze card-not-present transaction risk for order #{}"
+      - "Review account takeover indicators for user #{}"
+      - "Monitor for potential return fraud on order #{}"
+      - "Investigate velocity abuse pattern on payment method #{}"
+  - agent_type: MarketingCopy
+    display_name: Marketing Copy
+    owner: Marketing
+    purpose: Produce on-brand marketing copy for campaigns, product launches, and lifecycle messaging.
+    tools: BrandGuidelines, CampaignPlanner, ContentCalendar, A/BTesting
+    query_templates:
+      - "Generate email campaign copy for {} product launch"
+      - "Create social media posts for spring sale promotion"
+      - "Write product landing page content for new {} collection"
+      - "Generate A/B test variants for campaign headline"
+      - "Create customer testimonial showcase copy"
+      - "Write seasonal promotion announcement for {} holiday"
+      - "Generate SMS marketing message for flash sale (under 160 chars)"
+      - "Create blog post about product category {} trends"
+      - "Write abandoned cart recovery email sequence"
+      - "Generate push notification copy for discount campaign"
+  - agent_type: HRAssistant
+    display_name: HR Assistant
+    owner: Human Resources
+    purpose: Answer employee questions about policies, benefits, onboarding, and internal processes.
+    tools: HRIS, PolicyKB, BenefitsPortal, OnboardingChecklist
+    query_templates:
+      - "What are the PTO policies?"
+      - "Help me understand the benefits enrollment deadlines."
+      - "How do I update my direct deposit information?"
+      - "What's the process for requesting parental leave?"
+      - "Where can I find the employee handbook?"
+      - "How do I submit an expense reimbursement?"
+      - "What training is required for new managers?"
+      - "How do I change my address in the HR system?"
+      - "Explain the performance review timeline."
+      - "What is our remote work policy?"
+  - agent_type: FinanceAnalyst
+    display_name: Finance Analyst
+    owner: Finance
+    purpose: Support budgeting, reporting, forecasting, and variance analysis for business leaders.
+    tools: ERP, BI, Forecasting, Budgeting, AccountingPolicies
+    query_templates:
+      - "Generate quarterly revenue report for region {}"
+      - "Analyze budget variance for department {} in Q{}"
+      - "Forecast cash flow for the next {} weeks"
+      - "Summarize operating expenses by cost center"
+      - "Explain variance drivers for gross margin this month"
+      - "Create a KPI dashboard summary for executive review"
+      - "Prepare an accounts receivable aging report"
+      - "Generate financial ratios dashboard for executive review"
+      - "Analyze capital expenditure requests for {} project"
+      - "Summarize month-end close status and risks"
+

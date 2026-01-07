@@ -8,7 +8,11 @@ from azure.ai.projects import AIProjectClient
 # ORG01-FinanceAnalyst-AG009
 # https://foundry-control-plane.services.ai.azure.com/api/projects/foundry-control-plane/applications/ORG01-FinanceAnalyst-AG009/protocols/openai/responses?api-version=2025-11-15-preview
 # https://foundry-control-plane.services.ai.azure.com/api/projects/foundry-control-plane/applications/ORG01-FinanceAnalyst-AG009/protocols/activityprotocol?api-version=2025-11-15-preview
-myEndpoint = "https://foundry-control-plane.services.ai.azure.com/api/projects/foundry-control-plane"
+import os
+
+myEndpoint = os.environ.get("PROJECT_ENDPOINT")
+if not myEndpoint:
+    raise SystemExit("Missing PROJECT_ENDPOINT. Set it in your environment or .env file.")
 
 project_client = AIProjectClient(
     endpoint=myEndpoint,
@@ -29,6 +33,5 @@ response = openai_client.responses.create(
 )
 
 print(f"Response output: {response.output_text}")
-
 
 

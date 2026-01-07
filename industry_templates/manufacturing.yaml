@@ -1,0 +1,133 @@
+id: manufacturing
+name: Manufacturing Company
+default_org_id: ORG01
+agent_archetypes:
+  - agent_type: ProductionPlanning
+    display_name: Production Planning
+    owner: Operations
+    purpose: Support production scheduling, capacity planning, and demand alignment.
+    tools: MES, ERP, DemandForecast, CapacityPlanner
+    query_templates:
+      - "Create a production schedule for line {} for next week"
+      - "Identify capacity constraints for product family {}"
+      - "Summarize demand vs supply for the next {} days"
+      - "Recommend batch sizes for SKU {}"
+      - "What are the top drivers of schedule adherence issues?"
+      - "Generate a plan to reduce changeover time by {}%"
+      - "Forecast finished goods inventory for the next {} weeks"
+      - "Identify critical work orders at risk of delay"
+      - "Summarize WIP levels by production area"
+      - "Generate an executive summary of production KPIs"
+  - agent_type: QualityAssurance
+    display_name: Quality Assurance
+    owner: Quality
+    purpose: Support quality inspections, nonconformance analysis, and corrective actions.
+    tools: QMS, SPC, NCR, CAPA
+    query_templates:
+      - "Summarize nonconformance report #{} and recommended CAPA"
+      - "Analyze defect trends for line {} over last {} days"
+      - "Create an inspection checklist for product {}"
+      - "Explain how to run root cause analysis (5 Whys) for this defect"
+      - "Generate a supplier quality scorecard summary for vendor {}"
+      - "What are common failure modes for component {}?"
+      - "Draft a corrective action plan for recurring defect {}"
+      - "Summarize audit findings and remediation steps"
+      - "Generate SPC chart interpretation guidance"
+      - "Create a training memo for new quality procedures"
+  - agent_type: MaintenanceOps
+    display_name: Maintenance Operations
+    owner: Maintenance
+    purpose: Support preventive maintenance schedules, troubleshooting, and work order triage.
+    tools: CMMS, IoT, WorkOrders, AssetRegistry
+    query_templates:
+      - "Generate a preventive maintenance schedule for asset {}"
+      - "Troubleshoot downtime issue on machine {}"
+      - "Summarize open work orders by priority for area {}"
+      - "Identify top assets contributing to downtime this month"
+      - "Create a checklist for safety lockout/tagout before service"
+      - "Draft a root cause analysis summary for incident #{}"
+      - "Recommend spare parts to keep on hand for asset {}"
+      - "Analyze vibration telemetry anomalies for motor {}"
+      - "Create a shift handover note template"
+      - "Summarize mean time between failures (MTBF) trends"
+  - agent_type: SupplyChain
+    display_name: Supply Chain
+    owner: Logistics
+    purpose: Track inbound materials, outbound shipments, and optimize inventory and transport.
+    tools: WMS, TMS, SupplierScorecards, DemandForecast, ShipmentTracking
+    query_templates:
+      - "Track shipment status for PO #{}"
+      - "Optimize delivery routes for region {} this week"
+      - "Forecast inventory needs for next {} days based on demand"
+      - "Analyze supplier performance metrics for vendor #{}"
+      - "Identify supply chain bottlenecks in distribution center {}"
+      - "Calculate optimal reorder points for component category {}"
+      - "Predict potential delays for critical materials next month"
+      - "Optimize warehouse space utilization in facility #{}"
+      - "Analyze transportation costs for route optimization"
+      - "Summarize inventory turns by product line {}"
+  - agent_type: Procurement
+    display_name: Procurement
+    owner: Procurement
+    purpose: Support sourcing, RFQs, supplier negotiation prep, and purchase order workflows.
+    tools: SupplierDirectory, RFQ, ContractRepo, SpendAnalytics
+    query_templates:
+      - "Draft an RFQ for component {} with volume {}"
+      - "Summarize supplier options and pros/cons for category {}"
+      - "Create a negotiation checklist for vendor renewal"
+      - "Identify cost-saving opportunities in spend category {}"
+      - "Draft a supplier performance review agenda"
+      - "Summarize contract terms and risks for agreement #{}"
+      - "Create a purchase requisition checklist"
+      - "Recommend dual-sourcing plan for critical part {}"
+      - "Summarize lead time trends by supplier"
+      - "Generate an executive summary of sourcing pipeline"
+  - agent_type: SafetyCompliance
+    display_name: Safety & Compliance
+    owner: EHS
+    purpose: Support safety reporting, incident response, and compliance documentation.
+    tools: EHSSystem, IncidentMgmt, TrainingContent, AuditChecklists
+    query_templates:
+      - "Draft an incident report for near-miss event {}"
+      - "Create a safety audit checklist for area {}"
+      - "Summarize OSHA reporting requirements in plain language"
+      - "Generate toolbox talk topics for this week"
+      - "Create a corrective action plan for safety finding #{}"
+      - "Summarize training completion status for team {}"
+      - "Draft a safety bulletin about hazard {}"
+      - "List common root causes of incidents in manufacturing"
+      - "Generate a risk assessment template for new process"
+      - "Create an emergency response drill plan"
+  - agent_type: HRAssistant
+    display_name: HR Assistant
+    owner: Human Resources
+    purpose: Answer employee questions about policies, benefits, onboarding, and internal processes.
+    tools: HRIS, PolicyKB, BenefitsPortal, OnboardingChecklist
+    query_templates:
+      - "What are the PTO policies?"
+      - "How do I request shift changes?"
+      - "Where can I find the employee handbook?"
+      - "How do I submit an expense reimbursement?"
+      - "What training is required for new employees?"
+      - "How do I update my direct deposit information?"
+      - "Explain the performance review timeline."
+      - "What is our overtime policy?"
+      - "How do I report a workplace concern?"
+      - "What is our remote work policy?"
+  - agent_type: FinanceAnalyst
+    display_name: Finance Analyst
+    owner: Finance
+    purpose: Support budgeting, reporting, forecasting, and variance analysis for business leaders.
+    tools: ERP, BI, Forecasting, Budgeting, AccountingPolicies
+    query_templates:
+      - "Analyze budget variance for plant {} in Q{}"
+      - "Forecast cash flow for the next {} weeks"
+      - "Summarize operating expenses by cost center"
+      - "Explain variance drivers for COGS this month"
+      - "Create a KPI dashboard summary for executive review"
+      - "Prepare an accounts receivable aging report"
+      - "Summarize inventory valuation changes this quarter"
+      - "Analyze capex request #{} and payback period"
+      - "Summarize month-end close status and risks"
+      - "Generate an executive summary of financial performance"
+

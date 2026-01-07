@@ -4,11 +4,10 @@ After=network.target
 
 [Service]
 Type=simple
-User=azureuser
-Group=azureuser
-WorkingDirectory=/home/azureuser/code/AI-Foundry-Agent-Simulation
-Environment="PATH=/home/azureuser/code/AI-Foundry-Agent-Simulation/.venv/bin:/usr/local/bin:/usr/bin:/bin"
-ExecStart=/home/azureuser/code/AI-Foundry-Agent-Simulation/.venv/bin/python3 /home/azureuser/code/AI-Foundry-Agent-Simulation/simulation_daemon.py
+User=REPLACE_ME
+Group=REPLACE_ME
+WorkingDirectory=/path/to/this/repo
+ExecStart=/usr/bin/env python3 /path/to/this/repo/simulation_daemon.py --config /path/to/this/repo/simulation_daemon_config.json
 
 # Restart policy
 Restart=on-failure
@@ -18,8 +17,8 @@ RestartSec=30
 LimitNOFILE=65536
 
 # Logging
-StandardOutput=append:/home/azureuser/code/AI-Foundry-Agent-Simulation/daemon_results/daemon_stdout.log
-StandardError=append:/home/azureuser/code/AI-Foundry-Agent-Simulation/daemon_results/daemon_stderr.log
+StandardOutput=append:/path/to/this/repo/daemon_results/daemon_stdout.log
+StandardError=append:/path/to/this/repo/daemon_results/daemon_stderr.log
 
 [Install]
 WantedBy=multi-user.target

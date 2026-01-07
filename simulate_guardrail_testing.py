@@ -86,11 +86,12 @@ GUARDRAIL_TEST_QUERIES = {
     ],
 }
 
+endpoint = os.environ.get("PROJECT_ENDPOINT")
+if not endpoint:
+    raise SystemExit("Missing PROJECT_ENDPOINT. Set it in your environment or .env file.")
+
 # Initialize project client
-project_client = AIProjectClient(
-    endpoint=os.environ.get("PROJECT_ENDPOINT", 'https://foundry-control-plane.services.ai.azure.com/api/projects/foundry-control-plane'),
-    credential=DefaultAzureCredential(),
-)
+project_client = AIProjectClient(endpoint=endpoint, credential=DefaultAzureCredential())
 
 openai_client = project_client.get_openai_client()
 

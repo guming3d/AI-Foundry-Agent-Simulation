@@ -1,0 +1,133 @@
+id: healthcare
+name: Healthcare Provider
+default_org_id: ORG01
+agent_archetypes:
+  - agent_type: PatientSupport
+    display_name: Patient Support
+    owner: Patient Services
+    purpose: Help patients with common questions, portals, forms, and next-step guidance.
+    tools: PatientPortal, FAQ, KnowledgeBase, TriageGuidance
+    query_templates:
+      - "How do I reset my patient portal password?"
+      - "Where can I find my lab results?"
+      - "What should I bring to my appointment tomorrow?"
+      - "Can you explain what my after-visit summary means?"
+      - "How do I request a copy of my medical records?"
+      - "What are the clinic hours for the {} location?"
+      - "How do I update my insurance information?"
+      - "Who do I contact for billing questions?"
+      - "How do I message my care team?"
+      - "What do I do if I missed a dose of my medication?"
+  - agent_type: AppointmentScheduling
+    display_name: Appointment Scheduling
+    owner: Scheduling
+    purpose: Schedule, reschedule, and triage appointments based on availability and visit type.
+    tools: SchedulingSystem, ProviderDirectory, EligibilityCheck
+    query_templates:
+      - "Schedule a new appointment with a {} specialist next week"
+      - "Reschedule my appointment on {} to a later time"
+      - "Find the next available appointment for {}"
+      - "Can you help me book a telehealth visit?"
+      - "What is the earliest appointment for imaging this month?"
+      - "I need to cancel my appointment for tomorrow"
+      - "Which locations offer {} services?"
+      - "Can you schedule follow-up in {} weeks?"
+      - "Is there availability on Saturday?"
+      - "Help me book a pediatric appointment for my child"
+  - agent_type: ClaimsProcessing
+    display_name: Claims Processing
+    owner: Revenue Cycle
+    purpose: Assist staff with claim status, coding checks, denials, and documentation requirements.
+    tools: ClaimsSystem, PayerRules, ICD10, DenialsWorkbench
+    query_templates:
+      - "Check status of claim #{} submitted last week"
+      - "Why was claim #{} denied and what are next steps?"
+      - "What documentation is required for prior authorization for {}?"
+      - "Validate ICD-10 coding for diagnosis {}"
+      - "Summarize denial trends for payer {} this month"
+      - "How do I appeal a denial for procedure {}?"
+      - "Identify missing fields in claim submission batch #{}"
+      - "Explain coordination of benefits for this patient case"
+      - "Generate a checklist for clean claims submission"
+      - "Recommend steps to reduce denials for CPT {}"
+  - agent_type: ClinicalDocumentation
+    display_name: Clinical Documentation
+    owner: Clinical Operations
+    purpose: Draft and summarize clinical notes, discharge instructions, and care plans (no diagnosis).
+    tools: EHR, Templates, ClinicalGuidelines
+    query_templates:
+      - "Summarize the following visit note into a concise patient-friendly summary"
+      - "Draft discharge instructions for a patient after {} procedure"
+      - "Create a SOAP note outline for a follow-up visit"
+      - "Generate a care plan checklist for chronic condition management"
+      - "Extract key vitals and medications from this note"
+      - "Draft referral letter to {} specialist"
+      - "Summarize imaging report findings in plain language"
+      - "Create after-visit education points for {}"
+      - "Turn these bullet notes into a structured progress note"
+      - "Generate a medication reconciliation summary"
+  - agent_type: ComplianceAdvisor
+    display_name: Compliance Advisor
+    owner: Compliance
+    purpose: Support policy compliance, privacy guidance, and audit preparation (no legal advice).
+    tools: Policies, AuditChecklists, TrainingContent
+    query_templates:
+      - "Summarize HIPAA minimum necessary rule in plain language"
+      - "Create an audit checklist for access logs review"
+      - "What is the process for reporting a privacy incident?"
+      - "Draft staff training quiz questions on PHI handling"
+      - "Explain retention requirements for clinical documentation"
+      - "Generate a policy reminder message for staff"
+      - "What controls reduce risk of unauthorized access?"
+      - "Help prepare an internal compliance report outline"
+      - "List common compliance gaps in {} workflows"
+      - "Create a remediation plan template for audit findings"
+  - agent_type: PharmacySupport
+    display_name: Pharmacy Support
+    owner: Pharmacy
+    purpose: Help with medication refill workflows, formulary checks, and patient guidance (no prescribing).
+    tools: Formulary, RefillWorkflow, MedicationInfo
+    query_templates:
+      - "How do I request a refill for my prescription?"
+      - "Is {} covered on my formulary?"
+      - "What are common side effects of {}?"
+      - "How long does it take to process a refill request?"
+      - "What should I do if the pharmacy is out of stock?"
+      - "Explain how to use an inhaler correctly"
+      - "Can you remind me of storage instructions for {}?"
+      - "What is the process for prior authorization?"
+      - "Help me understand medication interactions for {}"
+      - "How do I transfer my prescription to another pharmacy?"
+  - agent_type: HRAssistant
+    display_name: HR Assistant
+    owner: Human Resources
+    purpose: Answer employee questions about policies, benefits, onboarding, and internal processes.
+    tools: HRIS, PolicyKB, BenefitsPortal, OnboardingChecklist
+    query_templates:
+      - "What are the PTO policies?"
+      - "How do I complete mandatory compliance training?"
+      - "Where do I find shift scheduling policies?"
+      - "How do I update my direct deposit information?"
+      - "What is our vaccination policy for staff?"
+      - "How do I request leave?"
+      - "Where can I find the employee handbook?"
+      - "How do I submit an expense reimbursement?"
+      - "What is the process for internal transfers?"
+      - "What is our remote work policy?"
+  - agent_type: FinanceAnalyst
+    display_name: Finance Analyst
+    owner: Finance
+    purpose: Support budgeting, reporting, forecasting, and variance analysis for department leaders.
+    tools: ERP, BI, Forecasting, Budgeting, AccountingPolicies
+    query_templates:
+      - "Generate monthly revenue cycle performance summary"
+      - "Analyze operating expense variance for department {}"
+      - "Forecast cash flow for the next {} weeks"
+      - "Summarize labor cost trends by unit"
+      - "Create a KPI dashboard summary for executive review"
+      - "Prepare an accounts receivable aging report"
+      - "Analyze denial write-offs by payer"
+      - "Summarize supply spend and savings opportunities"
+      - "Create an annual budget template for a clinic"
+      - "Summarize month-end close status and risks"
+

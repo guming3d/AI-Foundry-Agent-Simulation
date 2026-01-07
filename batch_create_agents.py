@@ -18,10 +18,11 @@ AVAILABLE_MODELS = [
 ]
 
 # Initialize the project client
-project_client = AIProjectClient(
-    endpoint='https://foundry-control-plane.services.ai.azure.com/api/projects/foundry-control-plane',
-    credential=DefaultAzureCredential(),
-)
+endpoint = os.environ.get("PROJECT_ENDPOINT")
+if not endpoint:
+    raise SystemExit("Missing PROJECT_ENDPOINT. Set it in your environment or .env file.")
+
+project_client = AIProjectClient(endpoint=endpoint, credential=DefaultAzureCredential())
 
 def create_agent_name(base_name, org_id, agent_id):
     """Create a descriptive agent name."""

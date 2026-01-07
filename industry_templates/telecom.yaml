@@ -1,0 +1,149 @@
+id: telecom
+name: Telecommunications Provider
+default_org_id: ORG01
+agent_archetypes:
+  - agent_type: CustomerSupport
+    display_name: Customer Support
+    owner: Customer Care
+    purpose: Help customers with account access, service issues, device questions, and plan changes.
+    tools: CRM, AccountLookup, DeviceCatalog, PlanMgmt, KnowledgeBase
+    query_templates:
+      - "My internet is down. Can you help troubleshoot?"
+      - "How do I change my mobile plan?"
+      - "I was charged an unexpected fee on my bill. Can you explain?"
+      - "How do I reset my modem/router?"
+      - "Help me upgrade my device"
+      - "What are your customer service hours?"
+      - "How do I add a line to my account?"
+      - "How do I update my address on file?"
+      - "Where can I download my monthly statements?"
+      - "How do I cancel my service?"
+  - agent_type: NetworkOps
+    display_name: Network Operations
+    owner: Network Operations Center
+    purpose: Support network monitoring, incident triage, and performance reporting.
+    tools: NMS, Telemetry, IncidentMgmt, ChangeMgmt
+    query_templates:
+      - "Summarize network alarms for region {} in the last hour"
+      - "Is there an outage affecting ZIP code {}?"
+      - "Generate a root cause hypothesis for incident #{}"
+      - "Create a post-incident review outline for outage {}"
+      - "Summarize latency and packet loss trends for node {}"
+      - "Identify top recurring incidents this week"
+      - "Draft a customer impact statement for outage notification"
+      - "Recommend steps to reduce congestion in sector {}"
+      - "Summarize SLA compliance for enterprise customer {}"
+      - "Generate a maintenance window communication template"
+  - agent_type: BillingSupport
+    display_name: Billing Support
+    owner: Billing
+    purpose: Explain bills, resolve disputes, and assist with payment arrangements.
+    tools: BillingSystem, Payments, Disputes, PolicyKB
+    query_templates:
+      - "Explain line items on invoice #{}"
+      - "Why did my bill increase this month?"
+      - "Help me set up autopay"
+      - "I need to dispute a roaming charge"
+      - "What payment methods do you accept?"
+      - "How do I change my billing date?"
+      - "Can you help me with a payment extension?"
+      - "Summarize my charges for the last {} months"
+      - "What is the late fee policy?"
+      - "How do I update my payment information?"
+  - agent_type: FraudDetection
+    display_name: Fraud Detection
+    owner: Fraud Operations
+    purpose: Detect suspicious SIM swaps, account takeover, and unusual usage patterns.
+    tools: UsageAnalytics, RiskScoring, FraudRules, CaseMgmt
+    query_templates:
+      - "Investigate potential SIM swap on account #{}"
+      - "Analyze unusual international usage for line {}"
+      - "Flag multiple failed login attempts on account #{}"
+      - "Investigate chargeback claim for transaction #{}"
+      - "Detect anomalous data usage spike: {}GB in {} minutes"
+      - "Verify identity for account showing unusual location changes"
+      - "Review account takeover indicators for user #{}"
+      - "Investigate velocity abuse pattern on payment method #{}"
+      - "Create a fraud case summary for incident #{}"
+      - "Summarize fraud trends by region {}"
+  - agent_type: FieldService
+    display_name: Field Service
+    owner: Field Operations
+    purpose: Support dispatch, technician workflows, and service appointment management.
+    tools: Dispatch, WorkOrders, KnowledgeBase, PartsInventory
+    query_templates:
+      - "Schedule a technician visit for address {}"
+      - "Summarize open work orders by priority in region {}"
+      - "Create a troubleshooting checklist for fiber install"
+      - "What parts are needed for repair type {}?"
+      - "Draft customer instructions before a technician visit"
+      - "Recommend routing plan for technicians tomorrow"
+      - "Summarize technician productivity metrics this week"
+      - "Generate an installation completion checklist"
+      - "Create a customer follow-up message after repair"
+      - "Summarize repeat dispatch reasons for last {} days"
+  - agent_type: SalesEnablement
+    display_name: Sales Enablement
+    owner: Sales
+    purpose: Help sales teams with offers, competitive positioning, and proposal drafting.
+    tools: OfferCatalog, CompetitiveIntel, ProposalTemplates
+    query_templates:
+      - "Draft a proposal for business customer {} with {} lines"
+      - "Compare our plans vs competitor {} for segment {}"
+      - "Summarize key benefits of the {} plan"
+      - "Create an objection-handling script for price concerns"
+      - "Generate a discovery call questionnaire"
+      - "Draft an email follow-up for lead {}"
+      - "Create a one-page product sheet for {}"
+      - "Suggest bundle options for customer needs: {}"
+      - "Generate ROI talking points for managed services"
+      - "Draft a QBR agenda for enterprise account {}"
+  - agent_type: MarketingCopy
+    display_name: Marketing Copy
+    owner: Marketing
+    purpose: Produce on-brand marketing copy for campaigns, promotions, and lifecycle messaging.
+    tools: BrandGuidelines, CampaignPlanner, ContentCalendar, A/BTesting
+    query_templates:
+      - "Generate email campaign copy for {} promotion"
+      - "Create social media posts for new plan launch"
+      - "Write landing page content for {} offer"
+      - "Generate A/B test variants for campaign headline"
+      - "Create customer testimonial showcase copy"
+      - "Write seasonal promotion announcement for {}"
+      - "Generate SMS marketing message (under 160 chars)"
+      - "Create blog post about network performance improvements"
+      - "Write churn prevention email sequence"
+      - "Generate push notification copy for upgrade campaign"
+  - agent_type: HRAssistant
+    display_name: HR Assistant
+    owner: Human Resources
+    purpose: Answer employee questions about policies, benefits, onboarding, and internal processes.
+    tools: HRIS, PolicyKB, BenefitsPortal, OnboardingChecklist
+    query_templates:
+      - "What are the PTO policies?"
+      - "How do I enroll in benefits?"
+      - "Where can I find the employee handbook?"
+      - "How do I submit an expense reimbursement?"
+      - "What training is required for new employees?"
+      - "How do I update my direct deposit information?"
+      - "Explain the performance review timeline."
+      - "What is our remote work policy?"
+      - "How do I request leave?"
+      - "What is our overtime policy?"
+  - agent_type: FinanceAnalyst
+    display_name: Finance Analyst
+    owner: Finance
+    purpose: Support budgeting, reporting, forecasting, and variance analysis for business leaders.
+    tools: ERP, BI, Forecasting, Budgeting, AccountingPolicies
+    query_templates:
+      - "Analyze budget variance for business unit {} in Q{}"
+      - "Forecast cash flow for the next {} weeks"
+      - "Summarize operating expenses by cost center"
+      - "Explain variance drivers for revenue this month"
+      - "Create a KPI dashboard summary for executive review"
+      - "Prepare an accounts receivable aging report"
+      - "Summarize capex vs plan for network upgrade projects"
+      - "Analyze churn impact on revenue forecast"
+      - "Summarize month-end close status and risks"
+      - "Generate an executive summary of financial performance"
+

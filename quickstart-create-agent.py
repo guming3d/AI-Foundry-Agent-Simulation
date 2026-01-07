@@ -7,8 +7,7 @@ from azure.ai.projects.models import PromptAgentDefinition
 load_dotenv()
 
 project_client = AIProjectClient(
-    #endpoint=os.environ["PROJECT_ENDPOINT"],
-    endpoint='https://foundry-control-plane.services.ai.azure.com/api/projects/foundry-control-plane',
+    endpoint=os.environ["PROJECT_ENDPOINT"],
     credential=DefaultAzureCredential(),
 )
 

@@ -198,6 +198,8 @@ For production environments, use systemd for automatic startup and monitoring:
 
 ```bash
 # Copy service file
+#
+# NOTE: `simulation-daemon.service` is a template; edit paths + User/Group before installing.
 sudo cp simulation-daemon.service /etc/systemd/system/
 
 # Reload systemd
