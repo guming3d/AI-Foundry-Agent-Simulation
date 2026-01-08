@@ -1,0 +1,82 @@
+{
+  "description": "TEST CONFIGURATION - Shorter intervals for testing (DO NOT USE IN PRODUCTION)",
+  "target_daily_requests": {
+    "min": 100,
+    "max": 200,
+    "comment": "Reduced target for testing"
+  },
+  "execution_interval_minutes": 2,
+  "busy_hours": {
+    "description": "Always considered busy for testing",
+    "weekday": {
+      "enabled": true,
+      "start_hour": 0,
+      "end_hour": 23,
+      "comment": "All day for testing"
+    },
+    "weekend": {
+      "enabled": true,
+      "start_hour": 0,
+      "end_hour": 23,
+      "comment": "All day for testing"
+    }
+  },
+  "load_profiles": {
+    "busy": {
+      "operations": {
+        "num_calls": {"min": 5, "max": 10},
+        "threads": {"min": 2, "max": 3},
+        "delay": {"min": 0.5, "max": 1.0}
+      },
+      "guardrails": {
+        "num_tests": {"min": 3, "max": 5},
+        "threads": {"min": 1, "max": 2},
+        "delay": {"min": 1.0, "max": 1.5}
+      }
+    },
+    "normal": {
+      "operations": {
+        "num_calls": {"min": 3, "max": 7},
+        "threads": {"min": 2, "max": 3},
+        "delay": {"min": 0.8, "max": 1.2}
+      },
+      "guardrails": {
+        "num_tests": {"min": 2, "max": 4},
+        "threads": {"min": 1, "max": 2},
+        "delay": {"min": 1.2, "max": 1.8}
+      }
+    },
+    "quiet": {
+      "operations": {
+        "num_calls": {"min": 2, "max": 5},
+        "threads": {"min": 1, "max": 2},
+        "delay": {"min": 1.0, "max": 1.5}
+      },
+      "guardrails": {
+        "num_tests": {"min": 1, "max": 3},
+        "threads": {"min": 1, "max": 1},
+        "delay": {"min": 1.5, "max": 2.0}
+      }
+    }
+  },
+  "simulation_mix": {
+    "operations_weight": 70,
+    "guardrails_weight": 30,
+    "comment": "70% operations, 30% guardrail testing"
+  },
+  "output": {
+    "base_dir": "daemon_results_test",
+    "operations_csv": "test_operations_metrics.csv",
+    "guardrails_csv": "test_guardrail_results.csv",
+    "log_file": "simulation_daemon_test.log",
+    "daily_summary_dir": "daily_summaries"
+  },
+  "agents": {
+    "csv_path": "created_agents_results.csv"
+  },
+  "error_handling": {
+    "max_consecutive_failures": 3,
+    "failure_cooldown_minutes": 2,
+    "retry_on_rate_limit": true
+  }
+}
