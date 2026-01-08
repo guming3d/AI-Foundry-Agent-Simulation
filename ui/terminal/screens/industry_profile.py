@@ -54,8 +54,11 @@ class IndustryProfileScreen(Screen):
     def on_mount(self) -> None:
         """Initialize the profile list."""
         table = self.query_one("#profile-table", DataTable)
-        table.add_columns("ID", "Name", "Agent Types")
         table.cursor_type = "row"
+
+        # Add columns if not already present
+        if not table.columns:
+            table.add_columns("ID", "Name", "Agent Types")
 
         self._populate_table()
 
@@ -68,9 +71,16 @@ class IndustryProfileScreen(Screen):
     def _populate_table(self) -> None:
         """Populate the profile table."""
         table = self.query_one("#profile-table", DataTable)
-        table.clear()
+
+        # Clear rows only, keep columns
+        table.clear(columns=False)
 
         templates = self.loader.list_templates()
+
+        if not templates:
+            table.add_row("", "No profiles found", "", key="none")
+            return
+
         for template_id in templates:
             try:
                 info = self.loader.get_template_info(template_id)
@@ -120,10 +130,21 @@ class IndustryProfileScreen(Screen):
             details_panel.update(f"Error loading profile: {e}")
 
     def on_data_table_row_selected(self, event: DataTable.RowSelected) -> None:
-        """Show profile details when row is selected."""
+        """Select profile when row is clicked or Enter pressed."""
         profile_id = str(event.row_key.value)
-        self.current_profile_id = profile_id
-        self._show_profile_details(profile_id)
+        if profile_id and profile_id != "none":
+            self.current_profile_id = profile_id
+            self._show_profile_details(profile_id)
+            # Auto-select on row selection (double-click or Enter)
+            self.action_select_profile()
+
+    def on_data_table_row_highlighted(self, event: DataTable.RowHighlighted) -> None:
+        """Show profile details when cursor moves to a row."""
+        if event.row_key:
+            profile_id = str(event.row_key.value)
+            if profile_id and profile_id != "none":
+                self.current_profile_id = profile_id
+                self._show_profile_details(profile_id)
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """Handle button presses."""

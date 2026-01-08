@@ -20,6 +20,8 @@ class ModelSelectionScreen(Screen):
         ("escape", "app.pop_screen()", "Back"),
         ("r", "refresh_models", "Refresh"),
         ("s", "save_selection", "Save"),
+        ("space", "toggle_current", "Toggle"),
+        ("enter", "toggle_current", "Toggle"),
     ]
 
     def __init__(self):
@@ -32,10 +34,7 @@ class ModelSelectionScreen(Screen):
             Static("Model Selection", id="title", classes="screen-title"),
             Static("Select models to use for your agents. These will be randomly assigned during agent creation.",
                    classes="description"),
-            Vertical(
-                DataTable(id="model-table"),
-                id="table-container",
-            ),
+            DataTable(id="model-table"),
             Horizontal(
                 Button("Select All", id="btn-select-all"),
                 Button("Clear All", id="btn-clear-all"),
@@ -50,8 +49,11 @@ class ModelSelectionScreen(Screen):
     def on_mount(self) -> None:
         """Initialize the model table."""
         table = self.query_one("#model-table", DataTable)
-        table.add_columns("Selected", "Model Name", "Capabilities")
         table.cursor_type = "row"
+
+        # Add columns if not already present
+        if not table.columns:
+            table.add_columns("Selected", "Model Name", "Capabilities", "Version")
 
         # Load current selection
         state = get_state_manager().state
@@ -62,15 +64,23 @@ class ModelSelectionScreen(Screen):
     def _populate_table(self) -> None:
         """Populate the model table."""
         table = self.query_one("#model-table", DataTable)
-        table.clear()
+
+        # Clear existing rows only (not columns)
+        table.clear(columns=False)
 
         models = self.model_manager.list_available_models()
+
+        if not models:
+            table.add_row("", "No models found", "Check Azure connection", "")
+            self._update_status()
+            return
 
         for model in models:
             is_selected = model.name in self.selected_models
             selected_mark = "[X]" if is_selected else "[ ]"
             capabilities = ", ".join(model.capabilities) if model.capabilities else "N/A"
-            table.add_row(selected_mark, model.name, capabilities, key=model.name)
+            version = model.version or "N/A"
+            table.add_row(selected_mark, model.name, capabilities, version, key=model.name)
 
         self._update_status()
 
@@ -107,6 +117,24 @@ class ModelSelectionScreen(Screen):
 
         elif button_id == "btn-save":
             self.action_save_selection()
+
+    def action_toggle_current(self) -> None:
+        """Toggle selection of the currently highlighted row."""
+        table = self.query_one("#model-table", DataTable)
+        try:
+            # Get the cell key at current cursor position
+            cell_key = table.coordinate_to_cell_key(table.cursor_coordinate)
+            model_name = str(cell_key.row_key.value)
+            if model_name:
+                if model_name in self.selected_models:
+                    self.selected_models.discard(model_name)
+                    self.notify(f"Deselected: {model_name}")
+                else:
+                    self.selected_models.add(model_name)
+                    self.notify(f"Selected: {model_name}")
+                self._populate_table()
+        except Exception:
+            pass  # No valid row selected
 
     def action_refresh_models(self) -> None:
         """Refresh the model list."""

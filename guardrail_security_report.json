@@ -1,73 +1,73 @@
 {
-  "timestamp": "2026-01-06T10:32:24.892805",
-  "total_tests": 50,
-  "blocked_count": 21,
-  "allowed_count": 29,
-  "block_rate": 42.0,
-  "api_filter_count": 5,
-  "model_block_count": 16,
+  "timestamp": "2026-01-08T10:04:54.112514",
+  "total_tests": 22,
+  "blocked_count": 0,
+  "allowed_count": 22,
+  "block_rate": 0.0,
+  "api_filter_count": 0,
+  "model_block_count": 0,
   "category_stats": {
-    "sexual_content": {
-      "total": 10,
-      "blocked": 2,
-      "allowed": 8,
-      "block_rate": 20.0
-    },
     "self_harm_content": {
-      "total": 9,
-      "blocked": 2,
-      "allowed": 7,
-      "block_rate": 22.22
-    },
-    "indirect_prompt_injection": {
-      "total": 10,
-      "blocked": 6,
-      "allowed": 4,
-      "block_rate": 60.0
+      "total": 3,
+      "blocked": 0,
+      "allowed": 3,
+      "block_rate": 0.0
     },
     "jailbreak_content": {
-      "total": 9,
-      "blocked": 3,
+      "total": 6,
+      "blocked": 0,
       "allowed": 6,
-      "block_rate": 33.33
+      "block_rate": 0.0
+    },
+    "sexual_content": {
+      "total": 4,
+      "blocked": 0,
+      "allowed": 4,
+      "block_rate": 0.0
     },
     "harms_content": {
-      "total": 12,
-      "blocked": 8,
+      "total": 4,
+      "blocked": 0,
       "allowed": 4,
-      "block_rate": 66.67
+      "block_rate": 0.0
+    },
+    "indirect_prompt_injection": {
+      "total": 5,
+      "blocked": 0,
+      "allowed": 5,
+      "block_rate": 0.0
     }
   },
   "model_stats": {
-    "grok-4": {
-      "total": 13,
-      "blocked": 3,
-      "allowed": 10,
-      "block_rate": 23.08
-    },
-    "gpt-4.1-mini": {
-      "total": 12,
-      "blocked": 5,
-      "allowed": 7,
-      "block_rate": 41.67
-    },
-    "grok-4-fast-non-reasoning": {
-      "total": 6,
-      "blocked": 4,
-      "allowed": 2,
-      "block_rate": 66.67
-    },
     "gpt-5.1-codex": {
-      "total": 9,
-      "blocked": 5,
-      "allowed": 4,
-      "block_rate": 55.56
+      "total": 7,
+      "blocked": 0,
+      "allowed": 7,
+      "block_rate": 0.0
     },
     "gpt-5.2-chat": {
-      "total": 10,
-      "blocked": 4,
-      "allowed": 6,
-      "block_rate": 40.0
+      "total": 3,
+      "blocked": 0,
+      "allowed": 3,
+      "block_rate": 0.0
+    },
+    "gpt-4.1-mini": {
+      "total": 5,
+      "blocked": 0,
+      "allowed": 5,
+      "block_rate": 0.0
+    },
+    "grok-4": {
+      "total": 2,
+      "blocked": 0,
+      "allowed": 2,
+      "block_rate": 0.0
+    },
+    "grok-4-fast-non-reasoning": {
+      "total": 5,
+      "blocked": 0,
+      "allowed": 5,
+      "block_rate": 0.0
     }
   }
 }

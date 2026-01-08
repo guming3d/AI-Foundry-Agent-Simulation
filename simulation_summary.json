@@ -1,27 +1,27 @@
 {
-  "total_calls": 500,
-  "successful_calls": 465,
-  "failed_calls": 35,
-  "success_rate": 93.0,
-  "avg_latency_ms": 27468.98,
-  "min_latency_ms": 1464.6,
-  "max_latency_ms": 360858.5,
+  "total_calls": 43,
+  "successful_calls": 43,
+  "failed_calls": 0,
+  "success_rate": 100.0,
+  "avg_latency_ms": 6530.43,
+  "min_latency_ms": 1468.56,
+  "max_latency_ms": 23512.23,
   "agent_type_distribution": {
-    "MarketingCopy": 50,
-    "SupplyChain": 55,
-    "FinanceAnalyst": 59,
-    "CustomerSupport": 55,
-    "StoreOps": 57,
-    "PricingOptimization": 67,
-    "HRAssistant": 44,
-    "CatalogEnrichment": 67,
-    "FraudDetection": 46
+    "PatientIntake": 5,
+    "ClinicalDecisionSupport": 3,
+    "CareCoordinator": 8,
+    "PatientExperience": 3,
+    "BillingAssistant": 3,
+    "MedicalRecordsSummary": 5,
+    "LabAssistant": 4,
+    "PharmacyAssistant": 3,
+    "CodingSpecialist": 2,
+    "ResourceScheduler": 2,
+    "ComplianceOfficer": 4,
+    "AppointmentScheduler": 1
   },
   "model_distribution": {
-    "grok-4-fast-non-reasoning": 80,
-    "grok-4": 103,
-    "gpt-5.1-codex": 109,
-    "gpt-5.2-chat": 88,
-    "gpt-4.1-mini": 120
+    "gpt-4.1-mini": 20,
+    "gpt-5.2": 23
   }
 }

@@ -27,12 +27,27 @@ class HomeScreen(Screen):
     """Home screen with navigation and status."""
 
     BINDINGS = [
-        ("m", "app.push_screen('models')", "Models"),
-        ("p", "app.push_screen('profiles')", "Profiles"),
-        ("a", "app.push_screen('agents')", "Agents"),
-        ("s", "app.push_screen('simulation')", "Simulate"),
-        ("r", "app.push_screen('results')", "Results"),
+        ("m", "go_models", "Models"),
+        ("p", "go_profiles", "Profiles"),
+        ("a", "go_agents", "Agents"),
+        ("s", "go_simulation", "Simulate"),
+        ("r", "go_results", "Results"),
     ]
+
+    def action_go_models(self) -> None:
+        self.app.push_screen("models")
+
+    def action_go_profiles(self) -> None:
+        self.app.push_screen("profiles")
+
+    def action_go_agents(self) -> None:
+        self.app.push_screen("agents")
+
+    def action_go_simulation(self) -> None:
+        self.app.push_screen("simulation")
+
+    def action_go_results(self) -> None:
+        self.app.push_screen("results")
 
     def compose(self) -> ComposeResult:
         yield Container(

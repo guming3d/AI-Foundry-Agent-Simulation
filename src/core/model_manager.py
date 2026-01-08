@@ -30,10 +30,18 @@ class ModelInfo:
     status: ModelStatus
     capabilities: List[str] = None
     version: str = None
+    model_name: str = None  # Publisher-specific model name
+    model_publisher: str = None  # Model publisher (e.g., OpenAI, Microsoft)
 
     def __post_init__(self):
         if self.capabilities is None:
             self.capabilities = []
+
+    def __str__(self) -> str:
+        """String representation showing deployment name and model info."""
+        if self.model_name and self.model_publisher:
+            return f"{self.name} ({self.model_publisher}/{self.model_name})"
+        return self.name
 
 
 class ModelManager:
@@ -67,7 +75,7 @@ class ModelManager:
 
     def list_available_models(self, refresh: bool = False) -> List[ModelInfo]:
         """
-        List all available model deployments.
+        List all available model deployments from Azure AI Foundry.
 
         Args:
             refresh: Force refresh of cached models
@@ -82,21 +90,39 @@ class ModelManager:
         client = get_project_client()
 
         try:
-            # Try to list deployments from Azure
-            # Note: The actual API may vary based on SDK version
-            # This is a placeholder for the actual implementation
+            # List deployments from Azure AI Foundry
+            deployments = client.deployments.list()
 
-            # For now, return default models as available
-            for model_name in self.DEFAULT_MODELS:
-                models.append(ModelInfo(
-                    name=model_name,
-                    deployment_name=model_name,
+            for deployment in deployments:
+                # Extract capabilities from the deployment
+                # The API returns capabilities as dict[str, str]
+                capabilities = []
+                if hasattr(deployment, 'capabilities') and deployment.capabilities:
+                    capabilities = list(deployment.capabilities.keys())
+
+                # Get model info - deployment.name is the deployment name we use to call the model
+                model_info = ModelInfo(
+                    name=deployment.name,  # Deployment name (used to call the model)
+                    deployment_name=deployment.name,
                     status=ModelStatus.AVAILABLE,
-                    capabilities=self.MODEL_CAPABILITIES.get(model_name, []),
-                ))
+                    capabilities=capabilities,
+                    version=getattr(deployment, 'model_version', None),
+                )
+
+                # Store additional metadata if available
+                if hasattr(deployment, 'model_name'):
+                    model_info.model_name = deployment.model_name
+                if hasattr(deployment, 'model_publisher'):
+                    model_info.model_publisher = deployment.model_publisher
+
+                models.append(model_info)
+
+            if not models:
+                print("No model deployments found in Azure AI Foundry project.")
 
         except Exception as e:
-            print(f"Error listing models: {e}")
+            print(f"Error listing models from Azure: {e}")
+            print("Falling back to default models list.")
             # Return default models if API fails
             for model_name in self.DEFAULT_MODELS:
                 models.append(ModelInfo(

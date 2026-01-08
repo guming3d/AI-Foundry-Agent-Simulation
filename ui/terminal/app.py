@@ -38,15 +38,16 @@ class AgentToolkitApp(App):
 
     BINDINGS = [
         Binding("q", "quit", "Quit", show=True),
-        Binding("h", "push_screen('home')", "Home", show=True),
-        Binding("m", "push_screen('models')", "Models", show=True),
-        Binding("p", "push_screen('profiles')", "Profiles", show=True),
-        Binding("a", "push_screen('agents')", "Agents", show=True),
-        Binding("s", "push_screen('simulation')", "Simulate", show=True),
-        Binding("r", "push_screen('results')", "Results", show=True),
+        Binding("h", "go_home", "Home", show=True),
+        Binding("m", "go_models", "Models", show=True),
+        Binding("p", "go_profiles", "Profiles", show=True),
+        Binding("a", "go_agents", "Agents", show=True),
+        Binding("s", "go_simulation", "Simulate", show=True),
+        Binding("r", "go_results", "Results", show=True),
         Binding("escape", "go_back", "Back", show=False),
     ]
 
+    # Use callable factories for screens (Textual 7.x compatible)
     SCREENS = {
         "home": HomeScreen,
         "models": ModelSelectionScreen,
@@ -58,6 +59,11 @@ class AgentToolkitApp(App):
 
     def on_mount(self) -> None:
         """Called when the app is mounted."""
+        # Use call_later to ensure app is fully running before pushing screen
+        self.call_later(self._push_initial_screen)
+
+    def _push_initial_screen(self) -> None:
+        """Push the initial screen after app is fully running."""
         self.push_screen("home")
 
     def action_go_back(self) -> None:
@@ -66,6 +72,30 @@ class AgentToolkitApp(App):
             self.pop_screen()
         else:
             self.push_screen("home")
+
+    def action_go_home(self) -> None:
+        """Navigate to home screen."""
+        self.push_screen("home")
+
+    def action_go_models(self) -> None:
+        """Navigate to models screen."""
+        self.push_screen("models")
+
+    def action_go_profiles(self) -> None:
+        """Navigate to profiles screen."""
+        self.push_screen("profiles")
+
+    def action_go_agents(self) -> None:
+        """Navigate to agents screen."""
+        self.push_screen("agents")
+
+    def action_go_simulation(self) -> None:
+        """Navigate to simulation screen."""
+        self.push_screen("simulation")
+
+    def action_go_results(self) -> None:
+        """Navigate to results screen."""
+        self.push_screen("results")
 
 
 def run_tui():

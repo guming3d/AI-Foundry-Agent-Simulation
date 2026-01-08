@@ -6,8 +6,8 @@ Displays simulation results and statistics.
 
 from textual.app import ComposeResult
 from textual.screen import Screen
-from textual.widgets import Static, Button, DataTable, TabbedContent, TabPane
-from textual.containers import Container, Vertical, Horizontal
+from textual.widgets import Static, Button, DataTable
+from textual.containers import Vertical, Horizontal, ScrollableContainer
 
 from ui.shared.state_manager import get_state
 
@@ -21,37 +21,36 @@ class ResultsScreen(Screen):
     ]
 
     def compose(self) -> ComposeResult:
-        yield Container(
-            Static("Simulation Results", id="title", classes="screen-title"),
-            TabbedContent(
-                TabPane("Operations",
-                    Vertical(
-                        Static(id="ops-summary"),
-                        Static("Agent Type Distribution:", classes="section-title"),
-                        DataTable(id="ops-types-table"),
-                        Static("Model Distribution:", classes="section-title"),
-                        DataTable(id="ops-models-table"),
-                    ),
-                    id="tab-ops",
-                ),
-                TabPane("Guardrails",
-                    Vertical(
-                        Static(id="guard-summary"),
-                        Static("Category Statistics:", classes="section-title"),
-                        DataTable(id="guard-categories-table"),
-                        Static("Model Statistics:", classes="section-title"),
-                        DataTable(id="guard-models-table"),
-                    ),
-                    id="tab-guard",
-                ),
-                id="results-tabs",
-            ),
-            Horizontal(
-                Button("Export Results [E]", id="btn-export", variant="primary"),
-                Button("Back", id="btn-back"),
-                id="button-bar",
-            ),
-            id="results-container",
+        yield Static("Simulation Results", id="title", classes="screen-title")
+
+        # Operations results panel
+        yield Vertical(
+            Static("[b]Operations Results[/b]", classes="section-title"),
+            Static(id="ops-summary"),
+            Static("Agent Type Distribution:", classes="section-title"),
+            DataTable(id="ops-types-table"),
+            Static("Model Distribution:", classes="section-title"),
+            DataTable(id="ops-models-table"),
+            id="ops-panel",
+            classes="results-panel",
+        )
+
+        # Guardrails results panel
+        yield Vertical(
+            Static("[b]Guardrails Results[/b]", classes="section-title"),
+            Static(id="guard-summary"),
+            Static("Category Statistics:", classes="section-title"),
+            DataTable(id="guard-categories-table"),
+            Static("Model Statistics:", classes="section-title"),
+            DataTable(id="guard-models-table"),
+            id="guard-panel",
+            classes="results-panel",
+        )
+
+        yield Horizontal(
+            Button("Export Results [E]", id="btn-export", variant="primary"),
+            Button("Back", id="btn-back"),
+            id="button-bar",
         )
 
     def on_mount(self) -> None:

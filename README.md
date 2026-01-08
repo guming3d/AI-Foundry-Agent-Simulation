@@ -35,7 +35,7 @@ A comprehensive toolkit for creating, testing, and demonstrating AI agents using
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                              USER INTERFACES                                 │
+│                              USER INTERFACES                                │
 ├─────────────────────────────────┬───────────────────────────────────────────┤
 │      Terminal UI (Textual)      │           Web UI (Gradio)                 │
 │  ┌───────────────────────────┐  │  ┌─────────────────────────────────────┐  │
@@ -50,7 +50,7 @@ A comprehensive toolkit for creating, testing, and demonstrating AI agents using
                                       │
                                       ▼
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                           SHARED STATE MANAGER                               │
+│                           SHARED STATE MANAGER                              │
 │                      (ui/shared/state_manager.py)                           │
 │  ┌─────────────────────────────────────────────────────────────────────┐    │
 │  │ • Current Profile    • Selected Models    • Created Agents          │    │
@@ -60,7 +60,7 @@ A comprehensive toolkit for creating, testing, and demonstrating AI agents using
                                       │
                                       ▼
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                              CORE ENGINE                                     │
+│                              CORE ENGINE                                    │
 ├──────────────────┬──────────────────┬──────────────────┬────────────────────┤
 │   Agent Manager  │  Model Manager   │ Simulation Engine│  Metrics Collector │
 │                  │                  │                  │                    │
@@ -72,7 +72,7 @@ A comprehensive toolkit for creating, testing, and demonstrating AI agents using
                                       │
                                       ▼
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                           TEMPLATE SYSTEM                                    │
+│                           TEMPLATE SYSTEM                                   │
 ├─────────────────────────────────────┬───────────────────────────────────────┤
 │         Template Loader             │          Code Generator               │
 │   (YAML → Pydantic Models)          │      (Jinja2 Templates)               │
@@ -86,8 +86,8 @@ A comprehensive toolkit for creating, testing, and demonstrating AI agents using
                                       │
                                       ▼
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                         AZURE AI FOUNDRY                                     │
-│                                                                              │
+│                         AZURE AI FOUNDRY                                    │
+│                                                                             │
 │  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────────────────┐  │
 │  │  AI Project     │  │  Model          │  │  Content Safety             │  │
 │  │  Client         │  │  Deployments    │  │  Guardrails                 │  │
