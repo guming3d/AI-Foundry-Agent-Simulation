@@ -41,15 +41,17 @@ env/
 .pydevproject
 .settings/
 
-# Output files
+# Generated output (keep directory structure via .gitkeep)
 output/
-daemon_results/
-*.csv
-!contoso_ai_control_plane_demo*.csv
+data/results/
+data/daemon_results/
+data/agents/*.csv
+!data/agents/.gitkeep
+!data/results/.gitkeep
+!data/daemon_results/.gitkeep
+
+# Log files
 *.log
-*.json
-!templates/**/*.json
-!simulation_daemon_config*.json
 
 # Credentials and secrets
 *.pem

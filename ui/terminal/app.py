@@ -1,12 +1,12 @@
 """
-Main Textual TUI application for Azure AI Foundry Agent Toolkit.
+Main Textual TUI application for Azure AI Foundry Control-Plane Batch Agent Operation.
 
 Provides a rich terminal interface for:
+- Batch agent creation (100+ agents)
 - Model selection and deployment
 - Industry profile management
-- Agent generation
-- Simulation execution
-- Results visualization
+- Parallel simulation execution
+- Real-time metrics and visualization
 """
 
 from textual.app import App, ComposeResult
@@ -25,14 +25,14 @@ from .screens.results import ResultsScreen
 
 class AgentToolkitApp(App):
     """
-    Azure AI Foundry Agent Toolkit TUI Application.
+    Azure AI Foundry Control-Plane Batch Agent Operation TUI Application.
 
-    A terminal-based interface for creating, testing, and managing
-    AI agents with Azure AI Foundry Control Plane.
+    A terminal-based interface for batch creating, testing, and managing
+    AI agents at scale with Azure AI Foundry Control Plane.
     """
 
-    TITLE = "Azure AI Foundry Agent Toolkit"
-    SUB_TITLE = "Create, Test, and Monitor AI Agents"
+    TITLE = "Azure AI Foundry Control-Plane Batch Agent Operation"
+    SUB_TITLE = "Batch Create, Test, and Monitor AI Agents at Scale"
 
     CSS_PATH = "styles/app.tcss"
 

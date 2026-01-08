@@ -1,12 +1,12 @@
 """
-Main Gradio Web UI application for Azure AI Foundry Agent Toolkit.
+Main Gradio Web UI application for Azure AI Foundry Control-Plane Batch Agent Operation.
 
 Provides a web-based interface for:
+- Batch agent creation (100+ agents)
 - Model selection and deployment
 - Industry profile management
-- Agent generation
-- Simulation execution
-- Results visualization
+- Parallel simulation execution
+- Real-time metrics and visualization
 """
 
 import gradio as gr
@@ -20,13 +20,13 @@ from .tabs.results_tab import create_results_tab
 
 def create_app() -> gr.Blocks:
     """
-    Create the Gradio application.
+    Create the Gradio application for batch agent operations.
 
     Returns:
         gr.Blocks application
     """
     with gr.Blocks(
-        title="Azure AI Foundry Agent Toolkit",
+        title="Azure AI Foundry Control-Plane Batch Agent Operation",
         theme=gr.themes.Soft(
             primary_hue="blue",
             secondary_hue="slate",
@@ -34,9 +34,9 @@ def create_app() -> gr.Blocks:
     ) as app:
         gr.Markdown(
             """
-            # Azure AI Foundry Agent Toolkit
+            # Azure AI Foundry Control-Plane Batch Agent Operation
 
-            Create, test, and monitor AI agents with Azure AI Foundry Control Plane.
+            Batch create, test, and monitor AI agents at scale with Azure AI Foundry Control Plane.
 
             **Quick Start:**
             1. **Models** - Select models for your agents

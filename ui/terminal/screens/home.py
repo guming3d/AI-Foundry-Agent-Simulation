@@ -1,7 +1,8 @@
 """
 Home screen for the Textual TUI application.
 
-Provides navigation and status overview.
+Provides navigation, status overview, and quick start guide
+for batch agent operations.
 """
 
 from textual.app import ComposeResult
@@ -19,7 +20,7 @@ LOGO = """
  / ___ \\ | |  |  _| (_) | |_| | | | | (_| | |  | |_| |
 /_/   \\_\\___| |_|  \\___/ \\__,_|_| |_|\\__,_|_|   \\__, |
                                                 |___/
-           Agent Creation & Demo Toolkit
+      Control-Plane Batch Agent Operation
 """
 
 
@@ -52,14 +53,14 @@ class HomeScreen(Screen):
     def compose(self) -> ComposeResult:
         yield Container(
             Static(LOGO, id="logo"),
-            Static("Welcome to the Azure AI Foundry Agent Toolkit", id="welcome"),
+            Static("Welcome to Azure AI Foundry Control-Plane Batch Agent Operation", id="welcome"),
             Vertical(
                 Static("Quick Start Guide:", classes="section-title"),
                 Static("1. Select models to use for your agents", classes="guide-step"),
                 Static("2. Choose an industry profile or customize", classes="guide-step"),
-                Static("3. Configure and create agents", classes="guide-step"),
-                Static("4. Generate simulation code", classes="guide-step"),
-                Static("5. Run simulations and view results", classes="guide-step"),
+                Static("3. Batch create agents (100+ at scale)", classes="guide-step"),
+                Static("4. Run parallel simulations with real-time metrics", classes="guide-step"),
+                Static("5. View results and performance dashboards", classes="guide-step"),
                 id="guide",
             ),
             Horizontal(
