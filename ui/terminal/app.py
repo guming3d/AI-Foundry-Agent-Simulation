@@ -37,7 +37,9 @@ class AgentToolkitApp(App):
     CSS_PATH = "styles/app.tcss"
 
     BINDINGS = [
-        Binding("q", "quit", "Quit", show=True),
+        Binding("q", "request_quit", "Quit", show=True),
+        Binding("ctrl+c", "request_quit", "Quit", show=False),
+        Binding("ctrl+q", "request_quit", "Quit", show=False),
         Binding("h", "go_home", "Home", show=True),
         Binding("m", "go_models", "Models", show=True),
         Binding("p", "go_profiles", "Profiles", show=True),
@@ -96,6 +98,26 @@ class AgentToolkitApp(App):
     def action_go_results(self) -> None:
         """Navigate to results screen."""
         self.push_screen("results")
+
+    def action_request_quit(self) -> None:
+        """Handle quit request with cleanup."""
+        # Stop any running simulation before quitting
+        self._cleanup_simulations()
+        self.exit()
+
+    def _cleanup_simulations(self) -> None:
+        """Stop any running simulations to allow clean exit."""
+        # Find and stop any active simulation screens
+        for screen in self.screen_stack:
+            if isinstance(screen, SimulationScreen):
+                if screen.engine and screen.simulation_active:
+                    screen.engine.stop()
+                    screen.simulation_active = False
+                    screen.engine = None
+
+    async def on_unmount(self) -> None:
+        """Called when the app is being unmounted - cleanup."""
+        self._cleanup_simulations()
 
 
 def run_tui():

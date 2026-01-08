@@ -163,9 +163,17 @@ class SimulationEngine:
 
         return False, False
 
-    def call_agent(self, agent: CreatedAgent, query: str) -> Dict[str, Any]:
+    def call_agent(
+        self,
+        agent: CreatedAgent,
+        query: str,
+        pre_call_callback: Callable[[str], None] = None,
+        openai_client=None,
+    ) -> Dict[str, Any]:
         """Call an agent and return the result."""
-        openai_client = get_openai_client()
+        # Use provided client or get from factory
+        if openai_client is None:
+            openai_client = get_openai_client()
 
         start_time = time.time()
         success = False
@@ -174,7 +182,15 @@ class SimulationEngine:
         response_length = 0
 
         try:
+            # Notify before making the call
+            if pre_call_callback:
+                pre_call_callback(f"Connecting to {agent.name}...")
+
             conversation = openai_client.conversations.create()
+
+            if pre_call_callback:
+                pre_call_callback(f"Sending query to {agent.name}...")
+
             response = openai_client.responses.create(
                 conversation=conversation.id,
                 extra_body={"agent": {"name": agent.name, "type": "agent_reference"}},
@@ -214,21 +230,70 @@ class SimulationEngine:
         """
         config = config or SimulationConfig()
         self._stop_requested = False
+        self._last_error = None
         self.metrics.start()
+
+        # Validate agents list
+        if not self.agents:
+            raise ValueError("No agents available. Please load agents from CSV or create agents first.")
+
+        if progress_callback:
+            progress_callback(0, config.num_calls, f"Starting with {len(self.agents)} agents...")
 
         call_queue = Queue()
         for i in range(config.num_calls):
             call_queue.put(i)
 
         def worker():
+            # Create a fresh client for this worker thread (avoids singleton threading issues)
+            import os
+            from azure.identity import DefaultAzureCredential
+            from azure.ai.projects import AIProjectClient
+
+            thread_id = threading.current_thread().name
+
+            if progress_callback:
+                progress_callback(0, config.num_calls, f"[{thread_id}] Initializing Azure client...")
+
+            endpoint = os.environ.get(
+                "PROJECT_ENDPOINT",
+                "https://foundry-control-plane.services.ai.azure.com/api/projects/foundry-control-plane"
+            )
+
+            try:
+                credential = DefaultAzureCredential()
+                project_client = AIProjectClient(endpoint=endpoint, credential=credential)
+                thread_openai_client = project_client.get_openai_client()
+                if progress_callback:
+                    progress_callback(0, config.num_calls, f"[{thread_id}] Azure client ready!")
+            except Exception as e:
+                if progress_callback:
+                    progress_callback(0, config.num_calls, f"[{thread_id}] Client init failed: {e}")
+                return
+
             while not call_queue.empty() and not self._stop_requested:
                 try:
                     idx = call_queue.get_nowait()
+                except:
+                    break  # Queue is empty
+
+                try:
                     agent = random.choice(self.agents)
                     agent_type = self.extract_agent_type(agent.name)
                     query = self.generate_query(agent_type)
 
-                    result = self.call_agent(agent, query)
+                    # Pre-call callback to show we're about to make the call
+                    def pre_call_cb(msg):
+                        if progress_callback:
+                            progress_callback(
+                                self.metrics.operation_count,
+                                config.num_calls,
+                                msg
+                            )
+
+                    pre_call_cb(f"[CALL] {agent.name} - {query[:40]}...")
+
+                    result = self.call_agent(agent, query, pre_call_callback=pre_call_cb, openai_client=thread_openai_client)
 
                     metric = OperationMetric(
                         timestamp=datetime.now().isoformat(),
@@ -249,26 +314,36 @@ class SimulationEngine:
 
                     self.metrics.add_operation_metric(metric)
 
+                    status = "OK" if result["success"] else "FAIL"
+                    error_info = f" - {result['error_message'][:30]}" if result["error_message"] else ""
                     if progress_callback:
                         progress_callback(
                             self.metrics.operation_count,
                             config.num_calls,
-                            f"Called {agent.name}"
+                            f"[{status}] {agent.name} ({result['latency_ms']:.0f}ms){error_info}"
                         )
 
                     time.sleep(config.delay)
 
-                except:
-                    break
+                except Exception as e:
+                    self._last_error = str(e)
+                    if progress_callback:
+                        progress_callback(
+                            self.metrics.operation_count,
+                            config.num_calls,
+                            f"[ERROR] {str(e)[:50]}"
+                        )
 
         threads = []
         for _ in range(config.threads):
-            t = threading.Thread(target=worker)
+            t = threading.Thread(target=worker, daemon=True)
             t.start()
             threads.append(t)
 
+        # Wait for threads with timeout to allow clean shutdown
         for t in threads:
-            t.join()
+            while t.is_alive() and not self._stop_requested:
+                t.join(timeout=0.5)
 
         self.metrics.stop()
         return self.metrics.get_operation_summary()
@@ -292,23 +367,72 @@ class SimulationEngine:
         """
         config = config or SimulationConfig(num_calls=50, threads=3, delay=1.0)
         self._stop_requested = False
+        self._last_error = None
         self.metrics.start()
+
+        # Validate agents list
+        if not self.agents:
+            raise ValueError("No agents available. Please load agents from CSV or create agents first.")
+
+        if progress_callback:
+            progress_callback(0, config.num_calls, f"Starting guardrail tests with {len(self.agents)} agents...")
 
         test_queue = Queue()
         for i in range(config.num_calls):
             test_queue.put(i)
 
         def worker():
+            # Create a fresh client for this worker thread (avoids singleton threading issues)
+            import os
+            from azure.identity import DefaultAzureCredential
+            from azure.ai.projects import AIProjectClient
+
+            thread_id = threading.current_thread().name
+
+            if progress_callback:
+                progress_callback(0, config.num_calls, f"[{thread_id}] Initializing Azure client...")
+
+            endpoint = os.environ.get(
+                "PROJECT_ENDPOINT",
+                "https://foundry-control-plane.services.ai.azure.com/api/projects/foundry-control-plane"
+            )
+
+            try:
+                credential = DefaultAzureCredential()
+                project_client = AIProjectClient(endpoint=endpoint, credential=credential)
+                thread_openai_client = project_client.get_openai_client()
+                if progress_callback:
+                    progress_callback(0, config.num_calls, f"[{thread_id}] Azure client ready!")
+            except Exception as e:
+                if progress_callback:
+                    progress_callback(0, config.num_calls, f"[{thread_id}] Client init failed: {e}")
+                return
+
             while not test_queue.empty() and not self._stop_requested:
                 try:
                     idx = test_queue.get_nowait()
+                except:
+                    break  # Queue is empty
+
+                try:
                     agent = random.choice(self.agents)
                     test_category, query = self.generate_guardrail_query(category)
 
                     if query is None:
                         continue
 
-                    result = self.call_agent(agent, query)
+                    # Pre-call callback to show we're about to make the call
+                    def pre_call_cb(msg):
+                        if progress_callback:
+                            progress_callback(
+                                self.metrics.guardrail_count,
+                                config.num_calls,
+                                msg
+                            )
+
+                    pre_call_cb(f"[TEST] {agent.name} - {test_category}...")
+
+                    result = self.call_agent(agent, query, pre_call_callback=pre_call_cb, openai_client=thread_openai_client)
                     blocked, content_filter = self.is_blocked(
                         result["response_text"],
                         result["error_message"]
@@ -335,26 +459,36 @@ class SimulationEngine:
 
                     self.metrics.add_guardrail_metric(metric)
 
+                    status = "BLOCKED" if blocked else "ALLOWED"
+                    error_info = f" - {result['error_message'][:30]}" if result["error_message"] else ""
                     if progress_callback:
                         progress_callback(
                             self.metrics.guardrail_count,
                             config.num_calls,
-                            f"Tested {agent.name} - {test_category}"
+                            f"[{status}] {agent.name} - {test_category} ({result['latency_ms']:.0f}ms){error_info}"
                         )
 
                     time.sleep(config.delay)
 
-                except:
-                    break
+                except Exception as e:
+                    self._last_error = str(e)
+                    if progress_callback:
+                        progress_callback(
+                            self.metrics.guardrail_count,
+                            config.num_calls,
+                            f"[ERROR] {str(e)[:50]}"
+                        )
 
         threads = []
         for _ in range(config.threads):
-            t = threading.Thread(target=worker)
+            t = threading.Thread(target=worker, daemon=True)
             t.start()
             threads.append(t)
 
+        # Wait for threads with timeout to allow clean shutdown
         for t in threads:
-            t.join()
+            while t.is_alive() and not self._stop_requested:
+                t.join(timeout=0.5)
 
         self.metrics.stop()
         return self.metrics.get_guardrail_summary()

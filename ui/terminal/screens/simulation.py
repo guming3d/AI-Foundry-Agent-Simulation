@@ -199,6 +199,8 @@ class SimulationScreen(Screen):
 
     def action_run_simulation(self) -> None:
         """Run the simulation."""
+        import os
+
         if self.simulation_active:
             self.notify("Simulation already running", severity="warning")
             return
@@ -213,28 +215,56 @@ class SimulationScreen(Screen):
             delay = float(self.query_one("#delay", Input).value or "0.5")
         except ValueError:
             self.notify("Invalid configuration values", severity="error")
+            log.write_line("[X] Invalid configuration values. Please check Calls, Threads, and Delay.")
             return
 
         # Get simulation type from Select widget
         select = self.query_one("#sim-type", Select)
         sim_type = str(select.value) if select.value else "operations"
 
-        log.write_line(f"\n[>] Starting {sim_type} simulation...")
-        log.write_line(f"    Calls: {num_calls}, Threads: {threads}, Delay: {delay}s")
+        log.write_line("")
+        log.write_line("=" * 50)
+        log.write_line(f"[>] Starting {sim_type} simulation...")
+        log.write_line(f"    Config: {num_calls} calls, {threads} threads, {delay}s delay")
+
+        # Pre-flight check: Verify agents CSV exists
+        agents_csv = state.agents_csv_path
+        log.write_line(f"    Agents CSV: {agents_csv}")
+
+        if not os.path.exists(agents_csv):
+            log.write_line(f"[X] Error: Agents CSV not found: {agents_csv}")
+            log.write_line("[!] Please create agents first or specify a valid CSV path.")
+            self.notify("Agents CSV not found", severity="error")
+            return
 
         # Initialize engine
         try:
+            log.write_line("[>] Initializing simulation engine...")
             if state.current_profile:
+                log.write_line(f"    Using profile: {state.current_profile.metadata.name}")
                 self.engine = SimulationEngine.from_profile(
                     profile=state.current_profile,
-                    agents_csv=state.agents_csv_path,
+                    agents_csv=agents_csv,
                 )
             else:
+                log.write_line("    No profile selected, using default templates")
                 self.engine = SimulationEngine(
-                    agents_csv=state.agents_csv_path,
+                    agents_csv=agents_csv,
                 )
+
+            # Verify agents were loaded
+            if not self.engine.agents:
+                log.write_line("[X] Error: No agents loaded from CSV")
+                log.write_line("[!] Please verify the CSV file contains valid agent data.")
+                self.notify("No agents loaded", severity="error")
+                return
+
+            log.write_line(f"[+] Loaded {len(self.engine.agents)} agents from CSV")
+
         except Exception as e:
+            import traceback
             log.write_line(f"[X] Error initializing engine: {e}")
+            log.write_line(f"    {traceback.format_exc()[:300]}")
             self.notify(f"Error: {e}", severity="error")
             return
 
@@ -243,6 +273,9 @@ class SimulationScreen(Screen):
             threads=threads,
             delay=delay,
         )
+
+        log.write_line("[>] Starting background worker...")
+        log.write_line("=" * 50)
 
         # Run in background thread
         self.run_simulation_in_thread(sim_type, config)
@@ -254,24 +287,36 @@ class SimulationScreen(Screen):
 
         def progress_callback(current, total, message):
             self.app.call_from_thread(self._update_progress, current, total, message)
+            # Also log each progress update
+            self.app.call_from_thread(self._log_message, f"    [{current}/{total}] {message}")
 
         def log_message(msg):
             self.app.call_from_thread(self._log_message, msg)
 
         try:
+            log_message(f"[>] Initializing {sim_type} simulation...")
+            log_message(f"    Agents loaded: {len(self.engine.agents)}")
+
             if sim_type == "operations":
                 log_message("[>] Running operations simulation...")
                 summary = self.engine.run_operations(config, progress_callback)
+                log_message("[>] Saving results...")
                 self.engine.save_results()
                 get_state_manager().set_operation_summary(summary)
-                log_message(f"[+] Operations complete: {summary.get('success_rate', 0):.1f}% success rate")
+                log_message(f"[+] Operations complete!")
+                log_message(f"    Total calls: {summary.get('total_calls', 0)}")
+                log_message(f"    Success rate: {summary.get('success_rate', 0):.1f}%")
+                log_message(f"    Avg latency: {summary.get('avg_latency_ms', 0):.1f}ms")
 
             elif sim_type == "guardrails":
                 log_message("[>] Running guardrails simulation...")
                 summary = self.engine.run_guardrails(config, progress_callback=progress_callback)
+                log_message("[>] Saving results...")
                 self.engine.save_results()
                 get_state_manager().set_guardrail_summary(summary)
-                log_message(f"[+] Guardrails complete: {summary.get('overall_block_rate', 0):.1f}% block rate")
+                log_message(f"[+] Guardrails complete!")
+                log_message(f"    Total tests: {summary.get('total_tests', 0)}")
+                log_message(f"    Block rate: {summary.get('overall_block_rate', 0):.1f}%")
 
             else:  # both
                 log_message("[>] Running operations simulation...")
@@ -286,18 +331,25 @@ class SimulationScreen(Screen):
                 get_state_manager().set_guardrail_summary(guard_summary)
                 log_message(f"[+] Guardrails: {guard_summary.get('overall_block_rate', 0):.1f}% blocked")
 
+                log_message("[>] Saving results...")
                 self.engine.save_results()
 
-            log_message("[*] Simulation completed. View results in Results screen.")
+            log_message("")
+            log_message("[*] ========================================")
+            log_message("[*] Simulation completed successfully!")
+            log_message("[*] View results in Results screen (F6)")
+            log_message("[*] ========================================")
             self.app.call_from_thread(self.notify, "Simulation completed!")
 
         except Exception as e:
+            import traceback
             log_message(f"[X] Error: {e}")
+            log_message(f"[X] Details: {traceback.format_exc()[:500]}")
             self.app.call_from_thread(self.notify, f"Error: {e}", severity="error")
 
         finally:
             self.simulation_active = False
-            self.app.call_from_thread(self._update_progress, 0, 100, "Ready")
+            self.app.call_from_thread(self._update_progress, 100, 100, "Completed")
 
     def _log_message(self, msg: str) -> None:
         """Write a message to the log widget."""
@@ -316,8 +368,11 @@ class SimulationScreen(Screen):
         """Stop the current simulation."""
         if self.engine and self.simulation_active:
             self.engine.stop()
+            self.simulation_active = False
+            self.engine = None
             log = self.query_one("#sim-log", Log)
             log.write_line("[!] Simulation stopped by user")
             self.notify("Simulation stopped")
+            self._update_progress(0, 100, "Stopped")
         else:
             self.notify("No simulation running", severity="warning")

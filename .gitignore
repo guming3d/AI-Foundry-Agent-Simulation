@@ -1,0 +1,70 @@
+# Environment files (NEVER commit secrets!)
+.env
+.env.local
+.env.*.local
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.project
+.pydevproject
+.settings/
+
+# Output files
+output/
+daemon_results/
+*.csv
+!contoso_ai_control_plane_demo*.csv
+*.log
+*.json
+!templates/**/*.json
+!simulation_daemon_config*.json
+
+# Credentials and secrets
+*.pem
+*.key
+credentials.json
+service_account.json
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Pytest
+.pytest_cache/
+.coverage
+htmlcov/
+
+# mypy
+.mypy_cache/

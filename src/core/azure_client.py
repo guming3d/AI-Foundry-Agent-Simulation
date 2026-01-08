@@ -78,7 +78,9 @@ class AzureClientFactory:
             DefaultAzureCredential instance
         """
         if self._credential is None:
+            print("[Azure] Creating DefaultAzureCredential...")
             self._credential = DefaultAzureCredential()
+            print("[Azure] Credential created")
         return self._credential
 
     def get_project_client(self) -> AIProjectClient:
@@ -94,10 +96,12 @@ class AzureClientFactory:
         if self._project_client is None:
             with self._client_lock:
                 if self._project_client is None:
+                    print(f"[Azure] Creating AIProjectClient for {self._endpoint}...")
                     self._project_client = AIProjectClient(
                         endpoint=self._endpoint,
                         credential=self.get_credential(),
                     )
+                    print("[Azure] AIProjectClient created")
         return self._project_client
 
     def get_openai_client(self):
@@ -110,7 +114,9 @@ class AzureClientFactory:
         if self._openai_client is None:
             with self._client_lock:
                 if self._openai_client is None:
+                    print("[Azure] Getting OpenAI client from project...")
                     self._openai_client = self.get_project_client().get_openai_client()
+                    print("[Azure] OpenAI client ready")
         return self._openai_client
 
     def test_connection(self) -> bool:
