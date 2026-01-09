@@ -1,16 +1,13 @@
 # Azure AI Foundry Control-Plane Batch Agent Operation
 
-A comprehensive toolkit for batch creation, testing, and management of AI agents at scale using Azure AI Foundry Control Plane features. Supports industry-specific templates, parallel agent operations, continuous simulation, and real-time metrics collection through intuitive Terminal and Web interfaces.
+A comprehensive toolkit for batch creation, testing, and management of AI agents at scale using Azure AI Foundry Control Plane features. Supports industry-specific templates, parallel agent operations, and real-time metrics collection through intuitive Terminal and Web interfaces.
 
 ## Features
 
 - **Batch Agent Operations**: Create and manage 100+ AI agents simultaneously with multi-threaded processing
 - **Dual Interfaces**: Full-featured Terminal UI (Textual) and Web UI (Gradio) for interactive management
 - **Industry Templates**: Pre-configured profiles for Retail, Financial Services, Healthcare, and Manufacturing with specialized agent types
-- **Continuous Simulation**: 24/7 daemon mode for sustained agent testing with configurable load profiles
-- **Parallel Execution**: Thread-safe simulation engine supporting concurrent agent calls with real-time metrics
 - **Model Management**: Discover existing models and deploy new ones through Azure AI Foundry Control Plane
-- **Guardrail Testing**: Comprehensive security and compliance testing with automated attack simulations
 - **Code Generation**: Automatically generate production-ready simulation scripts from templates
 - **Metrics & Visualization**: Real-time performance tracking with Plotly-powered dashboards
 - **Agent Registry**: Centralized tracking of created agents with CSV-based persistence
@@ -43,38 +40,6 @@ python main.py web    # Web UI (opens browser)
 ├── requirements.txt        # Python dependencies
 ├── .env.example           # Environment template
 │
-├── config/                # Configuration files
-│   ├── daemon_config.json
-│   └── simulation-daemon.service
-│
-├── docs/                  # Documentation
-│   ├── QUICKSTART.md
-│   ├── SIMULATION.md
-│   ├── DAEMON.md
-│   └── GUARDRAIL_TESTING_GUIDE.md
-│
-├── scripts/               # Executable scripts
-│   ├── agents/           # Agent management
-│   │   ├── batch_create_agents.py
-│   │   └── delete_all_agents.py
-│   ├── simulation/       # Simulation runners
-│   │   ├── simulate_operations.py
-│   │   ├── simulate_guardrails.py
-│   │   └── daemon.py
-│   ├── visualization/    # Metrics visualization
-│   │   ├── visualize_metrics.py
-│   │   └── visualize_guardrails.py
-│   └── utils/            # Utilities
-│       └── test_azure_connection.py
-│
-├── examples/             # Example scripts
-│   └── quickstart_create_agent.py
-│
-├── data/                 # Generated data (gitignored)
-│   ├── agents/          # Agent registry
-│   ├── results/         # Simulation results
-│   └── daemon_results/  # Continuous simulation logs
-│
 ├── src/                  # Core library
 │   ├── core/            # Business logic
 │   │   ├── azure_client.py
@@ -82,7 +47,8 @@ python main.py web    # Web UI (opens browser)
 │   │   ├── model_manager.py
 │   │   └── simulation_engine.py
 │   ├── models/          # Pydantic models
-│   └── templates/       # Template utilities
+│   ├── templates/       # Template utilities
+│   └── codegen/         # Code generation
 │
 ├── templates/            # Industry templates
 │   ├── industries/      # YAML profiles
@@ -92,12 +58,10 @@ python main.py web    # Web UI (opens browser)
 │   │   └── manufacturing.yaml
 │   └── code/            # Jinja2 templates
 │
-├── ui/                   # User interfaces
-│   ├── terminal/        # Textual TUI
-│   ├── web/             # Gradio Web UI
-│   └── shared/          # Shared state
-│
-└── output/              # Generated code output
+└── ui/                   # User interfaces
+    ├── terminal/        # Textual TUI
+    ├── web/             # Gradio Web UI
+    └── shared/          # Shared state
 ```
 
 ## CLI Commands
@@ -136,14 +100,6 @@ Create `.env` from the example:
 ```env
 PROJECT_ENDPOINT=https://your-project.services.ai.azure.com/api/projects/your-project
 ```
-
-## Documentation
-
-- [Quick Start Guide](docs/QUICKSTART.md)
-- [Simulation Guide](docs/SIMULATION.md)
-- [Daemon (24/7 Operation)](docs/DAEMON.md)
-- [Guardrail Testing](docs/GUARDRAIL_TESTING_GUIDE.md)
-- [File Reference](docs/FILE_REFERENCE.md)
 
 ## License
 

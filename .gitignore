@@ -41,14 +41,9 @@ env/
 .pydevproject
 .settings/
 
-# Generated output (keep directory structure via .gitkeep)
+# Generated output
 output/
-data/results/
-data/daemon_results/
-data/agents/*.csv
-!data/agents/.gitkeep
-!data/results/.gitkeep
-!data/daemon_results/.gitkeep
+*.csv
 
 # Log files
 *.log
