@@ -6,6 +6,7 @@ Provides centralized state management for both TUI and Web UI.
 
 from typing import List, Dict, Any, Optional
 from dataclasses import dataclass, field
+from datetime import datetime
 from pathlib import Path
 
 from src.models.industry_profile import IndustryProfile
@@ -47,6 +48,14 @@ class AppState:
     # Azure connection
     is_connected: bool = False
     endpoint: str = ""
+
+    # Daemon state
+    daemon_running: bool = False
+    daemon_start_time: Optional[datetime] = None
+    daemon_metrics: Dict[str, Any] = field(default_factory=dict)
+
+    # Workflow tracking (for step indicators)
+    workflow_completed_steps: List[str] = field(default_factory=list)
 
 
 class StateManager:
@@ -135,6 +144,30 @@ class StateManager:
     def set_connected(self, connected: bool, endpoint: str = "") -> None:
         self._state.is_connected = connected
         self._state.endpoint = endpoint
+
+    # Daemon management
+    def start_daemon(self) -> None:
+        self._state.daemon_running = True
+        self._state.daemon_start_time = datetime.now()
+
+    def stop_daemon(self) -> None:
+        self._state.daemon_running = False
+
+    def update_daemon_metrics(self, metrics: Dict[str, Any]) -> None:
+        self._state.daemon_metrics = metrics
+
+    # Workflow tracking
+    def complete_workflow_step(self, step: str) -> None:
+        if step not in self._state.workflow_completed_steps:
+            self._state.workflow_completed_steps.append(step)
+
+    def get_next_workflow_step(self) -> str:
+        """Get the next incomplete workflow step."""
+        steps = ["models", "profiles", "agents", "simulation", "results"]
+        for step in steps:
+            if step not in self._state.workflow_completed_steps:
+                return step
+        return "results"  # All done, show results
 
 
 def get_state() -> AppState:

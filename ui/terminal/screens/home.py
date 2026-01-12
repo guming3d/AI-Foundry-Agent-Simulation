@@ -9,8 +9,10 @@ from textual.app import ComposeResult
 from textual.screen import Screen
 from textual.widgets import Static, Button, Label
 from textual.containers import Container, Vertical, Horizontal, Center
+from textual import work
 
-from ui.shared.state_manager import get_state
+from ui.shared.state_manager import get_state, get_state_manager
+from src.core.agent_manager import AgentManager
 
 
 LOGO = """
@@ -33,7 +35,15 @@ class HomeScreen(Screen):
         ("a", "go_agents", "Agents"),
         ("s", "go_simulation", "Simulate"),
         ("r", "go_results", "Results"),
+        ("d", "go_daemon", "Daemon"),
+        ("x", "go_manage", "Manage"),
+        ("n", "go_next", "Next Step"),
     ]
+
+    def __init__(self):
+        super().__init__()
+        self.azure_agent_count = 0
+        self.is_loading_agents = False
 
     def action_go_models(self) -> None:
         self.app.push_screen("models")
@@ -50,19 +60,79 @@ class HomeScreen(Screen):
     def action_go_results(self) -> None:
         self.app.push_screen("results")
 
+    def action_go_daemon(self) -> None:
+        self.app.push_screen("daemon")
+
+    def action_go_manage(self) -> None:
+        self.app.push_screen("agent_management")
+
+    def action_go_next(self) -> None:
+        """Navigate to the next incomplete workflow step."""
+        next_step = self._get_next_step()
+        self.app.push_screen(next_step)
+
+    def _get_workflow_status(self) -> dict:
+        """Get the completion status of each workflow step."""
+        state = get_state()
+
+        return {
+            "models": len(state.selected_models) > 0,
+            "profiles": state.current_profile is not None,
+            "agents": len(state.created_agents) > 0,
+            "simulation": bool(state.operation_summary) or bool(state.guardrail_summary),
+            "results": bool(state.operation_summary) or bool(state.guardrail_summary),
+        }
+
+    def _get_next_step(self) -> str:
+        """Get the next incomplete workflow step."""
+        status = self._get_workflow_status()
+
+        steps = ["models", "profiles", "agents", "simulation", "results"]
+        for step in steps:
+            if not status.get(step, False):
+                return step
+
+        return "results"
+
+    def _format_step(self, step_num: int, name: str, key: str, completed: bool, is_next: bool) -> str:
+        """Format a workflow step for display."""
+        if completed:
+            marker = "[X]"
+            style = "green"
+        elif is_next:
+            marker = "[>]"
+            style = "blue"
+        else:
+            marker = "[ ]"
+            style = "dim"
+
+        return f"{marker} {step_num}. {name} [{key}]"
+
     def compose(self) -> ComposeResult:
         yield Container(
             Static(LOGO, id="logo"),
             Static("Welcome to Azure AI Foundry Control-Plane Batch Agent Operation", id="welcome"),
+
+            # Workflow Stepper
             Vertical(
-                Static("Quick Start Guide:", classes="section-title"),
-                Static("1. Select models to use for your agents", classes="guide-step"),
-                Static("2. Choose an industry profile or customize", classes="guide-step"),
-                Static("3. Batch create agents (100+ at scale)", classes="guide-step"),
-                Static("4. Run parallel simulations with real-time metrics", classes="guide-step"),
-                Static("5. View results and performance dashboards", classes="guide-step"),
-                id="guide",
+                Static("Workflow Progress:", classes="section-title"),
+                Horizontal(
+                    Static(id="step-1"),
+                    Static(" -> ", classes="step-arrow"),
+                    Static(id="step-2"),
+                    Static(" -> ", classes="step-arrow"),
+                    Static(id="step-3"),
+                    Static(" -> ", classes="step-arrow"),
+                    Static(id="step-4"),
+                    Static(" -> ", classes="step-arrow"),
+                    Static(id="step-5"),
+                    id="workflow-stepper",
+                ),
+                Static(id="next-step-hint"),
+                id="stepper-panel",
             ),
+
+            # Navigation buttons - Main workflow
             Horizontal(
                 Button("Models [M]", id="btn-models", variant="primary"),
                 Button("Profiles [P]", id="btn-profiles", variant="primary"),
@@ -71,11 +141,22 @@ class HomeScreen(Screen):
                 Button("Results [R]", id="btn-results", variant="primary"),
                 id="nav-buttons",
             ),
+
+            # Additional tools
+            Horizontal(
+                Button("Daemon [D]", id="btn-daemon", variant="success"),
+                Button("Manage Agents [X]", id="btn-manage", variant="warning"),
+                Button("Next Step [N]", id="btn-next", variant="primary"),
+                id="nav-buttons-extra",
+            ),
+
             Vertical(
                 Static("Current Status:", classes="section-title"),
                 Static(id="status-models"),
                 Static(id="status-profile"),
-                Static(id="status-agents"),
+                Static(id="status-agents-azure"),
+                Static(id="status-agents-session"),
+                Static(id="status-daemon"),
                 id="status-panel",
             ),
             id="home-container",
@@ -84,10 +165,61 @@ class HomeScreen(Screen):
     def on_mount(self) -> None:
         """Update status on mount."""
         self._update_status()
+        self._update_stepper()
+        self._load_azure_agent_count()
 
     def on_screen_resume(self) -> None:
         """Update status when returning to this screen."""
         self._update_status()
+        self._update_stepper()
+        self._load_azure_agent_count()
+
+    def _update_stepper(self) -> None:
+        """Update the workflow stepper display."""
+        status = self._get_workflow_status()
+        next_step = self._get_next_step()
+
+        steps = [
+            ("models", "Models", "M"),
+            ("profiles", "Profile", "P"),
+            ("agents", "Agents", "A"),
+            ("simulation", "Simulate", "S"),
+            ("results", "Results", "R"),
+        ]
+
+        for i, (step_id, name, key) in enumerate(steps, 1):
+            completed = status.get(step_id, False)
+            is_next = step_id == next_step and not completed
+
+            widget = self.query_one(f"#step-{i}", Static)
+
+            if completed:
+                widget.update(f"[X]{i}.{name}")
+                widget.remove_class("step-pending", "step-next")
+                widget.add_class("step-completed")
+            elif is_next:
+                widget.update(f"[>]{i}.{name}")
+                widget.remove_class("step-pending", "step-completed")
+                widget.add_class("step-next")
+            else:
+                widget.update(f"[ ]{i}.{name}")
+                widget.remove_class("step-completed", "step-next")
+                widget.add_class("step-pending")
+
+        # Update next step hint
+        hint = self.query_one("#next-step-hint", Static)
+        step_names = {
+            "models": "Select models for your agents",
+            "profiles": "Choose an industry profile",
+            "agents": "Create agents from profile",
+            "simulation": "Run simulation tests",
+            "results": "View your results",
+        }
+
+        if all(status.values()):
+            hint.update("All steps completed! Press [R] to view results or [D] to run daemon.")
+        else:
+            hint.update(f"Next: {step_names.get(next_step, '')} - Press [N] or [{steps[[s[0] for s in steps].index(next_step)][2]}]")
 
     def _update_status(self) -> None:
         """Update the status display."""
@@ -95,7 +227,10 @@ class HomeScreen(Screen):
 
         models_status = self.query_one("#status-models", Static)
         models_count = len(state.selected_models)
-        models_status.update(f"  Models: {models_count} selected" if models_count else "  Models: None selected")
+        if models_count:
+            models_status.update(f"  Models: {models_count} selected")
+        else:
+            models_status.update("  Models: None selected")
 
         profile_status = self.query_one("#status-profile", Static)
         if state.current_profile:
@@ -103,9 +238,47 @@ class HomeScreen(Screen):
         else:
             profile_status.update("  Profile: None selected")
 
-        agents_status = self.query_one("#status-agents", Static)
-        agents_count = len(state.created_agents)
-        agents_status.update(f"  Agents: {agents_count} created" if agents_count else "  Agents: None created")
+        # Azure agents status
+        azure_status = self.query_one("#status-agents-azure", Static)
+        if self.is_loading_agents:
+            azure_status.update("  Agents in Azure: Loading...")
+        elif self.azure_agent_count > 0:
+            azure_status.update(f"  Agents in Azure: {self.azure_agent_count} existing")
+        else:
+            azure_status.update("  Agents in Azure: 0 (no agents deployed)")
+
+        # Session agents status
+        session_status = self.query_one("#status-agents-session", Static)
+        session_count = len(state.created_agents)
+        if session_count:
+            session_status.update(f"  Agents in Session: {session_count} created this session")
+        else:
+            session_status.update("  Agents in Session: None created")
+
+        daemon_status = self.query_one("#status-daemon", Static)
+        if state.daemon_running:
+            daemon_status.update("  Daemon: RUNNING")
+        else:
+            daemon_status.update("  Daemon: Stopped")
+
+    @work(thread=True)
+    def _load_azure_agent_count(self) -> None:
+        """Load the count of existing agents from Azure in background."""
+        if self.is_loading_agents:
+            return
+
+        self.is_loading_agents = True
+        self.app.call_from_thread(self._update_status)
+
+        try:
+            manager = AgentManager()
+            agents = manager.list_agents()
+            self.azure_agent_count = len(agents)
+        except Exception:
+            self.azure_agent_count = 0
+        finally:
+            self.is_loading_agents = False
+            self.app.call_from_thread(self._update_status)
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """Handle button presses."""
@@ -120,3 +293,9 @@ class HomeScreen(Screen):
             self.app.push_screen("simulation")
         elif button_id == "btn-results":
             self.app.push_screen("results")
+        elif button_id == "btn-daemon":
+            self.app.push_screen("daemon")
+        elif button_id == "btn-manage":
+            self.app.push_screen("agent_management")
+        elif button_id == "btn-next":
+            self.action_go_next()

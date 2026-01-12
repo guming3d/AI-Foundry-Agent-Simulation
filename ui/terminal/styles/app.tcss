@@ -73,6 +73,57 @@ Screen {
     border: solid $secondary;
 }
 
+/* Workflow stepper */
+#stepper-panel {
+    margin: 1 2;
+    padding: 1;
+    border: solid $primary;
+}
+
+#workflow-stepper {
+    height: auto;
+    align: center middle;
+    padding: 0 1;
+}
+
+#workflow-stepper Static {
+    width: auto;
+    padding: 0 1;
+}
+
+.step-arrow {
+    color: $text-muted;
+}
+
+.step-completed {
+    color: $success;
+    text-style: bold;
+}
+
+.step-next {
+    color: $primary;
+    text-style: bold;
+}
+
+.step-pending {
+    color: $text-muted;
+}
+
+#next-step-hint {
+    text-align: center;
+    color: $text-muted;
+    padding: 1 0;
+}
+
+#nav-buttons-extra {
+    margin: 1 0;
+    align: center middle;
+}
+
+#nav-buttons-extra Button {
+    margin: 0 1;
+}
+
 /* Model selection screen */
 #model-container {
     padding: 1 2;
@@ -132,6 +183,44 @@ Screen {
 /* Agent wizard screen */
 #wizard-container {
     padding: 1 2;
+}
+
+#existing-agents-panel {
+    margin: 1 0;
+    padding: 1;
+    border: solid $success;
+    max-height: 30%;
+}
+
+#existing-agents-table {
+    height: 100%;
+    min-height: 5;
+    max-height: 15;
+}
+
+#existing-agents-summary {
+    color: $text-muted;
+    padding: 0 1 1 1;
+}
+
+.section-header-with-button {
+    height: auto;
+    align: left middle;
+    padding: 0;
+}
+
+.section-header-with-button Static {
+    width: 1fr;
+}
+
+.section-header-with-button Button {
+    width: auto;
+    margin-left: 1;
+}
+
+.small-button {
+    min-width: 15;
+    height: 1;
 }
 
 #config-panel {
@@ -296,4 +385,42 @@ Input {
 /* Notifications */
 Toast {
     width: auto;
+}
+
+/* Agent Management Screen */
+#manage-agents-container {
+    padding: 1 2;
+}
+
+/* Daemon Screen */
+#daemon-container {
+    padding: 1 2;
+}
+
+#daemon-metrics {
+    margin: 1 0;
+    padding: 1;
+    border: solid $primary;
+}
+
+.metric-row {
+    height: auto;
+}
+
+.metric-label {
+    width: 16;
+    text-style: bold;
+}
+
+.metric-value {
+    width: 12;
+}
+
+.status-running {
+    color: $success;
+    text-style: bold;
+}
+
+.status-stopped {
+    color: $error;
 }

@@ -49,25 +49,8 @@ class ModelManager:
     Manager for Azure AI Foundry model deployments.
 
     Handles model discovery, deployment, and validation.
+    All model information is fetched dynamically from Azure AI Foundry.
     """
-
-    # Default models available in Azure AI Foundry (for reference)
-    DEFAULT_MODELS = [
-        "gpt-4.1-mini",
-        "gpt-5.2-chat",
-        "grok-4-fast-non-reasoning",
-        "gpt-5.1-codex",
-        "grok-4",
-    ]
-
-    # Model capabilities mapping
-    MODEL_CAPABILITIES = {
-        "gpt-4.1-mini": ["chat", "completion", "function_calling"],
-        "gpt-5.2-chat": ["chat", "completion", "function_calling", "vision"],
-        "gpt-5.1-codex": ["code", "completion", "function_calling"],
-        "grok-4": ["chat", "completion", "reasoning"],
-        "grok-4-fast-non-reasoning": ["chat", "completion"],
-    }
 
     def __init__(self):
         """Initialize the model manager."""
@@ -118,19 +101,13 @@ class ModelManager:
                 models.append(model_info)
 
             if not models:
-                print("No model deployments found in Azure AI Foundry project.")
+                print("WARNING: No model deployments found in Azure AI Foundry project.")
+                print("Please deploy models in your Azure AI Foundry project before creating agents.")
 
         except Exception as e:
-            print(f"Error listing models from Azure: {e}")
-            print("Falling back to default models list.")
-            # Return default models if API fails
-            for model_name in self.DEFAULT_MODELS:
-                models.append(ModelInfo(
-                    name=model_name,
-                    deployment_name=model_name,
-                    status=ModelStatus.AVAILABLE,
-                    capabilities=self.MODEL_CAPABILITIES.get(model_name, []),
-                ))
+            print(f"ERROR: Failed to list models from Azure AI Foundry: {e}")
+            print("Please check your PROJECT_ENDPOINT and Azure credentials.")
+            print("No models available - cannot proceed with agent creation.")
 
         self._cached_models = models
         return models
@@ -212,7 +189,7 @@ class ModelManager:
                 name=model_id,
                 deployment_name=deployment_name,
                 status=ModelStatus.DEPLOYING,
-                capabilities=self.MODEL_CAPABILITIES.get(model_id, []),
+                capabilities=[],  # Will be populated when deployment completes
             )
 
             # Invalidate cache
@@ -286,12 +263,12 @@ class ModelManager:
             model_name: Name of the model
 
         Returns:
-            List of capability strings
+            List of capability strings from Azure deployment
         """
         model = self.get_model(model_name)
         if model:
             return model.capabilities
-        return self.MODEL_CAPABILITIES.get(model_name, [])
+        return []
 
     def refresh_cache(self) -> None:
         """Force refresh of the model cache."""
@@ -311,5 +288,10 @@ def validate_model(model_name: str) -> bool:
 
 
 def get_default_models() -> List[str]:
-    """Get the default model list."""
-    return ModelManager.DEFAULT_MODELS.copy()
+    """
+    Get the list of available models from Azure AI Foundry.
+
+    Returns:
+        List of deployed model names
+    """
+    return ModelManager().get_available_model_names()

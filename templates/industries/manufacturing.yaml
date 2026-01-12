@@ -32,16 +32,12 @@ organization:
     - name: "Plant Operations"
       code: "PLANT"
 
+# Model preferences (optional - actual models are dynamically fetched from Azure AI Foundry)
+# These preferences guide model selection when multiple models are available
+# The system will automatically use whatever models are deployed in your project
 models:
-  preferred:
-    - "gpt-4.1-mini"
-    - "gpt-5.2-chat"
-  allowed:
-    - "gpt-4.1-mini"
-    - "gpt-5.2-chat"
-    - "gpt-5.1-codex"
-    - "grok-4"
-    - "grok-4-fast-non-reasoning"
+  preferred: []  # Add your preferred model deployment names here (e.g., ["gpt-4o", "gpt-4o-mini"])
+  allowed: []    # Add all allowed model deployment names here (leave empty to allow all deployed models)
 
 agent_types:
   # ============================================

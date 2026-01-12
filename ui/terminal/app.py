@@ -21,6 +21,8 @@ from .screens.industry_profile import IndustryProfileScreen
 from .screens.agent_wizard import AgentWizardScreen
 from .screens.simulation import SimulationScreen
 from .screens.results import ResultsScreen
+from .screens.daemon import DaemonScreen
+from .screens.agent_management import AgentManagementScreen
 
 
 class AgentToolkitApp(App):
@@ -46,6 +48,8 @@ class AgentToolkitApp(App):
         Binding("a", "go_agents", "Agents", show=True),
         Binding("s", "go_simulation", "Simulate", show=True),
         Binding("r", "go_results", "Results", show=True),
+        Binding("d", "go_daemon", "Daemon", show=True),
+        Binding("x", "go_manage", "Manage", show=True),
         Binding("escape", "go_back", "Back", show=False),
     ]
 
@@ -57,6 +61,8 @@ class AgentToolkitApp(App):
         "agents": AgentWizardScreen,
         "simulation": SimulationScreen,
         "results": ResultsScreen,
+        "daemon": DaemonScreen,
+        "agent_management": AgentManagementScreen,
     }
 
     def on_mount(self) -> None:
@@ -99,6 +105,14 @@ class AgentToolkitApp(App):
         """Navigate to results screen."""
         self.push_screen("results")
 
+    def action_go_daemon(self) -> None:
+        """Navigate to daemon screen."""
+        self.push_screen("daemon")
+
+    def action_go_manage(self) -> None:
+        """Navigate to agent management screen."""
+        self.push_screen("agent_management")
+
     def action_request_quit(self) -> None:
         """Handle quit request with cleanup."""
         # Stop any running simulation before quitting
@@ -106,7 +120,7 @@ class AgentToolkitApp(App):
         self.exit()
 
     def _cleanup_simulations(self) -> None:
-        """Stop any running simulations to allow clean exit."""
+        """Stop any running simulations and daemons to allow clean exit."""
         # Find and stop any active simulation screens
         for screen in self.screen_stack:
             if isinstance(screen, SimulationScreen):
@@ -114,6 +128,9 @@ class AgentToolkitApp(App):
                     screen.engine.stop()
                     screen.simulation_active = False
                     screen.engine = None
+            elif isinstance(screen, DaemonScreen):
+                if screen.daemon and screen.daemon.is_running:
+                    screen.daemon.stop()
 
     async def on_unmount(self) -> None:
         """Called when the app is being unmounted - cleanup."""

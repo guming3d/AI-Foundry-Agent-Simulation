@@ -32,15 +32,10 @@ class AgentManager:
         Initialize the agent manager.
 
         Args:
-            models: List of available models for random assignment
+            models: List of available models for random assignment.
+                   If not provided, models will be fetched from Azure AI Foundry.
         """
-        self.models = models or [
-            "gpt-4.1-mini",
-            "gpt-5.2-chat",
-            "grok-4-fast-non-reasoning",
-            "gpt-5.1-codex",
-            "grok-4"
-        ]
+        self.models = models or []
 
     def create_agent_name(self, org_id: str, agent_type: str, agent_id: str) -> str:
         """
@@ -138,7 +133,7 @@ Please assist users with tasks related to your area of expertise while maintaini
             profile: Industry profile defining agent types
             agent_count: Number of agents to create per type per org
             org_count: Number of organizations to create
-            models: List of models to randomly assign (uses default if not provided)
+            models: List of models to randomly assign (required - must be provided)
             progress_callback: Optional callback(current, total, message) for progress updates
 
         Returns:
@@ -146,6 +141,11 @@ Please assist users with tasks related to your area of expertise while maintaini
         """
         result = AgentBatchResult()
         available_models = models or self.models
+
+        if not available_models:
+            raise ValueError(
+                "No models provided. Please select models from your Azure AI Foundry project."
+            )
 
         # Calculate total agents
         total_agents = len(profile.agent_types) * agent_count * org_count
@@ -266,6 +266,42 @@ Please assist users with tasks related to your area of expertise while maintaini
         except Exception as e:
             print(f"Error deleting agent {agent_name}: {e}")
             return False
+
+    def delete_all_agents(self, progress_callback=None) -> Dict[str, Any]:
+        """
+        Delete all agents in the project.
+
+        Args:
+            progress_callback: Optional callback(current, total, message) for progress updates
+
+        Returns:
+            Dictionary with deleted, failed lists and total count
+        """
+        agents = self.list_agents()
+        deleted = []
+        failed = []
+        total = len(agents)
+
+        if progress_callback:
+            progress_callback(0, total, f"Found {total} agents to delete...")
+
+        for i, agent in enumerate(agents):
+            agent_name = agent.get('name', '')
+            if progress_callback:
+                progress_callback(i + 1, total, f"Deleting {agent_name}...")
+
+            if self.delete_agent(agent_name):
+                deleted.append(agent)
+            else:
+                failed.append(agent)
+
+        return {
+            "deleted": deleted,
+            "failed": failed,
+            "total": total,
+            "deleted_count": len(deleted),
+            "failed_count": len(failed),
+        }
 
     def save_agents_to_csv(
         self,
