@@ -499,12 +499,20 @@ class SimulationEngine:
 
     def save_results(
         self,
-        operations_csv: str = "simulation_metrics.csv",
-        operations_summary: str = "simulation_summary.json",
-        guardrails_csv: str = "guardrail_test_results.csv",
-        guardrails_summary: str = "guardrail_security_report.json",
+        operations_csv: str = None,
+        operations_summary: str = None,
+        guardrails_csv: str = None,
+        guardrails_summary: str = None,
     ) -> None:
-        """Save all collected metrics and summaries."""
+        """
+        Save all collected metrics and summaries.
+
+        Args:
+            operations_csv: Path for operations CSV (defaults to results/simulations/simulation_metrics.csv)
+            operations_summary: Path for operations summary JSON (defaults to results/simulations/simulation_summary.json)
+            guardrails_csv: Path for guardrails CSV (defaults to results/simulations/guardrail_test_results.csv)
+            guardrails_summary: Path for guardrails summary JSON (defaults to results/simulations/guardrail_security_report.json)
+        """
         if self.metrics.operation_count > 0:
             self.metrics.save_operations_csv(operations_csv)
             self.metrics.save_operation_summary(operations_summary)

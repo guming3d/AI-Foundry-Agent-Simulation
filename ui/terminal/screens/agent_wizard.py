@@ -12,6 +12,7 @@ from textual import work
 
 from ui.shared.state_manager import get_state_manager, get_state
 from src.core.agent_manager import AgentManager
+from src.core import config
 
 
 class AgentWizardScreen(Screen):
@@ -263,9 +264,9 @@ class AgentWizardScreen(Screen):
                 progress_callback=progress_callback,
             )
 
-            # Save to CSV
-            csv_path = "created_agents_results.csv"
-            manager.save_agents_to_csv(result.created, csv_path)
+            # Save to CSV using default path from config
+            manager.save_agents_to_csv(result.created)
+            csv_path = str(config.CREATED_AGENTS_CSV)
 
             # Update state
             get_state_manager().set_created_agents(result.created, csv_path)

@@ -15,6 +15,7 @@ from pathlib import Path
 from azure.ai.projects.models import PromptAgentDefinition
 
 from .azure_client import get_project_client
+from . import config
 from ..models.agent import Agent, AgentCreateRequest, CreatedAgent, AgentBatchResult
 from ..models.industry_profile import IndustryProfile, AgentType
 
@@ -306,17 +307,25 @@ Please assist users with tasks related to your area of expertise while maintaini
     def save_agents_to_csv(
         self,
         agents: List[CreatedAgent],
-        output_path: str = "created_agents_results.csv"
+        output_path: str = None
     ) -> None:
         """
         Save created agents to a CSV file.
 
         Args:
             agents: List of created agents
-            output_path: Output CSV file path
+            output_path: Output CSV file path (defaults to results/agents/created_agents_results.csv)
         """
         if not agents:
             return
+
+        # Use default path if not specified
+        if output_path is None:
+            config.ensure_directories()
+            output_path = str(config.CREATED_AGENTS_CSV)
+
+        # Ensure parent directory exists
+        Path(output_path).parent.mkdir(parents=True, exist_ok=True)
 
         fieldnames = ["agent_id", "name", "azure_id", "version", "model", "org_id"]
 
@@ -352,17 +361,25 @@ Please assist users with tasks related to your area of expertise while maintaini
     def save_failed_to_csv(
         self,
         failed: List[Dict],
-        output_path: str = "failed_agents_results.csv"
+        output_path: str = None
     ) -> None:
         """
         Save failed agent creation attempts to a CSV file.
 
         Args:
             failed: List of failed attempt dictionaries
-            output_path: Output CSV file path
+            output_path: Output CSV file path (defaults to results/agents/failed_agents_results.csv)
         """
         if not failed:
             return
+
+        # Use default path if not specified
+        if output_path is None:
+            config.ensure_directories()
+            output_path = str(config.FAILED_AGENTS_CSV)
+
+        # Ensure parent directory exists
+        Path(output_path).parent.mkdir(parents=True, exist_ok=True)
 
         fieldnames = ["agent_id", "name", "error"]
 
@@ -378,7 +395,7 @@ def create_agents_quick(
     agent_count: int = 1,
     org_count: int = 1,
     models: List[str] = None,
-    output_csv: str = "created_agents_results.csv"
+    output_csv: str = None
 ) -> AgentBatchResult:
     """
     Quick function to create agents from a profile and save to CSV.
@@ -388,7 +405,7 @@ def create_agents_quick(
         agent_count: Agents per type per org
         org_count: Number of organizations
         models: Models to use (random selection)
-        output_csv: Output CSV path
+        output_csv: Output CSV path (defaults to results/agents/created_agents_results.csv)
 
     Returns:
         AgentBatchResult

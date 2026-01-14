@@ -8,6 +8,7 @@ import gradio as gr
 
 from ui.shared.state_manager import get_state_manager, get_state
 from src.core.agent_manager import AgentManager
+from src.core import config
 from src.codegen.generator import generate_code_for_profile
 
 
@@ -71,9 +72,9 @@ def create_agent_tab():
                 progress_callback=progress_callback,
             )
 
-            # Save to CSV
-            csv_path = "created_agents_results.csv"
-            manager.save_agents_to_csv(result.created, csv_path)
+            # Save to CSV using default path from config
+            manager.save_agents_to_csv(result.created)
+            csv_path = str(config.CREATED_AGENTS_CSV)
 
             # Update state
             get_state_manager().set_created_agents(result.created, csv_path)
@@ -95,7 +96,7 @@ def create_agent_tab():
             return "Error: Please select an industry profile first", ""
 
         try:
-            output_dir = "output/generated_code"
+            output_dir = str(config.GENERATED_CODE_DIR)
             result = generate_code_for_profile(
                 profile=state.current_profile,
                 output_dir=output_dir,

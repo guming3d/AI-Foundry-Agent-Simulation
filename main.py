@@ -15,6 +15,8 @@ import argparse
 import sys
 from pathlib import Path
 
+from src.core import config
+
 
 def run_tui():
     """Launch the Textual TUI application."""
@@ -173,15 +175,15 @@ Examples:
     # Generate command
     gen_parser = subparsers.add_parser("generate", help="Generate simulation code")
     gen_parser.add_argument("template", help="Template ID (e.g., retail, healthcare)")
-    gen_parser.add_argument("-o", "--output", default="output/generated_code", help="Output directory")
-    gen_parser.add_argument("--agents-csv", default="created_agents_results.csv", help="Agents CSV path")
+    gen_parser.add_argument("-o", "--output", default=str(config.GENERATED_CODE_DIR), help="Output directory")
+    gen_parser.add_argument("--agents-csv", default=str(config.CREATED_AGENTS_CSV), help="Agents CSV path")
 
     # Create command
     create_parser = subparsers.add_parser("create", help="Create agents from template")
     create_parser.add_argument("template", help="Template ID")
     create_parser.add_argument("-n", "--count", type=int, default=1, help="Agents per type")
     create_parser.add_argument("--orgs", type=int, default=1, help="Number of organizations")
-    create_parser.add_argument("-o", "--output", default="created_agents_results.csv", help="Output CSV")
+    create_parser.add_argument("-o", "--output", default=str(config.CREATED_AGENTS_CSV), help="Output CSV")
     create_parser.add_argument("-y", "--yes", action="store_true", help="Skip confirmation")
 
     args = parser.parse_args()

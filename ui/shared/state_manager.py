@@ -11,6 +11,7 @@ from pathlib import Path
 
 from src.models.industry_profile import IndustryProfile
 from src.models.agent import CreatedAgent
+from src.core import config
 
 
 @dataclass
@@ -30,7 +31,7 @@ class AppState:
 
     # Created agents
     created_agents: List[CreatedAgent] = field(default_factory=list)
-    agents_csv_path: str = "created_agents_results.csv"
+    agents_csv_path: str = field(default_factory=lambda: str(config.CREATED_AGENTS_CSV))
 
     # Generated code paths
     generated_code_dir: Optional[str] = None

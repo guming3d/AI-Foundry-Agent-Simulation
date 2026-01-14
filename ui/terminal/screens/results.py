@@ -10,6 +10,7 @@ from textual.widgets import Static, Button, DataTable
 from textual.containers import Vertical, Horizontal, ScrollableContainer
 
 from ui.shared.state_manager import get_state
+from src.core import config
 
 
 class ResultsScreen(Screen):
@@ -194,10 +195,10 @@ class ResultsScreen(Screen):
         state = get_state()
 
         if state.operation_summary:
-            self.notify("Operations results saved to simulation_summary.json")
+            self.notify(f"Operations results saved to {config.SIMULATION_SUMMARY_JSON}")
 
         if state.guardrail_summary:
-            self.notify("Guardrail results saved to guardrail_security_report.json")
+            self.notify(f"Guardrail results saved to {config.GUARDRAILS_SUMMARY_JSON}")
 
         if not state.operation_summary and not state.guardrail_summary:
             self.notify("No results to export", severity="warning")

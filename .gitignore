@@ -43,7 +43,9 @@ env/
 
 # Generated output
 output/
+results/
 *.csv
+*.json
 
 # Log files
 *.log

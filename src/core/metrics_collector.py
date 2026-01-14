@@ -15,6 +15,8 @@ from typing import List, Dict, Any, Optional
 from pathlib import Path
 from dataclasses import dataclass, field, asdict
 
+from . import config
+
 
 @dataclass
 class OperationMetric:
@@ -210,13 +212,26 @@ class MetricsCollector:
         end = self._ended_at or datetime.now()
         return (end - self._started_at).total_seconds()
 
-    def save_operations_csv(self, path: str = "simulation_metrics.csv") -> None:
-        """Save operation metrics to CSV."""
+    def save_operations_csv(self, path: str = None) -> None:
+        """
+        Save operation metrics to CSV.
+
+        Args:
+            path: Output CSV file path (defaults to results/simulations/simulation_metrics.csv)
+        """
         with self._lock:
             metrics = self.operation_metrics.copy()
 
         if not metrics:
             return
+
+        # Use default path if not specified
+        if path is None:
+            config.ensure_directories()
+            path = str(config.SIMULATION_METRICS_CSV)
+
+        # Ensure parent directory exists
+        Path(path).parent.mkdir(parents=True, exist_ok=True)
 
         fieldnames = [
             "timestamp", "agent_id", "agent_name", "azure_id", "model", "org_id",
@@ -230,13 +245,26 @@ class MetricsCollector:
             for m in metrics:
                 writer.writerow(m.to_dict())
 
-    def save_guardrails_csv(self, path: str = "guardrail_test_results.csv") -> None:
-        """Save guardrail metrics to CSV."""
+    def save_guardrails_csv(self, path: str = None) -> None:
+        """
+        Save guardrail metrics to CSV.
+
+        Args:
+            path: Output CSV file path (defaults to results/simulations/guardrail_test_results.csv)
+        """
         with self._lock:
             metrics = self.guardrail_metrics.copy()
 
         if not metrics:
             return
+
+        # Use default path if not specified
+        if path is None:
+            config.ensure_directories()
+            path = str(config.GUARDRAILS_RESULTS_CSV)
+
+        # Ensure parent directory exists
+        Path(path).parent.mkdir(parents=True, exist_ok=True)
 
         fieldnames = [
             "timestamp", "agent_id", "agent_name", "azure_id", "model", "org_id",
@@ -250,14 +278,40 @@ class MetricsCollector:
             for m in metrics:
                 writer.writerow(m.to_dict())
 
-    def save_operation_summary(self, path: str = "simulation_summary.json") -> None:
-        """Save operation summary to JSON."""
+    def save_operation_summary(self, path: str = None) -> None:
+        """
+        Save operation summary to JSON.
+
+        Args:
+            path: Output JSON file path (defaults to results/simulations/simulation_summary.json)
+        """
+        # Use default path if not specified
+        if path is None:
+            config.ensure_directories()
+            path = str(config.SIMULATION_SUMMARY_JSON)
+
+        # Ensure parent directory exists
+        Path(path).parent.mkdir(parents=True, exist_ok=True)
+
         summary = self.get_operation_summary()
         with open(path, 'w', encoding='utf-8') as f:
             json.dump(summary, f, indent=2)
 
-    def save_guardrail_summary(self, path: str = "guardrail_security_report.json") -> None:
-        """Save guardrail summary to JSON."""
+    def save_guardrail_summary(self, path: str = None) -> None:
+        """
+        Save guardrail summary to JSON.
+
+        Args:
+            path: Output JSON file path (defaults to results/simulations/guardrail_security_report.json)
+        """
+        # Use default path if not specified
+        if path is None:
+            config.ensure_directories()
+            path = str(config.GUARDRAILS_SUMMARY_JSON)
+
+        # Ensure parent directory exists
+        Path(path).parent.mkdir(parents=True, exist_ok=True)
+
         summary = self.get_guardrail_summary()
         with open(path, 'w', encoding='utf-8') as f:
             json.dump(summary, f, indent=2)
