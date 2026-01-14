@@ -136,13 +136,38 @@ class EnvValidator:
             with open(cls.ENV_FILE, 'w') as f:
                 f.writelines(new_lines)
 
-            # Update environment variable for current session
+            # Reload environment from .env file
+            cls.reload_environment()
+
+            # Update environment variable for current session (redundant but ensures it's set)
             os.environ["PROJECT_ENDPOINT"] = project_endpoint
+
+            # Update Azure client factory with new endpoint
+            cls._update_azure_client(project_endpoint)
 
             return True, f"Successfully updated {cls.ENV_FILE}"
 
         except Exception as e:
             return False, f"Failed to update .env file: {str(e)}"
+
+    @classmethod
+    def _update_azure_client(cls, endpoint: str) -> None:
+        """
+        Update Azure client factory with new endpoint.
+
+        Args:
+            endpoint: The new project endpoint
+        """
+        try:
+            # Import here to avoid circular dependency
+            from .azure_client import _get_factory
+
+            factory = _get_factory()
+            factory.set_endpoint(endpoint)
+            factory.reset()  # Reset clients to force reconnection with new endpoint
+        except Exception as e:
+            # Not critical if this fails, user can restart
+            print(f"Warning: Could not update Azure client: {e}")
 
     @classmethod
     def get_endpoint(cls) -> Optional[str]:
@@ -153,6 +178,21 @@ class EnvValidator:
     def is_configured(cls) -> bool:
         """Check if environment is properly configured."""
         return cls.validate().is_valid
+
+    @classmethod
+    def reload_environment(cls) -> None:
+        """
+        Reload environment variables from .env file.
+
+        This is useful after updating the .env file to ensure
+        all environment variables are current.
+        """
+        try:
+            from dotenv import load_dotenv
+            # Reload with override=True to update existing variables
+            load_dotenv(override=True)
+        except Exception as e:
+            print(f"Warning: Could not reload environment: {e}")
 
 
 def validate_environment() -> EnvValidationResult:

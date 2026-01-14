@@ -20,11 +20,13 @@ from .env_validator import EnvValidator
 # Load environment variables
 load_dotenv()
 
-# Default endpoint from environment
-DEFAULT_ENDPOINT = os.environ.get(
-    "PROJECT_ENDPOINT",
-    "https://foundry-control-plane.services.ai.azure.com/api/projects/foundry-control-plane"
-)
+
+def _get_default_endpoint() -> str:
+    """Get the default endpoint from environment variables."""
+    return os.environ.get(
+        "PROJECT_ENDPOINT",
+        "https://foundry-control-plane.services.ai.azure.com/api/projects/foundry-control-plane"
+    )
 
 
 class AzureClientFactory:
@@ -55,7 +57,7 @@ class AzureClientFactory:
         self._project_client: Optional[AIProjectClient] = None
         self._openai_client = None
         self._credential: Optional[DefaultAzureCredential] = None
-        self._endpoint: str = DEFAULT_ENDPOINT
+        self._endpoint: Optional[str] = None  # Will be retrieved from environment when needed
         self._client_lock = threading.Lock()
         self._initialized = True
 
@@ -107,9 +109,11 @@ class AzureClientFactory:
         if self._project_client is None:
             with self._client_lock:
                 if self._project_client is None:
-                    print(f"[Azure] Creating AIProjectClient for {self._endpoint}...")
+                    # Get endpoint - use explicitly set one or get from environment
+                    endpoint = self._endpoint if self._endpoint else _get_default_endpoint()
+                    print(f"[Azure] Creating AIProjectClient for {endpoint}...")
                     self._project_client = AIProjectClient(
-                        endpoint=self._endpoint,
+                        endpoint=endpoint,
                         credential=self.get_credential(),
                     )
                     print("[Azure] AIProjectClient created")
@@ -152,11 +156,13 @@ class AzureClientFactory:
             self._project_client = None
             self._openai_client = None
             self._credential = None
+            # Clear cached endpoint to force reload from environment
+            self._endpoint = None
 
     @property
     def endpoint(self) -> str:
         """Get the current endpoint."""
-        return self._endpoint
+        return self._endpoint if self._endpoint else _get_default_endpoint()
 
     @property
     def is_connected(self) -> bool:
