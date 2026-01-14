@@ -4,6 +4,7 @@ Environment setup screen for the Textual TUI application.
 Guides users through initial environment configuration.
 """
 
+import asyncio
 from textual.app import ComposeResult
 from textual.screen import Screen
 from textual.widgets import Static, Button, Input, Label
@@ -160,7 +161,7 @@ class SetupScreen(Screen):
                 timeout=5
             )
             # Wait a moment then close
-            await self.app.wait_for_animation()
+            await asyncio.sleep(1)
             self.app.pop_screen()
         else:
             status_widget.update(f"❌ {message}")
