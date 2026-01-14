@@ -23,6 +23,9 @@ from .screens.simulation import SimulationScreen
 from .screens.results import ResultsScreen
 from .screens.daemon import DaemonScreen
 from .screens.agent_management import AgentManagementScreen
+from .screens.setup import SetupScreen
+
+from src.core.env_validator import EnvValidator
 
 
 class AgentToolkitApp(App):
@@ -50,6 +53,7 @@ class AgentToolkitApp(App):
         Binding("r", "go_results", "Results", show=True),
         Binding("d", "go_daemon", "Daemon", show=True),
         Binding("x", "go_manage", "Manage", show=True),
+        Binding("c", "go_setup", "Setup", show=True),
         Binding("escape", "go_back", "Back", show=False),
     ]
 
@@ -63,6 +67,7 @@ class AgentToolkitApp(App):
         "results": ResultsScreen,
         "daemon": DaemonScreen,
         "agent_management": AgentManagementScreen,
+        "setup": SetupScreen,
     }
 
     def on_mount(self) -> None:
@@ -72,7 +77,11 @@ class AgentToolkitApp(App):
 
     def _push_initial_screen(self) -> None:
         """Push the initial screen after app is fully running."""
-        self.push_screen("home")
+        # Check if environment is configured
+        if not EnvValidator.is_configured():
+            self.push_screen("setup")
+        else:
+            self.push_screen("home")
 
     def action_go_back(self) -> None:
         """Go back to previous screen or home."""
@@ -112,6 +121,10 @@ class AgentToolkitApp(App):
     def action_go_manage(self) -> None:
         """Navigate to agent management screen."""
         self.push_screen("agent_management")
+
+    def action_go_setup(self) -> None:
+        """Navigate to setup screen."""
+        self.push_screen("setup")
 
     def action_request_quit(self) -> None:
         """Handle quit request with cleanup."""

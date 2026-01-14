@@ -15,6 +15,8 @@ from dotenv import load_dotenv
 from azure.identity import DefaultAzureCredential
 from azure.ai.projects import AIProjectClient
 
+from .env_validator import EnvValidator
+
 # Load environment variables
 load_dotenv()
 
@@ -91,8 +93,17 @@ class AzureClientFactory:
             AIProjectClient instance
 
         Raises:
+            ValueError: If environment is not properly configured
             Exception: If connection fails
         """
+        # Validate environment configuration
+        validation = EnvValidator.validate()
+        if not validation.is_valid:
+            raise ValueError(
+                f"Environment not configured: {validation.error_message}\n\n"
+                f"Please configure your environment first:\n{validation.setup_guide}"
+            )
+
         if self._project_client is None:
             with self._client_lock:
                 if self._project_client is None:
