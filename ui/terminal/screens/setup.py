@@ -18,7 +18,7 @@ class SetupScreen(Screen):
     """Screen for environment setup and configuration."""
 
     BINDINGS = [
-        ("escape", "app.pop_screen()", "Back"),
+        ("escape", "go_home", "Back"),
         ("s", "save_config", "Save"),
     ]
 
@@ -134,7 +134,12 @@ class SetupScreen(Screen):
         if button_id == "btn-save":
             self.action_save_config()
         elif button_id == "btn-skip":
-            self.app.pop_screen()
+            # Navigate to home screen (handles empty screen stack case)
+            self.app.switch_screen("home")
+
+    def action_go_home(self) -> None:
+        """Navigate to home screen."""
+        self.app.switch_screen("home")
 
     @work
     async def action_save_config(self) -> None:
@@ -160,9 +165,10 @@ class SetupScreen(Screen):
                 severity="information",
                 timeout=5
             )
-            # Wait a moment then close
+            # Wait a moment then navigate to home screen
             await asyncio.sleep(1)
-            self.app.pop_screen()
+            # Use switch_screen to replace setup with home (handles empty screen stack)
+            self.app.switch_screen("home")
         else:
             status_widget.update(f"❌ {message}")
             status_widget.styles.color = "red"
