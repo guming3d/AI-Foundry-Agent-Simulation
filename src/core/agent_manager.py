@@ -206,19 +206,37 @@ Please assist users with tasks related to your area of expertise while maintaini
         List all agents in the project.
 
         Returns:
-            List of agent dictionaries with name, id, version info
+            List of agent dictionaries with name, id, version, and model info
         """
         client = get_project_client()
         agents = []
 
         try:
-            # Note: The actual API method may vary based on SDK version
             for agent in client.agents.list():
+                # Extract version and model from nested structure
+                version = None
+                model = None
+
+                # Agent object has 'versions' attribute with 'latest' version info
+                if hasattr(agent, 'versions'):
+                    try:
+                        # Access latest version (works like a dict but is AgentObjectVersions)
+                        latest = agent.versions.get('latest', {})
+                        if latest:
+                            version = latest.get('version')
+
+                            # Model is in definition.model
+                            definition = latest.get('definition', {})
+                            if definition:
+                                model = definition.get('model')
+                    except Exception as e:
+                        print(f"Error extracting version/model for agent {agent.name}: {e}")
+
                 agents.append({
                     "name": agent.name,
                     "id": agent.id,
-                    "version": getattr(agent, 'version', None),
-                    "model": getattr(agent, 'model', None),
+                    "version": version,
+                    "model": model,
                 })
         except Exception as e:
             print(f"Error listing agents: {e}")

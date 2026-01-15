@@ -36,7 +36,6 @@ class HomeScreen(Screen):
         ("s", "go_simulation", "Simulate"),
         ("r", "go_results", "Results"),
         ("d", "go_daemon", "Daemon"),
-        ("x", "go_manage", "Manage"),
         ("n", "go_next", "Next Step"),
     ]
 
@@ -62,9 +61,6 @@ class HomeScreen(Screen):
 
     def action_go_daemon(self) -> None:
         self.app.push_screen("daemon")
-
-    def action_go_manage(self) -> None:
-        self.app.push_screen("agent_management")
 
     def action_go_next(self) -> None:
         """Navigate to the next incomplete workflow step."""
@@ -145,7 +141,6 @@ class HomeScreen(Screen):
             # Additional tools
             Horizontal(
                 Button("Daemon [D]", id="btn-daemon", variant="success"),
-                Button("Manage Agents [X]", id="btn-manage", variant="warning"),
                 Button("Next Step [N]", id="btn-next", variant="primary"),
                 id="nav-buttons-extra",
             ),
@@ -295,7 +290,5 @@ class HomeScreen(Screen):
             self.app.push_screen("results")
         elif button_id == "btn-daemon":
             self.app.push_screen("daemon")
-        elif button_id == "btn-manage":
-            self.app.push_screen("agent_management")
         elif button_id == "btn-next":
             self.action_go_next()
