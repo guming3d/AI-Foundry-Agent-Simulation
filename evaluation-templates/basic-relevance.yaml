@@ -1,0 +1,18 @@
+id: basic-relevance
+display_name: Basic Relevance + BLEU
+description: Checks response overlap with ground truth for short factual QA.
+dataset:
+  items:
+    - query: What is the capital of France?
+      context: France is in Europe.
+      ground_truth: Paris is the capital of France.
+    - query: What is the largest planet in our solar system?
+      context: Planets include Mercury, Venus, Earth, Mars, and Jupiter.
+      ground_truth: Jupiter is the largest planet in our solar system.
+evaluators:
+  - name: relevance
+    type: relevance
+    min_score: 0.2
+  - name: bleu_score
+    type: bleu_score
+    min_score: 0.1

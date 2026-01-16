@@ -7,6 +7,7 @@ from pathlib import Path
 RESULTS_DIR = Path("results")
 AGENTS_RESULTS_DIR = RESULTS_DIR / "agents"
 SIMULATIONS_RESULTS_DIR = RESULTS_DIR / "simulations"
+EVALUATIONS_RESULTS_DIR = RESULTS_DIR / "evaluations"
 OUTPUT_DIR = Path("output")
 GENERATED_CODE_DIR = OUTPUT_DIR / "generated_code"
 
@@ -25,4 +26,5 @@ def ensure_directories():
     """Create all necessary output directories if they don't exist."""
     AGENTS_RESULTS_DIR.mkdir(parents=True, exist_ok=True)
     SIMULATIONS_RESULTS_DIR.mkdir(parents=True, exist_ok=True)
+    EVALUATIONS_RESULTS_DIR.mkdir(parents=True, exist_ok=True)
     GENERATED_CODE_DIR.mkdir(parents=True, exist_ok=True)

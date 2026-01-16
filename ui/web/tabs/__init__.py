@@ -6,6 +6,7 @@ from .model_tab import create_model_tab
 from .profile_tab import create_profile_tab
 from .agent_tab import create_agent_tab
 from .simulation_tab import create_simulation_tab
+from .evaluation_tab import create_evaluation_tab
 from .results_tab import create_results_tab
 
 __all__ = [
@@ -13,5 +14,6 @@ __all__ = [
     "create_profile_tab",
     "create_agent_tab",
     "create_simulation_tab",
+    "create_evaluation_tab",
     "create_results_tab",
 ]

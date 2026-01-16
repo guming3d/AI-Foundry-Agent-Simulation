@@ -35,6 +35,7 @@ class HomeScreen(Screen):
         ("m", "go_models", "Models"),
         ("p", "go_profiles", "Profiles"),
         ("a", "go_agents", "Agents"),
+        ("e", "go_evaluations", "Evaluations"),
         ("s", "go_simulation", "Simulate"),
     ]
 
@@ -55,6 +56,9 @@ class HomeScreen(Screen):
     def action_go_simulation(self) -> None:
         self.app.push_screen("simulation")
 
+    def action_go_evaluations(self) -> None:
+        self.app.push_screen("evaluations")
+
     def _get_workflow_status(self) -> dict:
         """Get the completion status of each workflow step."""
         state = get_state()
@@ -63,6 +67,7 @@ class HomeScreen(Screen):
             "models": len(state.selected_models) > 0,
             "profiles": state.current_profile is not None,
             "agents": len(state.created_agents) > 0,
+            "evaluations": len(state.evaluation_runs) > 0,
             "simulation": bool(state.operation_summary) or bool(state.guardrail_summary),
         }
 
@@ -70,7 +75,7 @@ class HomeScreen(Screen):
         """Get the next incomplete workflow step."""
         status = self._get_workflow_status()
 
-        steps = ["models", "profiles", "agents", "simulation"]
+        steps = ["models", "profiles", "agents", "evaluations", "simulation"]
         for step in steps:
             if not status.get(step, False):
                 return step
@@ -106,6 +111,8 @@ class HomeScreen(Screen):
                 Static(id="step-3"),
                 Static(" -> ", classes="step-arrow"),
                 Static(id="step-4"),
+                Static(" -> ", classes="step-arrow"),
+                Static(id="step-5"),
                 id="workflow-stepper",
             ),
 
@@ -114,6 +121,7 @@ class HomeScreen(Screen):
                 Button("Models [M]", id="btn-models", variant="primary"),
                 Button("Profiles [P]", id="btn-profiles", variant="primary"),
                 Button("Agents [A]", id="btn-agents", variant="primary"),
+                Button("Evaluations [E]", id="btn-evaluations", variant="primary"),
                 Button("Simulate [S]", id="btn-simulate", variant="primary"),
                 id="nav-buttons",
             ),
@@ -125,6 +133,7 @@ class HomeScreen(Screen):
                 Static(id="status-profile", classes="info-text"),
                 Static(id="status-agents-azure", classes="info-text"),
                 Static(id="status-agents-session", classes="info-text"),
+                Static(id="status-evaluations", classes="info-text"),
                 id="status-panel",
             ),
 
@@ -160,6 +169,7 @@ class HomeScreen(Screen):
             ("models", "Models", "M"),
             ("profiles", "Profile", "P"),
             ("agents", "Agents", "A"),
+            ("evaluations", "Evaluate", "E"),
             ("simulation", "Simulate", "S"),
         ]
 
@@ -216,6 +226,13 @@ class HomeScreen(Screen):
         else:
             session_status.update("  Agents in Session: None created")
 
+        evaluations_status = self.query_one("#status-evaluations", Static)
+        evaluation_count = len(state.evaluation_runs)
+        if evaluation_count:
+            evaluations_status.update(f"  Evaluations: {evaluation_count} run(s) this session")
+        else:
+            evaluations_status.update("  Evaluations: None run yet")
+
     @work(thread=True)
     def _load_azure_agent_count(self) -> None:
         """Load the count of existing agents from Azure in background."""
@@ -244,6 +261,8 @@ class HomeScreen(Screen):
             self.app.push_screen("profiles")
         elif button_id == "btn-agents":
             self.app.push_screen("agents")
+        elif button_id == "btn-evaluations":
+            self.app.push_screen("evaluations")
         elif button_id == "btn-simulate":
             self.app.push_screen("simulation")
         elif button_id == "btn-theme":

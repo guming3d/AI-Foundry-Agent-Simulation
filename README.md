@@ -11,6 +11,7 @@ A comprehensive toolkit for batch creation, testing, and management of AI agents
 - **Code Generation**: Automatically generate production-ready simulation scripts from templates
 - **Metrics & Visualization**: Real-time performance tracking with Plotly-powered dashboards
 - **Agent Registry**: Centralized tracking of created agents with CSV-based persistence
+- **Sample Evaluations**: Run reusable evaluation templates against selected agents and review JSON outputs
 
 ## Quick Start
 
@@ -45,6 +46,8 @@ python main.py web    # Web UI (opens browser)
 │   │   ├── azure_client.py
 │   │   ├── agent_manager.py
 │   │   ├── model_manager.py
+│   │   ├── evaluation_engine.py
+│   │   ├── evaluation_templates.py
 │   │   └── simulation_engine.py
 │   ├── models/          # Pydantic models
 │   ├── templates/       # Template utilities
@@ -57,6 +60,8 @@ python main.py web    # Web UI (opens browser)
 │   │   ├── healthcare.yaml
 │   │   └── manufacturing.yaml
 │   └── code/            # Jinja2 templates
+│
+├── evaluation-templates/ # Sample evaluation templates (YAML)
 │
 └── ui/                   # User interfaces
     ├── terminal/        # Textual TUI

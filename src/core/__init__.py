@@ -13,6 +13,7 @@ from .azure_client import AzureClientFactory, get_project_client, get_openai_cli
 from .agent_manager import AgentManager, create_agents_quick
 from .model_manager import ModelManager, ModelInfo, ModelStatus, list_models, validate_model
 from .metrics_collector import MetricsCollector, OperationMetric, GuardrailMetric
+from .evaluation_engine import EvaluationEngine
 from .simulation_engine import SimulationEngine, SimulationConfig
 
 __all__ = [
@@ -33,6 +34,8 @@ __all__ = [
     "MetricsCollector",
     "OperationMetric",
     "GuardrailMetric",
+    # Evaluation engine
+    "EvaluationEngine",
     # Simulation engine
     "SimulationEngine",
     "SimulationConfig",

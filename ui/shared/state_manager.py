@@ -45,6 +45,7 @@ class AppState:
     # Results
     operation_summary: Dict[str, Any] = field(default_factory=dict)
     guardrail_summary: Dict[str, Any] = field(default_factory=dict)
+    evaluation_runs: List[Dict[str, Any]] = field(default_factory=list)
 
     # Azure connection
     is_connected: bool = False
@@ -141,6 +142,10 @@ class StateManager:
     def set_guardrail_summary(self, summary: Dict[str, Any]) -> None:
         self._state.guardrail_summary = summary
 
+    # Evaluations
+    def add_evaluation_run(self, run_summary: Dict[str, Any]) -> None:
+        self._state.evaluation_runs.append(run_summary)
+
     # Connection
     def set_connected(self, connected: bool, endpoint: str = "") -> None:
         self._state.is_connected = connected
@@ -164,7 +169,7 @@ class StateManager:
 
     def get_next_workflow_step(self) -> str:
         """Get the next incomplete workflow step."""
-        steps = ["models", "profiles", "agents", "simulation", "results"]
+        steps = ["models", "profiles", "agents", "evaluations", "simulation", "results"]
         for step in steps:
             if step not in self._state.workflow_completed_steps:
                 return step

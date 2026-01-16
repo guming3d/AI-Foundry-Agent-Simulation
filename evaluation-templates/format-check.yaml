@@ -1,0 +1,15 @@
+id: format-check
+display_name: Format - Starts With Answer
+description: "Ensures the response begins with an Answer: prefix."
+dataset:
+  items:
+    - query: What is 2 + 2?
+      ground_truth: "Answer: 4"
+evaluators:
+  - name: string_check
+    type: string_check
+    min_score: 1.0
+    params:
+      operation: starts_with
+      reference: "Answer:"
+      case_sensitive: false

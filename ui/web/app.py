@@ -14,6 +14,7 @@ import gradio as gr
 from .tabs.model_tab import create_model_tab
 from .tabs.profile_tab import create_profile_tab
 from .tabs.agent_tab import create_agent_tab
+from .tabs.evaluation_tab import create_evaluation_tab
 from .tabs.simulation_tab import create_simulation_tab
 from .tabs.results_tab import create_results_tab
 from .tabs.setup_tab import create_setup_tab
@@ -46,8 +47,9 @@ def create_app() -> gr.Blocks:
             2. **Models** - Select models for your agents
             3. **Profiles** - Choose an industry profile
             4. **Agents** - Create agents and generate code
-            5. **Simulate** - Run operations and guardrail tests
-            6. **Results** - View metrics and analysis
+            5. **Evaluate** - Run sample evaluations on agents
+            6. **Simulate** - Run operations and guardrail tests
+            7. **Results** - View metrics and analysis
             """
         )
 
@@ -78,6 +80,9 @@ def create_app() -> gr.Blocks:
 
             with gr.TabItem("Agents", id="agents"):
                 create_agent_tab()
+
+            with gr.TabItem("Evaluate", id="evaluations"):
+                create_evaluation_tab()
 
             with gr.TabItem("Simulate", id="simulate"):
                 create_simulation_tab()
