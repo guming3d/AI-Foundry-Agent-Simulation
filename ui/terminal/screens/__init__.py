@@ -7,7 +7,6 @@ from .model_selection import ModelSelectionScreen
 from .industry_profile import IndustryProfileScreen
 from .agent_wizard import AgentWizardScreen
 from .simulation import SimulationScreen
-from .results import ResultsScreen
 
 __all__ = [
     "HomeScreen",
@@ -15,5 +14,4 @@ __all__ = [
     "IndustryProfileScreen",
     "AgentWizardScreen",
     "SimulationScreen",
-    "ResultsScreen",
 ]

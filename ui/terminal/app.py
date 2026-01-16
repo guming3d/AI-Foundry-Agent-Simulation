@@ -20,7 +20,6 @@ from .screens.model_selection import ModelSelectionScreen
 from .screens.industry_profile import IndustryProfileScreen
 from .screens.agent_wizard import AgentWizardScreen
 from .screens.simulation import SimulationScreen
-from .screens.results import ResultsScreen
 from .screens.daemon import DaemonScreen
 from .screens.agent_management import AgentManagementScreen
 from .screens.setup import SetupScreen
@@ -50,7 +49,6 @@ class AgentToolkitApp(App):
         Binding("p", "go_profiles", "Profiles", show=True),
         Binding("a", "go_agents", "Agents", show=True),
         Binding("s", "go_simulation", "Simulate", show=True),
-        Binding("r", "go_results", "Results", show=True),
         Binding("d", "go_daemon", "Daemon", show=True),
         Binding("x", "go_manage", "Manage", show=True),
         Binding("c", "go_setup", "Setup", show=True),
@@ -64,7 +62,6 @@ class AgentToolkitApp(App):
         "profiles": IndustryProfileScreen,
         "agents": AgentWizardScreen,
         "simulation": SimulationScreen,
-        "results": ResultsScreen,
         "daemon": DaemonScreen,
         "agent_management": AgentManagementScreen,
         "setup": SetupScreen,
@@ -109,10 +106,6 @@ class AgentToolkitApp(App):
     def action_go_simulation(self) -> None:
         """Navigate to simulation screen."""
         self.push_screen("simulation")
-
-    def action_go_results(self) -> None:
-        """Navigate to results screen."""
-        self.push_screen("results")
 
     def action_go_daemon(self) -> None:
         """Navigate to daemon screen."""

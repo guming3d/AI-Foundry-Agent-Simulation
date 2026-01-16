@@ -34,8 +34,6 @@ class HomeScreen(Screen):
         ("p", "go_profiles", "Profiles"),
         ("a", "go_agents", "Agents"),
         ("s", "go_simulation", "Simulate"),
-        ("r", "go_results", "Results"),
-        ("n", "go_next", "Next Step"),
     ]
 
     def __init__(self):
@@ -55,14 +53,6 @@ class HomeScreen(Screen):
     def action_go_simulation(self) -> None:
         self.app.push_screen("simulation")
 
-    def action_go_results(self) -> None:
-        self.app.push_screen("results")
-
-    def action_go_next(self) -> None:
-        """Navigate to the next incomplete workflow step."""
-        next_step = self._get_next_step()
-        self.app.push_screen(next_step)
-
     def _get_workflow_status(self) -> dict:
         """Get the completion status of each workflow step."""
         state = get_state()
@@ -72,19 +62,18 @@ class HomeScreen(Screen):
             "profiles": state.current_profile is not None,
             "agents": len(state.created_agents) > 0,
             "simulation": bool(state.operation_summary) or bool(state.guardrail_summary),
-            "results": bool(state.operation_summary) or bool(state.guardrail_summary),
         }
 
     def _get_next_step(self) -> str:
         """Get the next incomplete workflow step."""
         status = self._get_workflow_status()
 
-        steps = ["models", "profiles", "agents", "simulation", "results"]
+        steps = ["models", "profiles", "agents", "simulation"]
         for step in steps:
             if not status.get(step, False):
                 return step
 
-        return "results"
+        return "simulation"
 
     def _format_step(self, step_num: int, name: str, key: str, completed: bool, is_next: bool) -> str:
         """Format a workflow step for display."""
@@ -115,11 +104,8 @@ class HomeScreen(Screen):
                 Static(id="step-3"),
                 Static(" -> ", classes="step-arrow"),
                 Static(id="step-4"),
-                Static(" -> ", classes="step-arrow"),
-                Static(id="step-5"),
                 id="workflow-stepper",
             ),
-            Static(id="next-step-hint", classes="info-text"),
 
             # Navigation buttons - Main workflow
             Horizontal(
@@ -127,8 +113,6 @@ class HomeScreen(Screen):
                 Button("Profiles [P]", id="btn-profiles", variant="primary"),
                 Button("Agents [A]", id="btn-agents", variant="primary"),
                 Button("Simulate [S]", id="btn-simulate", variant="primary"),
-                Button("Results [R]", id="btn-results", variant="primary"),
-                Button("Next Step [N]", id="btn-next", variant="success"),
                 id="nav-buttons",
             ),
 
@@ -167,7 +151,6 @@ class HomeScreen(Screen):
             ("profiles", "Profile", "P"),
             ("agents", "Agents", "A"),
             ("simulation", "Simulate", "S"),
-            ("results", "Results", "R"),
         ]
 
         for i, (step_id, name, key) in enumerate(steps, 1):
@@ -188,21 +171,6 @@ class HomeScreen(Screen):
                 widget.update(f"[ ]{i}.{name}")
                 widget.remove_class("step-completed", "step-next")
                 widget.add_class("step-pending")
-
-        # Update next step hint
-        hint = self.query_one("#next-step-hint", Static)
-        step_names = {
-            "models": "Select models for your agents",
-            "profiles": "Choose an industry profile",
-            "agents": "Create agents from profile",
-            "simulation": "Run simulation tests",
-            "results": "View your results",
-        }
-
-        if all(status.values()):
-            hint.update("All steps completed! Press [R] to view results or [S] for more simulations.")
-        else:
-            hint.update(f"Next: {step_names.get(next_step, '')} - Press [N] or [{steps[[s[0] for s in steps].index(next_step)][2]}]")
 
     def _update_status(self) -> None:
         """Update the status display."""
@@ -268,7 +236,3 @@ class HomeScreen(Screen):
             self.app.push_screen("agents")
         elif button_id == "btn-simulate":
             self.app.push_screen("simulation")
-        elif button_id == "btn-results":
-            self.app.push_screen("results")
-        elif button_id == "btn-next":
-            self.action_go_next()

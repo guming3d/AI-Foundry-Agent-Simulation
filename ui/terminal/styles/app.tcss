@@ -321,6 +321,24 @@ Screen {
     margin: 0 1;
 }
 
+#results-button-bar {
+    margin: 0 0 1 0;
+    align: left middle;
+}
+
+#results-button-bar Button {
+    margin-right: 1;
+}
+
+#simulation-scroll {
+    height: 1fr;
+    margin: 1 0 0 0;
+}
+
+#simulation-scroll > .verticalscroll--content {
+    padding-bottom: 1;
+}
+
 /* Labels */
 .label {
     margin-bottom: 0;

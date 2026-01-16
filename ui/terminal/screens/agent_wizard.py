@@ -5,6 +5,8 @@ Guides users through agent creation from industry profiles,
 and allows managing existing agents.
 """
 
+import csv
+from pathlib import Path
 from textual.app import ComposeResult
 from textual.screen import Screen
 from textual.widgets import Static, Button, Input, DataTable, ProgressBar, Label
@@ -14,6 +16,7 @@ from textual import work
 from ui.shared.state_manager import get_state_manager, get_state
 from src.core.agent_manager import AgentManager
 from src.core import config
+from src.models.agent import CreatedAgent
 
 
 class AgentWizardScreen(Screen):
@@ -24,6 +27,9 @@ class AgentWizardScreen(Screen):
         ("c", "create_agents", "Create Agents"),
         ("r", "refresh_existing", "Refresh Existing"),
         ("d", "delete_all_agents", "Delete All"),
+        ("s", "select_all", "Select All"),
+        ("u", "deselect_all", "Deselect All"),
+        ("enter", "use_selected", "Use Selected"),
     ]
 
     def __init__(self):
@@ -49,6 +55,9 @@ class AgentWizardScreen(Screen):
             Static(id="existing-agents-summary", classes="info-text"),
             DataTable(id="existing-agents-table"),
             Horizontal(
+                Button("Select All [S]", id="btn-select-all", variant="primary"),
+                Button("Deselect All [U]", id="btn-deselect-all", variant="primary"),
+                Button("Use Selected [Enter]", id="btn-use-selected", variant="success"),
                 Button("Delete Selected", id="btn-delete-selected", variant="warning"),
                 Button("Delete All [D]", id="btn-delete-all", variant="error"),
                 id="delete-buttons",
@@ -251,6 +260,12 @@ class AgentWizardScreen(Screen):
             self.app.pop_screen()
         elif button_id == "btn-refresh-existing":
             self.action_refresh_existing()
+        elif button_id == "btn-select-all":
+            self.action_select_all()
+        elif button_id == "btn-deselect-all":
+            self.action_deselect_all()
+        elif button_id == "btn-use-selected":
+            self.action_use_selected()
         elif button_id == "btn-delete-selected":
             self.action_delete_selected()
         elif button_id == "btn-delete-all":
@@ -348,9 +363,115 @@ class AgentWizardScreen(Screen):
         status = self.query_one("#delete-status", Static)
         count = len(self.selected_agent_names)
         if count == 0:
-            status.update("Click rows to select agents (click again to deselect). [X] = selected")
+            status.update("Select agents: Click rows to toggle selection. Use 'Use Selected' to prepare for simulation, or 'Delete Selected' to remove.")
         else:
-            status.update(f"Selected {count} agent(s) for deletion - click 'Delete Selected' to remove")
+            status.update(f"Selected {count} agent(s) - Use for simulation [Enter] or Delete [Del]")
+
+    def action_select_all(self) -> None:
+        """Select all agents in the table."""
+        if not self.existing_agents:
+            self.notify("No agents to select", severity="warning")
+            return
+
+        for agent in self.existing_agents:
+            agent_name = agent.get("name", "Unknown")
+            self.selected_agent_names.add(agent_name)
+
+        self._populate_existing_table(self.existing_agents)
+        self._update_delete_status()
+        self.notify(f"Selected all {len(self.selected_agent_names)} agent(s)")
+
+    def action_deselect_all(self) -> None:
+        """Deselect all agents."""
+        if not self.selected_agent_names:
+            self.notify("No agents are selected", severity="warning")
+            return
+
+        count = len(self.selected_agent_names)
+        self.selected_agent_names.clear()
+        self._populate_existing_table(self.existing_agents)
+        self._update_delete_status()
+        self.notify(f"Deselected all {count} agent(s)")
+
+    def action_use_selected(self) -> None:
+        """Export selected agents to CSV for simulation without creating new ones."""
+        if not self.selected_agent_names:
+            self.notify("No agents selected. Please select agents first.", severity="warning")
+            return
+
+        self.use_selected_async()
+
+    @work(thread=True)
+    def use_selected_async(self) -> None:
+        """Export selected agents to CSV in background thread."""
+        selected_count = len(self.selected_agent_names)
+        
+        self.app.call_from_thread(
+            self._update_delete_status_text,
+            f"Exporting {selected_count} selected agent(s) to CSV..."
+        )
+
+        try:
+            # Filter existing agents to only include selected ones
+            selected_agents_data = [
+                agent for agent in self.existing_agents 
+                if agent.get("name") in self.selected_agent_names
+            ]
+
+            # Convert to CreatedAgent objects
+            created_agents = []
+            for agent_data in selected_agents_data:
+                # Extract org_id and agent_id from name format: {org_id}-{agent_type}-{agent_id}
+                name_parts = agent_data.get("name", "").split("-")
+                org_id = name_parts[0] if len(name_parts) > 0 else "UNKNOWN"
+                agent_id = name_parts[-1] if len(name_parts) > 2 else "AG001"
+                
+                created_agent = CreatedAgent(
+                    agent_id=agent_id,
+                    name=agent_data.get("name", "Unknown"),
+                    azure_id=agent_data.get("id", ""),
+                    version=agent_data.get("version", "1"),
+                    model=agent_data.get("model", ""),
+                    org_id=org_id,
+                    agent_type=name_parts[1] if len(name_parts) > 1 else "Unknown"
+                )
+                created_agents.append(created_agent)
+
+            # Save to CSV using AgentManager
+            manager = AgentManager()
+            config.ensure_directories()
+            csv_path = str(config.CREATED_AGENTS_CSV)
+            manager.save_agents_to_csv(created_agents, csv_path)
+
+            # Update state
+            self.app.call_from_thread(
+                get_state_manager().set_created_agents,
+                created_agents,
+                csv_path
+            )
+
+            # Update the recently created table
+            self.app.call_from_thread(self._load_created_agents)
+
+            self.app.call_from_thread(
+                self._update_delete_status_text,
+                f"Successfully exported {selected_count} agent(s) to CSV for simulation"
+            )
+            self.app.call_from_thread(
+                self.notify,
+                f"Ready for simulation with {selected_count} agent(s)!"
+            )
+
+        except Exception as e:
+            self.app.call_from_thread(
+                self._update_delete_status_text,
+                f"Error exporting agents: {e}"
+            )
+            self.app.call_from_thread(
+                self.notify,
+                f"Error: {e}",
+                severity="error"
+            )
 
     def action_delete_selected(self) -> None:
         """Delete selected agents."""

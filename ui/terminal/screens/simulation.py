@@ -8,14 +8,15 @@ Supports both one-time simulations and long-running daemon simulations.
 import os
 from textual.app import ComposeResult
 from textual.screen import Screen
-from textual.widgets import Static, Button, Input, ProgressBar, Log, Select, RadioSet, RadioButton
-from textual.containers import Vertical, Horizontal
+from textual.widgets import Static, Button, Input, ProgressBar, Log, Select, RadioSet, RadioButton, DataTable
+from textual.containers import Vertical, Horizontal, VerticalScroll
 from textual import work
 from textual.timer import Timer
 
 from ui.shared.state_manager import get_state_manager, get_state
 from src.core.simulation_engine import SimulationEngine, SimulationConfig
 from src.core.daemon_runner import DaemonRunner, DaemonConfig
+from src.core import config
 
 
 class SimulationScreen(Screen):
@@ -318,17 +319,47 @@ class SimulationScreen(Screen):
             id="progress-panel",
         )
 
-        # Log section
-        yield Vertical(
-            Static("Log:", classes="section-title"),
-            Log(id="sim-log", auto_scroll=True),
-            id="log-panel",
+        # Scrollable log + results section
+        yield VerticalScroll(
+            Vertical(
+                Static("Log:", classes="section-title"),
+                Log(id="sim-log", auto_scroll=True),
+                id="log-panel",
+            ),
+            Static("Simulation Results", classes="section-title"),
+            Vertical(
+                Static("[b]Operations Results[/b]", classes="section-title"),
+                Static(id="ops-summary"),
+                Static("Agent Type Distribution:", classes="section-title"),
+                DataTable(id="ops-types-table"),
+                Static("Model Distribution:", classes="section-title"),
+                DataTable(id="ops-models-table"),
+                id="ops-panel",
+                classes="results-panel",
+            ),
+            Vertical(
+                Static("[b]Guardrails Results[/b]", classes="section-title"),
+                Static(id="guard-summary"),
+                Static("Category Statistics:", classes="section-title"),
+                DataTable(id="guard-categories-table"),
+                Static("Model Statistics:", classes="section-title"),
+                DataTable(id="guard-models-table"),
+                id="guard-panel",
+                classes="results-panel",
+            ),
+            Horizontal(
+                Button("Export Results [E]", id="btn-export", variant="primary"),
+                id="results-button-bar",
+            ),
+            id="simulation-scroll",
         )
 
     def on_mount(self) -> None:
         """Initialize the screen."""
         self._check_prerequisites()
         self._update_daemon_status(False)
+        self._setup_results_tables()
+        self._load_results()
         # Start metrics refresh timer
         self.metrics_timer = self.set_interval(1.0, self._refresh_daemon_metrics)
 
@@ -409,6 +440,8 @@ class SimulationScreen(Screen):
                 self.action_stop_daemon()
         elif button_id == "btn-back":
             self.app.pop_screen()
+        elif button_id == "btn-export":
+            self.action_export_results()
 
     def action_run_simulation(self) -> None:
         """Run one-time simulation."""
@@ -450,36 +483,32 @@ class SimulationScreen(Screen):
 
         # Create config
         config = SimulationConfig(
-            total_calls=num_calls,
+            num_calls=num_calls,
             threads=threads,
             delay=delay,
-            run_operations=(sim_type in ["operations", "both"]),
-            run_guardrails=(sim_type in ["guardrails", "both"]),
         )
 
-        # Create engine
+        # Create engine with profile data
+        query_templates = state.current_profile.get_query_templates_dict() if state.current_profile else {}
+        guardrail_tests = state.current_profile.guardrail_tests.get_all_tests() if state.current_profile else {}
+        
         self.engine = SimulationEngine(
             agents_csv=agents_csv,
-            profile=state.current_profile,
+            query_templates=query_templates,
+            guardrail_tests=guardrail_tests,
         )
 
-        if self.engine.get_agent_count() == 0:
+        agent_count = len(self.engine.agents)
+        if agent_count == 0:
             self.notify("No agents found in CSV", severity="error")
             log.write_line("[X] No agents found in CSV file")
             return
 
-        log.write_line(f"[+] Loaded {self.engine.get_agent_count()} agents")
-
-        # Define callbacks
-        def progress_callback(current, total, message):
-            self.app.call_from_thread(self._update_progress, current, total, message)
-
-        def log_callback(message):
-            self.app.call_from_thread(self._log_message, message)
+        log.write_line(f"[+] Loaded {agent_count} agents")
 
         # Run simulation in background
         self.simulation_active = True
-        self.run_simulation_async(config, progress_callback, log_callback)
+        self.run_simulation_in_thread(sim_type, config)
     @work(thread=True, exclusive=True)
     def run_simulation_in_thread(self, sim_type: str, config: SimulationConfig) -> None:
         """Run simulation in a background thread (non-blocking)."""
@@ -537,9 +566,10 @@ class SimulationScreen(Screen):
             log_message("")
             log_message("[*] ========================================")
             log_message("[*] Simulation completed successfully!")
-            log_message("[*] View results in Results screen (F6)")
+            log_message("[*] Results available below")
             log_message("[*] ========================================")
             self.app.call_from_thread(self.notify, "Simulation completed!")
+            self.app.call_from_thread(self._load_results)
 
         except Exception as e:
             import traceback
@@ -563,6 +593,127 @@ class SimulationScreen(Screen):
 
         progress.update(total=total, progress=current)
         status.update(message)
+
+    def _setup_results_tables(self) -> None:
+        """Setup the embedded results tables."""
+        ops_types = self.query_one("#ops-types-table", DataTable)
+        ops_types.add_columns("Agent Type", "Calls", "Percentage")
+
+        ops_models = self.query_one("#ops-models-table", DataTable)
+        ops_models.add_columns("Model", "Calls", "Percentage")
+
+        guard_cats = self.query_one("#guard-categories-table", DataTable)
+        guard_cats.add_columns("Category", "Total", "Blocked", "Block Rate", "Status")
+
+        guard_models = self.query_one("#guard-models-table", DataTable)
+        guard_models.add_columns("Model", "Total", "Blocked", "Block Rate")
+
+    def _load_results(self) -> None:
+        """Load results from state into embedded panels."""
+        state = get_state()
+        self._load_operations_results(state.operation_summary)
+        self._load_guardrails_results(state.guardrail_summary)
+
+    def _load_operations_results(self, summary: dict) -> None:
+        """Load operations results into embedded display."""
+        ops_summary = self.query_one("#ops-summary", Static)
+
+        if not summary:
+            ops_summary.update("No operations results available. Run a simulation first.")
+            return
+
+        total = summary.get("total_calls", 0)
+        success = summary.get("successful_calls", 0)
+        failed = summary.get("failed_calls", 0)
+        success_rate = summary.get("success_rate", 0)
+        avg_latency = summary.get("avg_latency_ms", 0)
+        min_latency = summary.get("min_latency_ms", 0)
+        max_latency = summary.get("max_latency_ms", 0)
+
+        ops_summary.update(f"""
+[b]Total Calls:[/b] {total}
+[b]Successful:[/b] {success} ({success_rate:.1f}%)
+[b]Failed:[/b] {failed}
+
+[b]Latency:[/b]
+  Average: {avg_latency:.2f}ms
+  Min: {min_latency:.2f}ms
+  Max: {max_latency:.2f}ms
+        """)
+
+        types_table = self.query_one("#ops-types-table", DataTable)
+        types_table.clear()
+
+        type_dist = summary.get("agent_type_distribution", {})
+        for agent_type, count in sorted(type_dist.items(), key=lambda x: x[1], reverse=True):
+            pct = count / total * 100 if total > 0 else 0
+            types_table.add_row(agent_type, str(count), f"{pct:.1f}%")
+
+        models_table = self.query_one("#ops-models-table", DataTable)
+        models_table.clear()
+
+        model_dist = summary.get("model_distribution", {})
+        for model, count in sorted(model_dist.items(), key=lambda x: x[1], reverse=True):
+            pct = count / total * 100 if total > 0 else 0
+            models_table.add_row(model, str(count), f"{pct:.1f}%")
+
+    def _load_guardrails_results(self, summary: dict) -> None:
+        """Load guardrails results into embedded display."""
+        guard_summary = self.query_one("#guard-summary", Static)
+
+        if not summary:
+            guard_summary.update("No guardrail results available. Run a simulation first.")
+            return
+
+        total = summary.get("total_tests", 0)
+        blocked = summary.get("blocked", 0)
+        allowed = summary.get("allowed", 0)
+        block_rate = summary.get("overall_block_rate", 0)
+        recommendation = summary.get("recommendation", "N/A")
+
+        status_color = "green" if recommendation == "PASS" else "yellow" if recommendation == "REVIEW" else "red"
+
+        guard_summary.update(f"""
+[b]Total Tests:[/b] {total}
+[b]Blocked:[/b] {blocked} ({block_rate:.1f}%)
+[b]Allowed:[/b] {allowed}
+
+[b]Recommendation:[/b] [{status_color}]{recommendation}[/{status_color}]
+        """)
+
+        cats_table = self.query_one("#guard-categories-table", DataTable)
+        cats_table.clear()
+
+        cat_stats = summary.get("category_stats", {})
+        for cat, stats in sorted(cat_stats.items(), key=lambda x: x[1].get("block_rate", 0)):
+            cat_total = stats.get("total", 0)
+            cat_blocked = stats.get("blocked", 0)
+            cat_rate = stats.get("block_rate", 0)
+            status = "OK" if cat_rate >= 95 else "WARN" if cat_rate >= 80 else "CRITICAL"
+            cats_table.add_row(cat, str(cat_total), str(cat_blocked), f"{cat_rate:.1f}%", status)
+
+        models_table = self.query_one("#guard-models-table", DataTable)
+        models_table.clear()
+
+        model_stats = summary.get("model_stats", {})
+        for model, stats in sorted(model_stats.items(), key=lambda x: x[1].get("block_rate", 0)):
+            m_total = stats.get("total", 0)
+            m_blocked = stats.get("blocked", 0)
+            m_rate = stats.get("block_rate", 0)
+            models_table.add_row(model, str(m_total), str(m_blocked), f"{m_rate:.1f}%")
+
+    def action_export_results(self) -> None:
+        """Export results to files."""
+        state = get_state()
+
+        if state.operation_summary:
+            self.notify(f"Operations results saved to {config.SIMULATION_SUMMARY_JSON}")
+
+        if state.guardrail_summary:
+            self.notify(f"Guardrail results saved to {config.GUARDRAILS_SUMMARY_JSON}")
+
+        if not state.operation_summary and not state.guardrail_summary:
+            self.notify("No results to export", severity="warning")
 
     def action_stop_simulation(self) -> None:
         """Stop the current simulation."""
