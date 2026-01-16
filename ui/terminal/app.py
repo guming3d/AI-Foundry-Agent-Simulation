@@ -23,6 +23,8 @@ from .screens.simulation import SimulationScreen
 from .screens.daemon import DaemonScreen
 from .screens.agent_management import AgentManagementScreen
 from .screens.setup import SetupScreen
+from .screens.theme_select import ThemeSelectScreen
+from .themes import register_app_themes, get_next_theme, DEFAULT_THEME, THEME_NAMES
 
 from src.core.env_validator import EnvValidator
 
@@ -44,6 +46,7 @@ class AgentToolkitApp(App):
         Binding("q", "request_quit", "Quit", show=True),
         Binding("ctrl+c", "request_quit", "Quit", show=False),
         Binding("ctrl+q", "request_quit", "Quit", show=False),
+        Binding("t", "show_theme_selector", "Theme", show=True),
         Binding("h", "go_home", "Home", show=True),
         Binding("m", "go_models", "Models", show=True),
         Binding("p", "go_profiles", "Profiles", show=True),
@@ -69,6 +72,10 @@ class AgentToolkitApp(App):
 
     def on_mount(self) -> None:
         """Called when the app is mounted."""
+        # Register custom themes
+        register_app_themes(self)
+        # Set the default theme
+        self.theme = DEFAULT_THEME
         # Use call_later to ensure app is fully running before pushing screen
         self.call_later(self._push_initial_screen)
 
@@ -86,6 +93,25 @@ class AgentToolkitApp(App):
             self.pop_screen()
         else:
             self.push_screen("home")
+
+    def action_cycle_theme(self) -> None:
+        """Cycle through available themes."""
+        current = self.theme
+        next_theme = get_next_theme(current)
+        self.theme = next_theme
+        self.notify(f"Theme: {next_theme}", timeout=2)
+
+    def action_show_theme_selector(self) -> None:
+        """Show the theme selection dialog."""
+        def handle_theme_selection(selected_theme: str | None) -> None:
+            if selected_theme:
+                self.theme = selected_theme
+                self.notify(f"Theme changed to: {selected_theme}", timeout=2)
+
+        self.push_screen(
+            ThemeSelectScreen(current_theme=self.theme),
+            handle_theme_selection
+        )
 
     def action_go_home(self) -> None:
         """Navigate to home screen."""

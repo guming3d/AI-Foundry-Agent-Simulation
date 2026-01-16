@@ -13,6 +13,7 @@ from textual import work
 
 from ui.shared.state_manager import get_state, get_state_manager
 from src.core.agent_manager import AgentManager
+from .theme_select import ThemeSelectScreen
 
 
 LOGO = """
@@ -126,6 +127,13 @@ class HomeScreen(Screen):
                 id="status-panel",
             ),
 
+            # Settings row with theme button
+            Horizontal(
+                Button("Theme", id="btn-theme", variant="default"),
+                Button("Setup [C]", id="btn-setup", variant="default"),
+                id="nav-buttons-extra",
+            ),
+
             id="home-container",
         )
 
@@ -236,3 +244,19 @@ class HomeScreen(Screen):
             self.app.push_screen("agents")
         elif button_id == "btn-simulate":
             self.app.push_screen("simulation")
+        elif button_id == "btn-theme":
+            self._show_theme_selector()
+        elif button_id == "btn-setup":
+            self.app.push_screen("setup")
+
+    def _show_theme_selector(self) -> None:
+        """Show the theme selection dialog."""
+        def handle_theme_selection(selected_theme: str | None) -> None:
+            if selected_theme:
+                self.app.theme = selected_theme
+                self.app.notify(f"Theme changed to: {selected_theme}", timeout=2)
+
+        self.app.push_screen(
+            ThemeSelectScreen(current_theme=self.app.theme),
+            handle_theme_selection
+        )
