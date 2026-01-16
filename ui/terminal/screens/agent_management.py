@@ -27,44 +27,32 @@ class AgentManagementScreen(Screen):
     DEFAULT_CSS = """
     AgentManagementScreen {
         layout: vertical;
-    }
-
-    #manage-header {
-        height: auto;
-        padding: 0 1;
-    }
-
-    #button-bar {
-        height: auto;
-        padding: 1;
-        align: center middle;
-    }
-
-    #button-bar Button {
-        margin: 0 1;
-    }
-
-    #agents-panel {
-        height: 1fr;
-        min-height: 15;
         padding: 0 1;
     }
 
     #agents-table {
         height: 1fr;
+        min-height: 12;
         border: solid $primary;
+        background: $surface-darken-1;
+        margin: 0 0 1 0;
     }
 
-    #progress-panel {
-        height: auto;
-        max-height: 4;
-        padding: 0 1;
+    #progress-bar {
+        margin-top: 0;
     }
 
-    #status-panel {
-        height: auto;
+    #progress-status {
+        margin-bottom: 1;
         padding: 0 1;
-        margin-top: 1;
+        border-left: solid $primary;
+        background: $surface-darken-1;
+    }
+
+    #status-message {
+        padding: 0 1;
+        border-left: solid $secondary;
+        background: $surface-darken-1;
     }
 
     .warning-text {
@@ -94,22 +82,13 @@ class AgentManagementScreen(Screen):
             id="button-bar",
         )
 
-        yield Vertical(
-            Static("Agents in Project:", classes="section-title"),
-            DataTable(id="agents-table"),
-            id="agents-panel",
-        )
+        yield Static("Agents in Project:", classes="section-title")
+        yield DataTable(id="agents-table")
 
-        yield Vertical(
-            ProgressBar(id="progress-bar", total=100, show_eta=False),
-            Static("Ready", id="progress-status"),
-            id="progress-panel",
-        )
+        yield ProgressBar(id="progress-bar", total=100, show_eta=False)
+        yield Static("Ready", id="progress-status", classes="info-text")
 
-        yield Vertical(
-            Static(id="status-message"),
-            id="status-panel",
-        )
+        yield Static(id="status-message", classes="info-text")
 
     def on_mount(self) -> None:
         """Initialize the screen."""

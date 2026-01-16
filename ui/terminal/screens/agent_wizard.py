@@ -41,28 +41,24 @@ class AgentWizardScreen(Screen):
 
         yield VerticalScroll(
             # Existing Agents Section
-            Vertical(
-                Horizontal(
-                    Static("Existing Agents in Azure:", classes="section-title"),
-                    Button("Refresh [R]", id="btn-refresh-existing", variant="default"),
-                    classes="section-header-with-button",
-                ),
-                Static(id="existing-agents-summary", classes="info-text"),
-                DataTable(id="existing-agents-table"),
-                Horizontal(
-                    Button("Delete Selected", id="btn-delete-selected", variant="warning"),
-                    Button("Delete All [D]", id="btn-delete-all", variant="error"),
-                    id="delete-buttons",
-                ),
-                Static(id="delete-status", classes="info-text"),
-                id="existing-agents-panel",
+            Horizontal(
+                Static("Existing Agents in Azure:", classes="section-title"),
+                Button("Refresh [R]", id="btn-refresh-existing", variant="default"),
+                classes="section-header-with-button",
             ),
+            Static(id="existing-agents-summary", classes="info-text"),
+            DataTable(id="existing-agents-table"),
+            Horizontal(
+                Button("Delete Selected", id="btn-delete-selected", variant="warning"),
+                Button("Delete All [D]", id="btn-delete-all", variant="error"),
+                id="delete-buttons",
+            ),
+            Static(id="delete-status", classes="info-text"),
 
-            Vertical(
-                Static("Current Configuration:", classes="section-title"),
-                Static(id="config-summary"),
-                id="config-panel",
-            ),
+            # Configuration Section
+            Static("Current Configuration:", classes="section-title"),
+            Static(id="config-summary", classes="info-text"),
+
             Horizontal(
                 Vertical(
                     Static("Organizations:", classes="label"),
@@ -77,23 +73,23 @@ class AgentWizardScreen(Screen):
                 id="config-inputs",
             ),
             Static(id="total-agents", classes="info-text"),
+
             Horizontal(
                 Button("Create Agents [C]", id="btn-create", variant="primary"),
                 Button("Back", id="btn-back"),
                 id="button-bar",
             ),
             Static("Tip: Use Daemon for continuous production traffic simulation", classes="info-text"),
-            Vertical(
-                Static("Progress:", classes="section-title"),
-                ProgressBar(id="progress-bar", total=100, show_eta=False),
-                Static(id="progress-status"),
-                id="progress-panel",
-            ),
-            Vertical(
-                Static("Recently Created Agents:", classes="section-title"),
-                DataTable(id="agents-table"),
-                id="agents-panel",
-            ),
+
+            # Progress Section
+            Static("Progress:", classes="section-title"),
+            ProgressBar(id="progress-bar", total=100, show_eta=False),
+            Static(id="progress-status", classes="info-text"),
+
+            # Recently Created Agents
+            Static("Recently Created Agents:", classes="section-title"),
+            DataTable(id="agents-table"),
+
             id="wizard-container",
         )
 

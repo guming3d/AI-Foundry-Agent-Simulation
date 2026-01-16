@@ -10,56 +10,45 @@ Screen {
     text-align: center;
     text-style: bold;
     color: $primary;
-    padding: 1;
-    margin-bottom: 1;
+    padding: 0;
+    margin-bottom: 0;
 }
 
 .description {
     color: $text-muted;
     padding: 0 1;
-    margin-bottom: 1;
+    margin-bottom: 0;
 }
 
 /* Section titles */
 .section-title {
     text-style: bold;
     color: $secondary;
-    margin-top: 1;
+    margin-top: 0;
     margin-bottom: 0;
     padding-left: 1;
 }
 
 /* Home screen */
 #home-container {
-    padding: 1 2;
+    padding: 0 1;
 }
 
 #logo {
     text-align: center;
     color: $primary;
-    padding: 1;
+    padding: 0;
 }
 
 #welcome {
     text-align: center;
     color: $text;
-    padding: 1;
+    padding: 0 0 1 0;
     text-style: bold;
 }
 
-#guide {
-    margin: 1 2;
-    padding: 1;
-    border: solid $primary;
-}
-
-.guide-step {
-    padding-left: 2;
-    color: $text-muted;
-}
-
 #nav-buttons {
-    margin: 2 0;
+    margin: 1 0;
     align: center middle;
 }
 
@@ -68,22 +57,24 @@ Screen {
 }
 
 #status-panel {
-    margin: 1 2;
+    margin: 1 0;
     padding: 1;
     border: solid $secondary;
+    background: $surface-darken-1;
+}
+
+#status-panel .info-text {
+    padding: 0 1;
 }
 
 /* Workflow stepper */
-#stepper-panel {
-    margin: 1 2;
-    padding: 1;
-    border: solid $primary;
-}
-
 #workflow-stepper {
     height: auto;
     align: center middle;
-    padding: 0 1;
+    padding: 1;
+    margin: 1 0;
+    border: solid $primary;
+    background: $surface-darken-1;
 }
 
 #workflow-stepper Static {
@@ -112,11 +103,12 @@ Screen {
 #next-step-hint {
     text-align: center;
     color: $text-muted;
-    padding: 1 0;
+    padding: 0;
+    margin-bottom: 1;
 }
 
 #nav-buttons-extra {
-    margin: 1 0;
+    margin: 0;
     align: center middle;
 }
 
@@ -126,15 +118,17 @@ Screen {
 
 /* Model selection screen */
 #model-container {
-    padding: 1 2;
+    padding: 0 1;
     height: 100%;
 }
 
 #model-table {
     height: 1fr;
-    min-height: 10;
+    min-height: 8;
     max-height: 70%;
-    margin: 1 0;
+    margin: 0;
+    border: solid $primary;
+    background: $surface-darken-1;
 }
 
 .status-bar {
@@ -147,13 +141,13 @@ Screen {
 
 /* Profile screen */
 #profile-container {
-    padding: 1 2;
+    padding: 0 1;
     height: 100%;
 }
 
 #main-content {
     height: 1fr;
-    min-height: 20;
+    min-height: 15;
 }
 
 #profile-list {
@@ -164,7 +158,9 @@ Screen {
 
 #profile-table {
     height: 1fr;
-    min-height: 10;
+    min-height: 8;
+    border: solid $primary;
+    background: $surface-darken-1;
 }
 
 #profile-details-panel {
@@ -178,35 +174,35 @@ Screen {
 #profile-details {
     height: auto;
     padding: 1;
+    border: solid $secondary;
+    background: $surface-darken-1;
 }
 
 /* Agent wizard screen */
 #wizard-container {
-    padding: 1 2;
+    padding: 0 1;
     height: 1fr;
-}
-
-#existing-agents-panel {
-    margin: 1 0;
-    padding: 1;
-    border: solid $success;
-    height: auto;
 }
 
 #existing-agents-table {
     height: auto;
-    min-height: 8;
-    max-height: 15;
+    min-height: 6;
+    max-height: 12;
+    margin: 0 0 1 0;
+    border: solid $success;
+    background: $surface-darken-1;
 }
 
 #existing-agents-summary {
     color: $text-muted;
-    padding: 0 1 1 1;
+    padding: 0 1;
+    border-left: solid $success;
+    background: $surface-darken-1;
 }
 
 #delete-buttons {
     height: auto;
-    margin: 1 0;
+    margin: 0 0 1 0;
     align: left middle;
 }
 
@@ -217,6 +213,9 @@ Screen {
 #delete-status {
     color: $text-muted;
     padding: 0 1;
+    margin-bottom: 1;
+    border-left: solid $warning;
+    background: $surface-darken-1;
 }
 
 .section-header-with-button {
@@ -239,14 +238,11 @@ Screen {
     height: 1;
 }
 
-#config-panel {
-    margin: 1 0;
+#config-inputs {
+    margin: 0 0 1 0;
     padding: 1;
     border: solid $secondary;
-}
-
-#config-inputs {
-    margin: 1 0;
+    background: $surface-darken-1;
 }
 
 #config-inputs Vertical {
@@ -260,87 +256,63 @@ Screen {
 
 .info-text {
     color: $text-muted;
-    padding: 1;
-}
-
-#progress-panel {
-    margin: 1 0;
-    padding: 1;
-    border: solid $primary;
-}
-
-#agents-panel {
-    margin: 1 0;
-    height: auto;
-    max-height: 40%;
+    padding: 0 1;
 }
 
 #agents-table {
-    height: 100%;
+    height: auto;
+    min-height: 6;
+    max-height: 15;
+    border: solid $primary;
+    background: $surface-darken-1;
 }
 
 /* Simulation screen */
 #simulation-container {
-    padding: 1 2;
+    padding: 0 1;
 }
 
 #settings-row {
     height: auto;
-    margin: 1 0;
-}
-
-#type-panel {
-    width: 30%;
-    padding: 1;
-    border: solid $secondary;
-}
-
-#config-panel {
-    width: 70%;
-    padding: 1;
-    border: solid $secondary;
-    margin-left: 1;
+    margin: 0 0 1 0;
 }
 
 .input-label {
     width: 10;
 }
 
-#sim-log {
-    height: 15;
-    margin: 1 0;
-    border: solid $primary;
-}
-
 /* Results screen */
 #results-container {
-    padding: 1 2;
+    padding: 0 1;
 }
 
 .results-panel {
     height: auto;
-    min-height: 12;
-    margin: 1 0;
+    min-height: 10;
+    margin: 0 0 1 0;
     padding: 1;
     border: solid $secondary;
+    background: $surface-darken-1;
 }
 
 #ops-panel {
     border: solid $primary;
+    background: $surface-darken-1;
 }
 
 #guard-panel {
     border: solid $warning;
+    background: $surface-darken-1;
 }
 
 #ops-summary, #guard-summary {
-    padding: 1;
-    margin: 1 0;
+    padding: 0 1;
+    margin: 0;
 }
 
 /* Button bar */
 #button-bar {
-    margin: 1 0;
+    margin: 0;
     align: center middle;
     height: auto;
 }
@@ -359,8 +331,8 @@ Screen {
 /* Data tables */
 DataTable {
     height: 1fr;
-    min-height: 8;
-    max-height: 25;
+    min-height: 6;
+    max-height: 20;
     scrollbar-gutter: stable;
 }
 
@@ -385,17 +357,17 @@ DataTable > .datatable--odd-row {
 
 /* Progress bars */
 ProgressBar {
-    padding: 1 0;
+    padding: 0;
 }
 
 /* Radio buttons */
 RadioSet {
-    margin: 1 0;
+    margin: 0;
 }
 
 /* Inputs */
 Input {
-    margin: 0 0 1 0;
+    margin: 0;
 }
 
 /* Notifications */
@@ -405,18 +377,19 @@ Toast {
 
 /* Agent Management Screen */
 #manage-agents-container {
-    padding: 1 2;
+    padding: 0 1;
 }
 
 /* Daemon Screen */
 #daemon-container {
-    padding: 1 2;
+    padding: 0 1;
 }
 
 #daemon-metrics {
     margin: 1 0;
     padding: 1;
     border: solid $primary;
+    background: $surface-darken-1;
 }
 
 .metric-row {

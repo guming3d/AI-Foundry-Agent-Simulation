@@ -35,7 +35,6 @@ class HomeScreen(Screen):
         ("a", "go_agents", "Agents"),
         ("s", "go_simulation", "Simulate"),
         ("r", "go_results", "Results"),
-        ("d", "go_daemon", "Daemon"),
         ("n", "go_next", "Next Step"),
     ]
 
@@ -58,9 +57,6 @@ class HomeScreen(Screen):
 
     def action_go_results(self) -> None:
         self.app.push_screen("results")
-
-    def action_go_daemon(self) -> None:
-        self.app.push_screen("daemon")
 
     def action_go_next(self) -> None:
         """Navigate to the next incomplete workflow step."""
@@ -110,23 +106,20 @@ class HomeScreen(Screen):
             Static("Welcome to Azure AI Foundry Control-Plane Batch Agent Operation", id="welcome"),
 
             # Workflow Stepper
-            Vertical(
-                Static("Workflow Progress:", classes="section-title"),
-                Horizontal(
-                    Static(id="step-1"),
-                    Static(" -> ", classes="step-arrow"),
-                    Static(id="step-2"),
-                    Static(" -> ", classes="step-arrow"),
-                    Static(id="step-3"),
-                    Static(" -> ", classes="step-arrow"),
-                    Static(id="step-4"),
-                    Static(" -> ", classes="step-arrow"),
-                    Static(id="step-5"),
-                    id="workflow-stepper",
-                ),
-                Static(id="next-step-hint"),
-                id="stepper-panel",
+            Static("Workflow Progress:", classes="section-title"),
+            Horizontal(
+                Static(id="step-1"),
+                Static(" -> ", classes="step-arrow"),
+                Static(id="step-2"),
+                Static(" -> ", classes="step-arrow"),
+                Static(id="step-3"),
+                Static(" -> ", classes="step-arrow"),
+                Static(id="step-4"),
+                Static(" -> ", classes="step-arrow"),
+                Static(id="step-5"),
+                id="workflow-stepper",
             ),
+            Static(id="next-step-hint", classes="info-text"),
 
             # Navigation buttons - Main workflow
             Horizontal(
@@ -135,25 +128,20 @@ class HomeScreen(Screen):
                 Button("Agents [A]", id="btn-agents", variant="primary"),
                 Button("Simulate [S]", id="btn-simulate", variant="primary"),
                 Button("Results [R]", id="btn-results", variant="primary"),
+                Button("Next Step [N]", id="btn-next", variant="success"),
                 id="nav-buttons",
             ),
 
-            # Additional tools
-            Horizontal(
-                Button("Daemon [D]", id="btn-daemon", variant="success"),
-                Button("Next Step [N]", id="btn-next", variant="primary"),
-                id="nav-buttons-extra",
-            ),
-
+            # Current Status - wrapped in bordered panel
             Vertical(
                 Static("Current Status:", classes="section-title"),
-                Static(id="status-models"),
-                Static(id="status-profile"),
-                Static(id="status-agents-azure"),
-                Static(id="status-agents-session"),
-                Static(id="status-daemon"),
+                Static(id="status-models", classes="info-text"),
+                Static(id="status-profile", classes="info-text"),
+                Static(id="status-agents-azure", classes="info-text"),
+                Static(id="status-agents-session", classes="info-text"),
                 id="status-panel",
             ),
+
             id="home-container",
         )
 
@@ -212,7 +200,7 @@ class HomeScreen(Screen):
         }
 
         if all(status.values()):
-            hint.update("All steps completed! Press [R] to view results or [D] to run daemon.")
+            hint.update("All steps completed! Press [R] to view results or [S] for more simulations.")
         else:
             hint.update(f"Next: {step_names.get(next_step, '')} - Press [N] or [{steps[[s[0] for s in steps].index(next_step)][2]}]")
 
@@ -250,12 +238,6 @@ class HomeScreen(Screen):
         else:
             session_status.update("  Agents in Session: None created")
 
-        daemon_status = self.query_one("#status-daemon", Static)
-        if state.daemon_running:
-            daemon_status.update("  Daemon: RUNNING")
-        else:
-            daemon_status.update("  Daemon: Stopped")
-
     @work(thread=True)
     def _load_azure_agent_count(self) -> None:
         """Load the count of existing agents from Azure in background."""
@@ -288,7 +270,5 @@ class HomeScreen(Screen):
             self.app.push_screen("simulation")
         elif button_id == "btn-results":
             self.app.push_screen("results")
-        elif button_id == "btn-daemon":
-            self.app.push_screen("daemon")
         elif button_id == "btn-next":
             self.action_go_next()
