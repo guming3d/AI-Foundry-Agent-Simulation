@@ -112,7 +112,7 @@ class SetupScreen(Screen):
             # Buttons
             with Horizontal(id="button-bar"):
                 yield Button("Save Configuration [S]", id="btn-save", variant="primary")
-                yield Button("Skip for Now", id="btn-skip", variant="default")
+                yield Button("Back to Home", id="btn-back", variant="default")
 
     def _format_guide(self) -> str:
         """Format the setup guide text."""
@@ -133,7 +133,7 @@ class SetupScreen(Screen):
 
         if button_id == "btn-save":
             self.action_save_config()
-        elif button_id == "btn-skip":
+        elif button_id == "btn-back":
             # Navigate to home screen (handles empty screen stack case)
             self.app.switch_screen("home")
 

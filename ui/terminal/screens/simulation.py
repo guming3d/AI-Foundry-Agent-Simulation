@@ -278,6 +278,7 @@ class SimulationScreen(Screen):
                     yield Button("Start Simulation", id="btn-onetime-run", variant="primary")
                     yield Button("Stop", id="btn-onetime-stop", variant="error")
                     yield Button("Export Results", id="btn-onetime-export", variant="success")
+                    yield Button("Back to Home", id="btn-back-onetime", variant="default")
 
                 # Progress
                 with Vertical(id="onetime-progress-section"):
@@ -329,6 +330,7 @@ class SimulationScreen(Screen):
                 with Horizontal(classes="button-row"):
                     yield Button("Start Daemon", id="btn-daemon-start", variant="primary")
                     yield Button("Stop Daemon", id="btn-daemon-stop", variant="error")
+                    yield Button("Back to Home", id="btn-back-daemon", variant="default")
 
                 # Real-time Metrics
                 with Vertical(id="daemon-metrics-section"):
@@ -395,6 +397,10 @@ class SimulationScreen(Screen):
                             with Vertical(classes="table-box"):
                                 yield Static("Model Comparison", classes="table-title")
                                 yield DataTable(id="guard-models-table")
+
+                    # Back button at bottom of results
+                    with Horizontal(classes="button-row"):
+                        yield Button("Back to Home", id="btn-back-results", variant="default")
 
     def on_mount(self) -> None:
         """Initialize the screen."""
@@ -469,6 +475,10 @@ class SimulationScreen(Screen):
             self.action_start_daemon()
         elif button_id == "btn-daemon-stop":
             self.action_stop_daemon()
+
+        # Navigation - all back buttons go to home
+        elif button_id in ("btn-back-onetime", "btn-back-daemon", "btn-back-results"):
+            self.app.pop_screen()
 
     def action_run_current(self) -> None:
         """Run simulation based on current tab."""

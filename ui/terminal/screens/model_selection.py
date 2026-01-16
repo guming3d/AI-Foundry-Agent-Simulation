@@ -40,6 +40,7 @@ class ModelSelectionScreen(Screen):
                 Button("Clear All", id="btn-clear-all"),
                 Button("Refresh [R]", id="btn-refresh"),
                 Button("Save Selection [S]", id="btn-save", variant="primary"),
+                Button("Back", id="btn-back", variant="default"),
                 id="button-bar",
             ),
             Static(id="status-bar", classes="status-bar"),
@@ -117,6 +118,9 @@ class ModelSelectionScreen(Screen):
 
         elif button_id == "btn-save":
             self.action_save_selection()
+
+        elif button_id == "btn-back":
+            self.app.pop_screen()
 
     def action_toggle_current(self) -> None:
         """Toggle selection of the currently highlighted row."""

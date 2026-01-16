@@ -25,6 +25,7 @@ from .screens.agent_management import AgentManagementScreen
 from .screens.setup import SetupScreen
 from .screens.theme_select import ThemeSelectScreen
 from .themes import register_app_themes, get_next_theme, DEFAULT_THEME, THEME_NAMES
+from .preferences import get_preferences
 
 from src.core.env_validator import EnvValidator
 
@@ -74,8 +75,9 @@ class AgentToolkitApp(App):
         """Called when the app is mounted."""
         # Register custom themes
         register_app_themes(self)
-        # Set the default theme
-        self.theme = DEFAULT_THEME
+        # Load saved theme preference or use default
+        prefs = get_preferences()
+        self.theme = prefs.theme
         # Use call_later to ensure app is fully running before pushing screen
         self.call_later(self._push_initial_screen)
 
@@ -99,6 +101,8 @@ class AgentToolkitApp(App):
         current = self.theme
         next_theme = get_next_theme(current)
         self.theme = next_theme
+        # Save theme preference
+        get_preferences().theme = next_theme
         self.notify(f"Theme: {next_theme}", timeout=2)
 
     def action_show_theme_selector(self) -> None:
@@ -106,6 +110,8 @@ class AgentToolkitApp(App):
         def handle_theme_selection(selected_theme: str | None) -> None:
             if selected_theme:
                 self.theme = selected_theme
+                # Save theme preference
+                get_preferences().theme = selected_theme
                 self.notify(f"Theme changed to: {selected_theme}", timeout=2)
 
         self.push_screen(

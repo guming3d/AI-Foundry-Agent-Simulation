@@ -14,6 +14,7 @@ from textual import work
 from ui.shared.state_manager import get_state, get_state_manager
 from src.core.agent_manager import AgentManager
 from .theme_select import ThemeSelectScreen
+from ui.terminal.preferences import get_preferences
 
 
 LOGO = """
@@ -127,10 +128,11 @@ class HomeScreen(Screen):
                 id="status-panel",
             ),
 
-            # Settings row with theme button
+            # Settings row with theme button and exit
             Horizontal(
                 Button("Theme", id="btn-theme", variant="default"),
                 Button("Setup [C]", id="btn-setup", variant="default"),
+                Button("Exit [Q]", id="btn-exit", variant="error"),
                 id="nav-buttons-extra",
             ),
 
@@ -248,12 +250,16 @@ class HomeScreen(Screen):
             self._show_theme_selector()
         elif button_id == "btn-setup":
             self.app.push_screen("setup")
+        elif button_id == "btn-exit":
+            self.app.exit()
 
     def _show_theme_selector(self) -> None:
         """Show the theme selection dialog."""
         def handle_theme_selection(selected_theme: str | None) -> None:
             if selected_theme:
                 self.app.theme = selected_theme
+                # Save theme preference
+                get_preferences().theme = selected_theme
                 self.app.notify(f"Theme changed to: {selected_theme}", timeout=2)
 
         self.app.push_screen(

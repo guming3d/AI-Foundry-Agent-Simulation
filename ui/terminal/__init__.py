@@ -3,13 +3,15 @@ Terminal UI (TUI) for Azure AI Foundry Agent Toolkit.
 
 Built with Textual library for a rich terminal experience.
 Includes theme support with multiple built-in themes.
+Theme preferences are persisted locally.
 
 Usage:
     from ui.terminal import run_tui
     run_tui()
 
 Theme switching:
-    Press 't' to cycle through available themes during runtime.
+    Press 't' to open theme selector during runtime.
+    Selected theme is automatically saved and restored on next launch.
 """
 
 from .app import AgentToolkitApp, run_tui
@@ -21,6 +23,7 @@ from .themes import (
     get_theme_by_name,
     get_next_theme,
 )
+from .preferences import get_preferences, UserPreferences
 
 __all__ = [
     "AgentToolkitApp",
@@ -31,4 +34,6 @@ __all__ = [
     "register_app_themes",
     "get_theme_by_name",
     "get_next_theme",
+    "get_preferences",
+    "UserPreferences",
 ]
