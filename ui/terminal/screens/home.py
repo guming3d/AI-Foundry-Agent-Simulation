@@ -35,6 +35,7 @@ class HomeScreen(Screen):
         ("m", "go_models", "Models"),
         ("p", "go_profiles", "Profiles"),
         ("a", "go_agents", "Agents"),
+        ("w", "go_workflows", "Workflows"),
         ("e", "go_evaluations", "Evaluations"),
         ("s", "go_simulation", "Simulate"),
     ]
@@ -53,6 +54,9 @@ class HomeScreen(Screen):
     def action_go_agents(self) -> None:
         self.app.push_screen("agents")
 
+    def action_go_workflows(self) -> None:
+        self.app.push_screen("workflows")
+
     def action_go_simulation(self) -> None:
         self.app.push_screen("simulation")
 
@@ -67,6 +71,7 @@ class HomeScreen(Screen):
             "models": len(state.selected_models) > 0,
             "profiles": state.current_profile is not None,
             "agents": len(state.created_agents) > 0,
+            "workflows": len(state.created_workflows) > 0,
             "evaluations": len(state.evaluation_runs) > 0,
             "simulation": bool(state.operation_summary) or bool(state.guardrail_summary),
         }
@@ -75,7 +80,7 @@ class HomeScreen(Screen):
         """Get the next incomplete workflow step."""
         status = self._get_workflow_status()
 
-        steps = ["models", "profiles", "agents", "evaluations", "simulation"]
+        steps = ["models", "profiles", "agents", "workflows", "evaluations", "simulation"]
         for step in steps:
             if not status.get(step, False):
                 return step
@@ -113,6 +118,8 @@ class HomeScreen(Screen):
                 Static(id="step-4"),
                 Static(" -> ", classes="step-arrow"),
                 Static(id="step-5"),
+                Static(" -> ", classes="step-arrow"),
+                Static(id="step-6"),
                 id="workflow-stepper",
             ),
 
@@ -121,6 +128,7 @@ class HomeScreen(Screen):
                 Button("Models [M]", id="btn-models", variant="primary"),
                 Button("Profiles [P]", id="btn-profiles", variant="primary"),
                 Button("Agents [A]", id="btn-agents", variant="primary"),
+                Button("Workflows [W]", id="btn-workflows", variant="primary"),
                 Button("Evaluations [E]", id="btn-evaluations", variant="primary"),
                 Button("Simulate [S]", id="btn-simulate", variant="primary"),
                 id="nav-buttons",
@@ -133,6 +141,7 @@ class HomeScreen(Screen):
                 Static(id="status-profile", classes="info-text"),
                 Static(id="status-agents-azure", classes="info-text"),
                 Static(id="status-agents-session", classes="info-text"),
+                Static(id="status-workflows-session", classes="info-text"),
                 Static(id="status-evaluations", classes="info-text"),
                 id="status-panel",
             ),
@@ -169,6 +178,7 @@ class HomeScreen(Screen):
             ("models", "Models", "M"),
             ("profiles", "Profile", "P"),
             ("agents", "Agents", "A"),
+            ("workflows", "Workflows", "W"),
             ("evaluations", "Evaluate", "E"),
             ("simulation", "Simulate", "S"),
         ]
@@ -226,6 +236,13 @@ class HomeScreen(Screen):
         else:
             session_status.update("  Agents in Session: None created")
 
+        workflows_status = self.query_one("#status-workflows-session", Static)
+        workflows_count = len(state.created_workflows)
+        if workflows_count:
+            workflows_status.update(f"  Workflows in Session: {workflows_count} created this session")
+        else:
+            workflows_status.update("  Workflows in Session: None created")
+
         evaluations_status = self.query_one("#status-evaluations", Static)
         evaluation_count = len(state.evaluation_runs)
         if evaluation_count:
@@ -261,6 +278,8 @@ class HomeScreen(Screen):
             self.app.push_screen("profiles")
         elif button_id == "btn-agents":
             self.app.push_screen("agents")
+        elif button_id == "btn-workflows":
+            self.app.push_screen("workflows")
         elif button_id == "btn-evaluations":
             self.app.push_screen("evaluations")
         elif button_id == "btn-simulate":

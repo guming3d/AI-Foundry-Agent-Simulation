@@ -19,6 +19,7 @@ from .screens.home import HomeScreen
 from .screens.model_selection import ModelSelectionScreen
 from .screens.industry_profile import IndustryProfileScreen
 from .screens.agent_wizard import AgentWizardScreen
+from .screens.workflow_wizard import WorkflowWizardScreen
 from .screens.simulation import SimulationScreen
 from .screens.evaluation import EvaluationScreen
 from .screens.daemon import DaemonScreen
@@ -53,6 +54,7 @@ class AgentToolkitApp(App):
         Binding("m", "go_models", "Models", show=True),
         Binding("p", "go_profiles", "Profiles", show=True),
         Binding("a", "go_agents", "Agents", show=True),
+        Binding("w", "go_workflows", "Workflows", show=True),
         Binding("s", "go_simulation", "Simulate", show=True),
         Binding("e", "go_evaluations", "Eval", show=True),
         Binding("d", "go_daemon", "Daemon", show=True),
@@ -67,6 +69,7 @@ class AgentToolkitApp(App):
         "models": ModelSelectionScreen,
         "profiles": IndustryProfileScreen,
         "agents": AgentWizardScreen,
+        "workflows": WorkflowWizardScreen,
         "simulation": SimulationScreen,
         "evaluations": EvaluationScreen,
         "daemon": DaemonScreen,
@@ -137,6 +140,10 @@ class AgentToolkitApp(App):
     def action_go_agents(self) -> None:
         """Navigate to agents screen."""
         self.push_screen("agents")
+
+    def action_go_workflows(self) -> None:
+        """Navigate to workflows screen."""
+        self.push_screen("workflows")
 
     def action_go_simulation(self) -> None:
         """Navigate to simulation screen."""

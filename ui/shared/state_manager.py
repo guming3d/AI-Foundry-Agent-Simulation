@@ -11,6 +11,7 @@ from pathlib import Path
 
 from src.models.industry_profile import IndustryProfile
 from src.models.agent import CreatedAgent
+from src.models.workflow import CreatedWorkflow
 from src.core import config
 
 
@@ -32,6 +33,9 @@ class AppState:
     # Created agents
     created_agents: List[CreatedAgent] = field(default_factory=list)
     agents_csv_path: str = field(default_factory=lambda: str(config.CREATED_AGENTS_CSV))
+
+    # Created workflows
+    created_workflows: List[CreatedWorkflow] = field(default_factory=list)
 
     # Generated code paths
     generated_code_dir: Optional[str] = None
@@ -117,6 +121,13 @@ class StateManager:
         if csv_path:
             self._state.agents_csv_path = csv_path
 
+    # Created workflows
+    def set_created_workflows(self, workflows: List[CreatedWorkflow]) -> None:
+        self._state.created_workflows = workflows
+
+    def add_created_workflows(self, workflows: List[CreatedWorkflow]) -> None:
+        self._state.created_workflows.extend(workflows)
+
     # Generated code
     def set_generated_code_dir(self, path: str) -> None:
         self._state.generated_code_dir = path
@@ -169,7 +180,7 @@ class StateManager:
 
     def get_next_workflow_step(self) -> str:
         """Get the next incomplete workflow step."""
-        steps = ["models", "profiles", "agents", "evaluations", "simulation", "results"]
+        steps = ["models", "profiles", "agents", "workflows", "evaluations", "simulation", "results"]
         for step in steps:
             if step not in self._state.workflow_completed_steps:
                 return step
