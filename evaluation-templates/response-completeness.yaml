@@ -1,0 +1,18 @@
+id: response-completeness
+display_name: Response Completeness
+description: Measures answer completeness relative to the expected response.
+dataset:
+  items:
+    - query: Summarize the three branches of the US government.
+      ground_truth: The executive enforces laws, the legislative makes laws, and the judicial interprets laws.
+    - query: What are two benefits of regular exercise?
+      ground_truth: Exercise improves cardiovascular health and boosts mood.
+evaluators:
+  - name: response_completeness
+    type: response_completeness
+    min_score: 0.5
+  - name: f1_score
+    type: f1_score
+    min_score: 0.4
+    initialization_parameters:
+      threshold: 0.4

@@ -1,0 +1,45 @@
+id: semantic-similarity
+display_name: Semantic Similarity + Overlap
+description: Compares responses to ground truth using similarity and overlap metrics.
+dataset:
+  items:
+    - query: What is the capital of Canada?
+      ground_truth: Ottawa is the capital of Canada.
+    - query: How do you reverse a list in Python?
+      ground_truth: Use list.reverse() or list[::-1] to reverse a list in Python.
+    - query: Name two primary colors.
+      ground_truth: Red and blue are primary colors.
+evaluators:
+  - name: similarity
+    type: similarity
+    min_score: 0.5
+    initialization_parameters:
+      threshold: 3
+  - name: rouge_score
+    type: rouge_score
+    min_score: 0.5
+    initialization_parameters:
+      rouge_type: rouge1
+      f1_score_threshold: 0.5
+      precision_threshold: 0.5
+      recall_threshold: 0.5
+  - name: meteor_score
+    type: meteor_score
+    min_score: 0.5
+    initialization_parameters:
+      threshold: 0.5
+  - name: gleu_score
+    type: gleu_score
+    min_score: 0.5
+    initialization_parameters:
+      threshold: 0.5
+  - name: f1_score
+    type: f1_score
+    min_score: 0.5
+    initialization_parameters:
+      threshold: 0.5
+  - name: bleu_score
+    type: bleu_score
+    min_score: 0.5
+    initialization_parameters:
+      threshold: 0.5

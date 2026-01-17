@@ -1,0 +1,15 @@
+id: quality-fluency-coherence
+display_name: Quality - Fluency + Coherence
+description: Checks fluency and coherence on general knowledge answers.
+dataset:
+  items:
+    - query: What is the capital of Japan?
+    - query: Explain the water cycle in one paragraph.
+    - query: What is the tallest mountain in the world?
+evaluators:
+  - name: fluency
+    type: fluency
+    min_score: 0.5
+  - name: coherence
+    type: coherence
+    min_score: 0.5

@@ -26,7 +26,10 @@ class EvaluatorDefinition:
 
     name: str
     type: str
+    evaluator_id: str = ""
     min_score: float = 0.0
+    init_params: Dict[str, Any] = field(default_factory=dict)
+    data_mapping: Dict[str, Any] = field(default_factory=dict)
     params: Dict[str, Any] = field(default_factory=dict)
 
 
@@ -95,7 +98,14 @@ class EvaluationTemplateLoader:
                 EvaluatorDefinition(
                     name=str(evaluator.get("name", "")).strip(),
                     type=str(evaluator.get("type", "")).strip(),
+                    evaluator_id=str(evaluator.get("evaluator_id", "")).strip(),
                     min_score=float(evaluator.get("min_score", 0.0) or 0.0),
+                    init_params=dict(
+                        evaluator.get("initialization_parameters")
+                        or evaluator.get("init_params", {})
+                        or {}
+                    ),
+                    data_mapping=dict(evaluator.get("data_mapping", {}) or {}),
                     params=dict(evaluator.get("params", {}) or {}),
                 )
             )
