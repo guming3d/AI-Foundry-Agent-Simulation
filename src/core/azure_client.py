@@ -214,6 +214,52 @@ def get_openai_client(endpoint: str = None):
     return factory.get_openai_client()
 
 
+def resolve_project_endpoint(endpoint: str = None) -> str:
+    """
+    Resolve the project endpoint with a consistent fallback.
+
+    Args:
+        endpoint: Optional custom endpoint (uses default if not provided)
+
+    Returns:
+        Resolved endpoint URL
+    """
+    return endpoint if endpoint else _get_default_endpoint()
+
+
+def create_project_client(
+    endpoint: str = None,
+    credential: DefaultAzureCredential = None,
+) -> AIProjectClient:
+    """
+    Create a new AIProjectClient instance (no caching).
+
+    Args:
+        endpoint: Optional custom endpoint (uses default if not provided)
+        credential: Optional Azure credential (creates DefaultAzureCredential if not provided)
+
+    Returns:
+        AIProjectClient instance
+    """
+    resolved_endpoint = resolve_project_endpoint(endpoint)
+    resolved_credential = credential or DefaultAzureCredential()
+    return AIProjectClient(endpoint=resolved_endpoint, credential=resolved_credential)
+
+
+def create_openai_client(endpoint: str = None, credential: DefaultAzureCredential = None):
+    """
+    Create a new OpenAI client from a fresh project client.
+
+    Args:
+        endpoint: Optional custom endpoint (uses default if not provided)
+        credential: Optional Azure credential (creates DefaultAzureCredential if not provided)
+
+    Returns:
+        OpenAI client instance
+    """
+    return create_project_client(endpoint=endpoint, credential=credential).get_openai_client()
+
+
 def test_azure_connection(endpoint: str = None) -> bool:
     """
     Test connection to Azure AI Foundry.

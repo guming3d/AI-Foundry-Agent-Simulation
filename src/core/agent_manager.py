@@ -399,10 +399,10 @@ Please assist users with tasks related to your area of expertise while maintaini
         # Ensure parent directory exists
         Path(output_path).parent.mkdir(parents=True, exist_ok=True)
 
-        fieldnames = ["agent_id", "name", "error"]
+        fieldnames = ["agent_id", "name", "org_id", "agent_type", "error"]
 
         with open(output_path, 'w', newline='', encoding='utf-8') as f:
-            writer = csv.DictWriter(f, fieldnames=fieldnames)
+            writer = csv.DictWriter(f, fieldnames=fieldnames, extrasaction="ignore")
             writer.writeheader()
             writer.writerows(failed)
 

@@ -14,7 +14,7 @@ from datetime import datetime
 from typing import List, Dict, Any, Optional, Callable
 from dataclasses import dataclass, field
 
-from .azure_client import get_project_client, get_openai_client
+from .azure_client import create_openai_client
 from .metrics_collector import MetricsCollector, OperationMetric, GuardrailMetric
 from ..models.agent import CreatedAgent
 from ..models.industry_profile import IndustryProfile
@@ -364,19 +364,8 @@ class DaemonRunner:
 
     def _daemon_loop(self, config: DaemonConfig) -> None:
         """Main daemon loop."""
-        # Create Azure client
-        endpoint = os.environ.get(
-            "PROJECT_ENDPOINT",
-            "https://foundry-control-plane.services.ai.azure.com/api/projects/foundry-control-plane"
-        )
-
         try:
-            from azure.identity import DefaultAzureCredential
-            from azure.ai.projects import AIProjectClient
-
-            credential = DefaultAzureCredential()
-            project_client = AIProjectClient(endpoint=endpoint, credential=credential)
-            openai_client = project_client.get_openai_client()
+            openai_client = create_openai_client()
             self._log("[DAEMON] Azure client initialized")
 
         except Exception as e:

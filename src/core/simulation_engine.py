@@ -16,12 +16,13 @@ import csv
 import random
 import time
 import threading
-from queue import Queue
+from queue import Queue, Empty
 from datetime import datetime
 from typing import List, Dict, Any, Optional, Callable
 
-from .azure_client import get_project_client, get_openai_client
+from .azure_client import create_openai_client, get_openai_client
 from .metrics_collector import MetricsCollector, OperationMetric, GuardrailMetric
+from . import config
 from ..models.agent import CreatedAgent
 from ..models.industry_profile import IndustryProfile
 
@@ -246,24 +247,13 @@ class SimulationEngine:
 
         def worker():
             # Create a fresh client for this worker thread (avoids singleton threading issues)
-            import os
-            from azure.identity import DefaultAzureCredential
-            from azure.ai.projects import AIProjectClient
-
             thread_id = threading.current_thread().name
 
             if progress_callback:
                 progress_callback(0, config.num_calls, f"[{thread_id}] Initializing Azure client...")
 
-            endpoint = os.environ.get(
-                "PROJECT_ENDPOINT",
-                "https://foundry-control-plane.services.ai.azure.com/api/projects/foundry-control-plane"
-            )
-
             try:
-                credential = DefaultAzureCredential()
-                project_client = AIProjectClient(endpoint=endpoint, credential=credential)
-                thread_openai_client = project_client.get_openai_client()
+                thread_openai_client = create_openai_client()
                 if progress_callback:
                     progress_callback(0, config.num_calls, f"[{thread_id}] Azure client ready!")
             except Exception as e:
@@ -274,7 +264,7 @@ class SimulationEngine:
             while not call_queue.empty() and not self._stop_requested:
                 try:
                     idx = call_queue.get_nowait()
-                except:
+                except Empty:
                     break  # Queue is empty
 
                 try:
@@ -383,24 +373,13 @@ class SimulationEngine:
 
         def worker():
             # Create a fresh client for this worker thread (avoids singleton threading issues)
-            import os
-            from azure.identity import DefaultAzureCredential
-            from azure.ai.projects import AIProjectClient
-
             thread_id = threading.current_thread().name
 
             if progress_callback:
                 progress_callback(0, config.num_calls, f"[{thread_id}] Initializing Azure client...")
 
-            endpoint = os.environ.get(
-                "PROJECT_ENDPOINT",
-                "https://foundry-control-plane.services.ai.azure.com/api/projects/foundry-control-plane"
-            )
-
             try:
-                credential = DefaultAzureCredential()
-                project_client = AIProjectClient(endpoint=endpoint, credential=credential)
-                thread_openai_client = project_client.get_openai_client()
+                thread_openai_client = create_openai_client()
                 if progress_callback:
                     progress_callback(0, config.num_calls, f"[{thread_id}] Azure client ready!")
             except Exception as e:
@@ -411,7 +390,7 @@ class SimulationEngine:
             while not test_queue.empty() and not self._stop_requested:
                 try:
                     idx = test_queue.get_nowait()
-                except:
+                except Empty:
                     break  # Queue is empty
 
                 try:
@@ -529,7 +508,7 @@ class SimulationEngine:
     def from_profile(
         cls,
         profile: IndustryProfile,
-        agents_csv: str = "created_agents_results.csv",
+        agents_csv: str = None,
     ) -> "SimulationEngine":
         """
         Create a simulation engine from an industry profile.
@@ -541,6 +520,8 @@ class SimulationEngine:
         Returns:
             Configured SimulationEngine
         """
+        if agents_csv is None:
+            agents_csv = str(config.CREATED_AGENTS_CSV)
         return cls(
             agents_csv=agents_csv,
             query_templates=profile.get_query_templates_dict(),
