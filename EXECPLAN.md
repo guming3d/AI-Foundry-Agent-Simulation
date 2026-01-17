@@ -14,21 +14,23 @@ Users need a guided way to create and run multiple sample evaluations so they ca
 - [x] (2025-02-14 12:40Z) Add evaluation screen and navigation in the Textual TUI.
 - [x] (2025-02-14 12:50Z) Add evaluation tab to the Gradio web UI.
 - [x] (2025-02-14 13:00Z) Validate with compile checks and document expected usage.
+- [x] (2025-02-14 15:30Z) Switch evaluation runner to azure-ai-evaluation with project-backed model config.
 
 ## Surprises & Discoveries
 
 - Observation: The installed Azure SDK does not expose the evaluation APIs used in `samples/evaluation`, so a local evaluation runner is required for working behavior.
   Evidence: `azure.ai.projects.AIProjectClient` has no `evaluations` attribute and no `evaluation` operations were found in the SDK package during inspection.
+- Observation: The evaluation SDK requires Azure OpenAI model endpoint + key; the project deployment provides the backing connection name, so the engine must resolve connection credentials automatically.
 
 ## Decision Log
 
-- Decision: Implement evaluations locally using OpenAI agent responses and lightweight heuristics rather than Azure evaluation API calls.
-  Rationale: The installed Azure SDK in this repo does not expose the evaluation APIs referenced in `samples/evaluation`, so a local, repeatable evaluation engine is required to deliver working behavior.
+- Decision: Use the azure-ai-evaluation SDK (`evaluate`) for sample evaluations, deriving model config from the selected deployment’s project connection.
+  Rationale: The new evaluation SDK is the supported path; it logs results to Foundry when given the project endpoint and removes the need for user-supplied model endpoint/key.
   Date/Author: 2025-02-14 / Codex
 
 ## Outcomes & Retrospective
 
-Sample evaluation templates are now available in `evaluation-templates/`, with a local evaluation engine that runs selected templates against selected agents. Both the TUI and web UI expose evaluation selection and execution, and results are saved under `results/evaluations/`. The work meets the goal of letting users create multiple sample evaluations and apply them to agents for study.
+Sample evaluation templates are available in `evaluation-templates/`, with an evaluation engine that builds datasets, calls agents, and runs evaluations through the azure-ai-evaluation SDK. Both the TUI and web UI expose evaluation selection and execution, and results are saved under `results/evaluations/`. Model endpoint/key are resolved from the project deployment connection so users only select the evaluation model.
 
 ## Context and Orientation
 

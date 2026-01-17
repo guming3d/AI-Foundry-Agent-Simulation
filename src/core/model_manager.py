@@ -32,6 +32,7 @@ class ModelInfo:
     version: str = None
     model_name: str = None  # Publisher-specific model name
     model_publisher: str = None  # Model publisher (e.g., OpenAI, Microsoft)
+    connection_name: str = None  # Connection backing the deployment, if available
 
     def __post_init__(self):
         if self.capabilities is None:
@@ -97,6 +98,8 @@ class ModelManager:
                     model_info.model_name = deployment.model_name
                 if hasattr(deployment, 'model_publisher'):
                     model_info.model_publisher = deployment.model_publisher
+                if hasattr(deployment, 'connection_name'):
+                    model_info.connection_name = deployment.connection_name
 
                 models.append(model_info)
 

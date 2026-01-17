@@ -11,7 +11,7 @@ A comprehensive toolkit for batch creation, testing, and management of AI agents
 - **Code Generation**: Automatically generate production-ready simulation scripts from templates
 - **Metrics & Visualization**: Real-time performance tracking with Plotly-powered dashboards
 - **Agent Registry**: Centralized tracking of created agents with CSV-based persistence
-- **Sample Evaluations**: Run reusable evaluation templates against selected agents and review JSON outputs
+- **Sample Evaluations**: Run reusable evaluation templates against selected agents using Foundry evaluation APIs
 
 ## Quick Start
 

@@ -67,3 +67,6 @@ htmlcov/
 
 # mypy
 .mypy_cache/
+
+# sample
+samples/

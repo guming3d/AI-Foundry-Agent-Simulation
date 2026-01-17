@@ -7,6 +7,7 @@ Allows users to run sample evaluations against selected agents.
 import gradio as gr
 
 from src.core.agent_manager import AgentManager
+from src.core.model_manager import ModelManager
 from src.core.evaluation_engine import EvaluationEngine
 from src.core.evaluation_templates import EvaluationTemplateLoader
 from ui.shared.state_manager import get_state_manager
@@ -19,6 +20,15 @@ def create_evaluation_tab():
     template_labels = [f"{template.display_name} ({template.id})" for template in templates]
     template_lookup = {f"{template.display_name} ({template.id})": template.id for template in templates}
 
+    def refresh_models():
+        """Refresh available model deployments."""
+        manager = ModelManager()
+        models = manager.list_available_models()
+        choices = [model.deployment_name for model in models]
+        status = f"Loaded {len(choices)} model(s)"
+        value = choices[0] if choices else None
+        return gr.Dropdown.update(choices=choices, value=value), status
+
     def refresh_agents():
         """Refresh available agents."""
         manager = AgentManager()
@@ -27,7 +37,12 @@ def create_evaluation_tab():
         status = f"Loaded {len(choices)} agent(s)"
         return gr.Dropdown.update(choices=choices, value=[]), status
 
-    def run_evaluations(selected_templates, selected_agents, progress=gr.Progress()):
+    def run_evaluations(
+        selected_templates,
+        selected_agents,
+        selected_model,
+        progress=gr.Progress(),
+    ):
         """Run evaluations for the selected agents."""
         if not selected_templates:
             return "Select at least one evaluation template.", [], ""
@@ -49,6 +64,7 @@ def create_evaluation_tab():
             results = engine.run(
                 template_ids=template_ids,
                 agent_names=selected_agents,
+                model_deployment_name=selected_model or None,
                 progress_callback=progress_callback,
                 log_callback=log_callback,
             )
@@ -71,12 +87,19 @@ def create_evaluation_tab():
     )
 
     with gr.Row():
+        model_picker = gr.Dropdown(
+            choices=[],
+            label="Evaluation Model",
+        )
+        refresh_models_btn = gr.Button("Refresh Models", size="sm")
+
+    with gr.Row():
         agent_picker = gr.Dropdown(
             choices=[],
             multiselect=True,
             label="Agents",
         )
-        refresh_btn = gr.Button("Refresh Agents", size="sm")
+        refresh_agents_btn = gr.Button("Refresh Agents", size="sm")
 
     status_output = gr.Textbox(label="Status", interactive=False)
     log_output = gr.Textbox(label="Log", lines=8, interactive=False)
@@ -84,13 +107,18 @@ def create_evaluation_tab():
 
     run_btn = gr.Button("Run Evaluations", variant="primary")
 
-    refresh_btn.click(
+    refresh_models_btn.click(
+        fn=refresh_models,
+        outputs=[model_picker, status_output],
+    )
+
+    refresh_agents_btn.click(
         fn=refresh_agents,
         outputs=[agent_picker, status_output],
     )
 
     run_btn.click(
         fn=run_evaluations,
-        inputs=[template_picker, agent_picker],
+        inputs=[template_picker, agent_picker, model_picker],
         outputs=[status_output, results_output, log_output],
     )

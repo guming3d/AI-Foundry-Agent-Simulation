@@ -4,7 +4,7 @@ Evaluation screen for running sample evaluations against agents.
 
 from textual.app import ComposeResult
 from textual.screen import Screen
-from textual.widgets import Static, Button, DataTable, ProgressBar, Log
+from textual.widgets import Static, Button, DataTable, ProgressBar, Log, Select
 from textual.containers import Horizontal, VerticalScroll
 from textual import work
 
@@ -12,6 +12,7 @@ from ui.shared.state_manager import get_state_manager
 from src.core.agent_manager import AgentManager
 from src.core.evaluation_engine import EvaluationEngine
 from src.core.evaluation_templates import EvaluationTemplateLoader
+from src.core.model_manager import ModelManager
 
 
 class EvaluationScreen(Screen):
@@ -26,14 +27,17 @@ class EvaluationScreen(Screen):
     def __init__(self) -> None:
         super().__init__()
         self.template_loader = EvaluationTemplateLoader()
+        self.model_manager = ModelManager()
         self.templates = []
         self.selected_template_ids = set()
         self.selected_agent_names = set()
         self.template_row_keys = {}
         self.agent_row_keys = {}
         self.is_loading_agents = False
+        self.is_loading_models = False
         self.evaluation_running = False
         self.agents = []
+        self.models = []
 
     def compose(self) -> ComposeResult:
         yield Static("Sample Evaluations", id="title", classes="screen-title")
@@ -48,6 +52,11 @@ class EvaluationScreen(Screen):
             Horizontal(
                 Button("Select All Templates", id="btn-select-all-templates", variant="primary"),
                 Button("Clear Templates", id="btn-clear-templates", variant="default"),
+            ),
+            Static("Evaluation Model", classes="section-title"),
+            Horizontal(
+                Select([], id="evaluation-model", allow_blank=True),
+                Button("Refresh Models", id="btn-refresh-models", variant="primary"),
             ),
             Static("Agents", classes="section-title"),
             DataTable(id="evaluation-agents-table"),
@@ -78,6 +87,7 @@ class EvaluationScreen(Screen):
         agents_table.cursor_type = "row"
 
         self._load_templates()
+        self.action_refresh_models()
         self.action_refresh_agents()
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
@@ -85,6 +95,8 @@ class EvaluationScreen(Screen):
         button_id = event.button.id
         if button_id == "btn-refresh-agents":
             self.action_refresh_agents()
+        elif button_id == "btn-refresh-models":
+            self.action_refresh_models()
         elif button_id == "btn-select-all-templates":
             self.action_select_all_templates()
         elif button_id == "btn-clear-templates":
@@ -168,6 +180,13 @@ class EvaluationScreen(Screen):
             return
         self.refresh_agents_async()
 
+    def action_refresh_models(self) -> None:
+        """Refresh model list."""
+        if self.is_loading_models:
+            self.notify("Already loading models...", severity="warning")
+            return
+        self.refresh_models_async()
+
     @work(thread=True)
     def refresh_agents_async(self) -> None:
         """Load agents in background thread."""
@@ -188,6 +207,27 @@ class EvaluationScreen(Screen):
             self.app.call_from_thread(self.notify, f"Error: {exc}", severity="error")
         finally:
             self.is_loading_agents = False
+
+    @work(thread=True)
+    def refresh_models_async(self) -> None:
+        """Load models in background thread."""
+        self.is_loading_models = True
+        self.app.call_from_thread(self._update_status, "Loading models...")
+
+        try:
+            models = self.model_manager.list_available_models(refresh=True)
+            self.models = models
+            self.app.call_from_thread(self._populate_models_select, models)
+            self.app.call_from_thread(
+                self._update_status,
+                f"Loaded {len(models)} model(s)",
+            )
+        except Exception as exc:
+            self.app.call_from_thread(self._update_status, f"Error: {exc}")
+            self.app.call_from_thread(self.notify, f"Error: {exc}", severity="error")
+        finally:
+            self.is_loading_models = False
+
 
     def action_select_all_templates(self) -> None:
         """Select all evaluation templates."""
@@ -239,10 +279,12 @@ class EvaluationScreen(Screen):
             self.app.call_from_thread(self._log, message)
 
         try:
+            model_select = self.query_one("#evaluation-model", Select)
             engine = EvaluationEngine()
             results = engine.run(
                 template_ids=sorted(self.selected_template_ids),
                 agent_names=sorted(self.selected_agent_names),
+                model_deployment_name=model_select.value or None,
                 progress_callback=progress_callback,
                 log_callback=log_callback,
             )
@@ -277,3 +319,11 @@ class EvaluationScreen(Screen):
         """Write to log."""
         log = self.query_one("#evaluation-log", Log)
         log.write_line(message)
+
+    def _populate_models_select(self, models) -> None:
+        """Populate model dropdown."""
+        select = self.query_one("#evaluation-model", Select)
+        options = [(model.deployment_name, model.deployment_name) for model in models]
+        select.set_options(options)
+        if options:
+            select.value = options[0][1]
