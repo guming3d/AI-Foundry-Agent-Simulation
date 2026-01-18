@@ -12,6 +12,7 @@ from textual.screen import Screen
 from textual.widgets import Static, Button, Input, DataTable, ProgressBar, Label
 from textual.containers import Container, Vertical, Horizontal, VerticalScroll
 from textual import work
+from rich.markup import escape
 
 from ui.shared.state_manager import get_state_manager, get_state
 from src.core.agent_manager import AgentManager
@@ -360,12 +361,15 @@ class AgentWizardScreen(Screen):
 
     def _update_delete_status(self) -> None:
         """Update the delete status display."""
-        status = self.query_one("#delete-status", Static)
         count = len(self.selected_agent_names)
         if count == 0:
-            status.update("Select agents: Click rows to toggle selection. Use 'Use Selected' to prepare for simulation, or 'Delete Selected' to remove.")
+            self._update_delete_status_text(
+                "Select agents: Click rows to toggle selection. Use 'Use Selected' to prepare for simulation, or 'Delete Selected' to remove."
+            )
         else:
-            status.update(f"Selected {count} agent(s) - Use for simulation [Enter] or Delete [Del]")
+            self._update_delete_status_text(
+                f"Selected {count} agent(s) - Use for simulation [Enter] or Delete [Del]"
+            )
 
     def action_select_all(self) -> None:
         """Select all agents in the table."""
@@ -527,7 +531,7 @@ class AgentWizardScreen(Screen):
     def _update_delete_status_text(self, message: str) -> None:
         """Update delete status text."""
         status = self.query_one("#delete-status", Static)
-        status.update(message)
+        status.update(escape(message))
 
     def action_delete_all_agents(self) -> None:
         """Delete all agents with confirmation."""

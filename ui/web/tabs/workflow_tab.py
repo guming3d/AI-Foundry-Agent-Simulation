@@ -30,7 +30,10 @@ def create_workflow_tab():
         templates = get_templates()
         data = []
         for template in templates:
-            roles = " -> ".join(role.agent_type.name for role in template.roles)
+            if template.roles:
+                roles = " -> ".join(role.agent_type.name for role in template.roles)
+            else:
+                roles = "Human input"
             data.append([template.name, roles, template.description, template.id])
         return data
 

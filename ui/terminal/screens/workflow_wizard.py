@@ -186,9 +186,12 @@ class WorkflowWizardScreen(Screen):
         self.template_row_keys.clear()
 
         for template in templates:
-            roles_display = " -> ".join(
-                role.agent_type.name for role in template.roles
-            )
+            if template.roles:
+                roles_display = " -> ".join(
+                    role.agent_type.name for role in template.roles
+                )
+            else:
+                roles_display = "Human input"
             is_selected = template.id in self.selected_template_ids
             row_key = table.add_row(
                 "[X]" if is_selected else "[ ]",

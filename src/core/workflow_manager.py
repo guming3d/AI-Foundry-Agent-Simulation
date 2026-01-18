@@ -98,6 +98,25 @@ class WorkflowManager:
             "planning",
             "data",
         ]
+        writer_keywords = [
+            "marketing",
+            "content",
+            "copy",
+            "writer",
+            "communications",
+            "brand",
+            "campaign",
+            "sales",
+        ]
+        editor_keywords = [
+            "editor",
+            "review",
+            "quality",
+            "qa",
+            "compliance",
+            "audit",
+            "legal",
+        ]
 
         templates: List[WorkflowTemplate] = []
 
@@ -204,6 +223,93 @@ class WorkflowManager:
                             id="analyst",
                             name="Insight Analyst",
                             agent_type=analyst,
+                        ),
+                    ],
+                )
+            )
+
+        # Template 4: Shared Conversation Chain
+        exclude = set()
+        analyst = pick_agent(analyst_keywords, exclude) or pick_agent(intake_keywords, exclude)
+        if analyst:
+            exclude.add(analyst.id)
+        writer = pick_agent(writer_keywords, exclude) or pick_agent(specialist_keywords, exclude)
+        if writer:
+            exclude.add(writer.id)
+        editor = pick_agent(editor_keywords, exclude) or pick_agent(reviewer_keywords, exclude)
+
+        roles = []
+        if analyst:
+            roles.append(
+                WorkflowRole(
+                    id="analyst",
+                    name="Analysis Lead",
+                    agent_type=analyst,
+                )
+            )
+        if writer and writer.id not in {role.agent_type.id for role in roles}:
+            roles.append(
+                WorkflowRole(
+                    id="writer",
+                    name="Content Drafter",
+                    agent_type=writer,
+                )
+            )
+        if editor and editor.id not in {role.agent_type.id for role in roles}:
+            roles.append(
+                WorkflowRole(
+                    id="editor",
+                    name="Final Editor",
+                    agent_type=editor,
+                )
+            )
+
+        if len(roles) >= 2:
+            templates.append(
+                WorkflowTemplate(
+                    id="shared_conversation_chain",
+                    name="Shared Conversation Chain",
+                    description="Sequential handoff using a single conversation thread.",
+                    pattern="sequential_shared",
+                    roles=roles,
+                )
+            )
+
+        # Template 5: Human Confirmation Gate
+        templates.append(
+            WorkflowTemplate(
+                id="human_confirmation",
+                name="Human Confirmation Gate",
+                description="Request a user confirmation before continuing.",
+                pattern="human_in_loop",
+                roles=[],
+            )
+        )
+
+        # Template 6: Group Chat Loop
+        exclude = set()
+        speaker = pick_agent(intake_keywords, exclude) or pick_agent(specialist_keywords, exclude)
+        if speaker:
+            exclude.add(speaker.id)
+        moderator = pick_agent(reviewer_keywords, exclude) or pick_agent(analyst_keywords, exclude)
+        if speaker and moderator and speaker.id != moderator.id:
+            templates.append(
+                WorkflowTemplate(
+                    id="group_chat_loop",
+                    name="Group Chat Loop",
+                    description="Two agents iterate until completion or timeout.",
+                    pattern="group_chat",
+                    roles=[
+                        WorkflowRole(
+                            id="speaker",
+                            name="Primary Speaker",
+                            agent_type=speaker,
+                        ),
+                        WorkflowRole(
+                            id="moderator",
+                            name="Moderator",
+                            agent_type=moderator,
+                            instructions_suffix="Conclude with [COMPLETE] when the answer is final.",
                         ),
                     ],
                 )
@@ -352,6 +458,12 @@ class WorkflowManager:
     def _build_workflow_yaml(self, template: WorkflowTemplate, role_agents: Dict[str, str]) -> str:
         if template.pattern == "review_loop":
             return self._build_review_loop_yaml(template, role_agents)
+        if template.pattern == "group_chat":
+            return self._build_group_chat_yaml(template, role_agents)
+        if template.pattern == "human_in_loop":
+            return self._build_human_in_loop_yaml()
+        if template.pattern == "sequential_shared":
+            return self._build_shared_conversation_sequential_yaml(template, role_agents)
         return self._build_sequential_yaml(template, role_agents)
 
     def _build_sequential_yaml(self, template: WorkflowTemplate, role_agents: Dict[str, str]) -> str:
@@ -387,6 +499,49 @@ class WorkflowManager:
                     "        messages: \"=Local.LatestMessage\"",
                     "      output:",
                     "        messages: Local.LatestMessage",
+                ]
+            )
+
+        lines.extend(
+            [
+                "    - kind: EndConversation",
+                "      id: end_workflow",
+            ]
+        )
+
+        return "\n".join(lines)
+
+    def _build_shared_conversation_sequential_yaml(
+        self,
+        template: WorkflowTemplate,
+        role_agents: Dict[str, str],
+    ) -> str:
+        lines = [
+            "kind: workflow",
+            "trigger:",
+            "  kind: OnConversationStart",
+            "  id: workflow_start",
+            "  actions:",
+        ]
+
+        for index, role in enumerate(template.roles):
+            role_key = self._slugify(role.id)
+            agent_name = role_agents.get(role.id, "")
+            input_source = "=System.LastMessage" if index == 0 else "=Local.LatestMessage"
+
+            lines.extend(
+                [
+                    "    - kind: InvokeAzureAgent",
+                    f"      id: {role_key}_agent",
+                    f"      description: {role.name}",
+                    "      conversationId: \"=System.ConversationId\"",
+                    "      agent:",
+                    f"        name: {agent_name}",
+                    "      input:",
+                    f"        messages: \"{input_source}\"",
+                    "      output:",
+                    "        messages: Local.LatestMessage",
+                    "        autoSend: true",
                 ]
             )
 
@@ -472,6 +627,121 @@ class WorkflowManager:
             "        - kind: GotoAction",
             "          id: goto_primary_agent",
             f"          actionId: {primary_key}_agent",
+        ]
+
+        return "\n".join(lines)
+
+    def _build_group_chat_yaml(self, template: WorkflowTemplate, role_agents: Dict[str, str]) -> str:
+        if len(template.roles) < 2:
+            return self._build_sequential_yaml(template, role_agents)
+
+        speaker = template.roles[0]
+        moderator = template.roles[1]
+        speaker_key = self._slugify(speaker.id)
+        moderator_key = self._slugify(moderator.id)
+
+        lines = [
+            "kind: workflow",
+            "trigger:",
+            "  kind: OnConversationStart",
+            "  id: workflow_start",
+            "  actions:",
+            "    - kind: SetVariable",
+            "      id: set_variable_input",
+            "      variable: Local.LatestMessage",
+            "      value: \"=UserMessage(System.LastMessageText)\"",
+            "    - kind: SetVariable",
+            "      id: set_variable_turncount",
+            "      variable: Local.TurnCount",
+            "      value: \"=0\"",
+            "    - kind: InvokeAzureAgent",
+            f"      id: {speaker_key}_agent",
+            f"      description: {speaker.name}",
+            "      conversationId: \"=System.ConversationId\"",
+            "      agent:",
+            f"        name: {role_agents.get(speaker.id, '')}",
+            "      input:",
+            "        messages: \"=Local.LatestMessage\"",
+            "      output:",
+            "        messages: Local.LatestMessage",
+            "        autoSend: true",
+            "    - kind: InvokeAzureAgent",
+            f"      id: {moderator_key}_agent",
+            f"      description: {moderator.name}",
+            "      conversationId: \"=System.ConversationId\"",
+            "      agent:",
+            f"        name: {role_agents.get(moderator.id, '')}",
+            "      input:",
+            "        messages: \"=Local.LatestMessage\"",
+            "      output:",
+            "        messages: Local.LatestMessage",
+            "        autoSend: true",
+            "    - kind: SetVariable",
+            "      id: increment_turncount",
+            "      variable: Local.TurnCount",
+            "      value: \"=Local.TurnCount + 1\"",
+            "    - kind: ConditionGroup",
+            "      id: completion_check",
+            "      conditions:",
+            "        - condition: '=!IsBlank(Find(\"[COMPLETE]\", Upper(Last(Local.LatestMessage).Text)))'",
+            "          id: check_done",
+            "          actions:",
+            "            - kind: EndConversation",
+            "              id: end_workflow",
+            "        - condition: \"=Local.TurnCount >= 4\"",
+            "          id: check_turn_count_exceeded",
+            "          actions:",
+            "            - kind: SendActivity",
+            "              id: send_activity_tired",
+            "              activity: \"Let's try again later...I am tired.\"",
+            "      elseActions:",
+            "        - kind: GotoAction",
+            "          id: goto_speaker_agent",
+            f"          actionId: {speaker_key}_agent",
+        ]
+
+        return "\n".join(lines)
+
+    def _build_human_in_loop_yaml(self) -> str:
+        lines = [
+            "kind: workflow",
+            "trigger:",
+            "  kind: OnConversationStart",
+            "  id: workflow_start",
+            "  actions:",
+            "    - kind: SetVariable",
+            "      id: set_original_input",
+            "      variable: Local.OriginalInput",
+            "      value: \"=System.LastMessageText\"",
+            "    - kind: Question",
+            "      id: question_confirm",
+            "      variable: Local.ConfirmedInput",
+            "      prompt: \"CONFIRM: Please re-enter your input to confirm\"",
+            "      entity: StringPrebuiltEntity",
+            "      alwaysPrompt: false",
+            "    - kind: ConditionGroup",
+            "      id: check_completion",
+            "      conditions:",
+            "        - id: check_confirm",
+            "          condition: \"=Local.OriginalInput <> Local.ConfirmedInput\"",
+            "          actions:",
+            "            - kind: SendActivity",
+            "              id: send_activity_mismatch",
+            "              activity: '\"{Local.ConfirmedInput}\" does not match the original input of \"{Local.OriginalInput}\". Please try again.'",
+            "            - kind: GotoAction",
+            "              id: goto_again",
+            "              actionId: question_confirm",
+            "      elseActions:",
+            "        - kind: SendActivity",
+            "          id: send_activity_confirmed",
+            "          activity: |-",
+            "            You entered:",
+            "                {Local.OriginalInput}",
+            "            ",
+            "            Confirmed input:",
+            "                {Local.ConfirmedInput}",
+            "    - kind: EndConversation",
+            "      id: end_workflow",
         ]
 
         return "\n".join(lines)
