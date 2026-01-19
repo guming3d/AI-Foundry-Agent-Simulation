@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import random
 import re
-from typing import List, Optional, Dict
+from typing import List, Optional, Dict, Any
 
 from azure.ai.projects.models import PromptAgentDefinition, WorkflowAgentDefinition
 
@@ -22,6 +22,71 @@ class WorkflowManager:
 
     def __init__(self, models: Optional[List[str]] = None):
         self.models = models or []
+
+    def list_workflows(self) -> List[Dict[str, Any]]:
+        """
+        List workflow agents in the project.
+
+        Returns:
+            List of workflow agent dictionaries with name, id, and version info
+        """
+        client = get_project_client()
+        workflows = []
+
+        try:
+            for agent in client.agents.list():
+                version, definition = self._get_latest_version_definition(agent)
+                if not self._is_workflow_definition(definition):
+                    continue
+
+                workflows.append({
+                    "name": agent.name,
+                    "id": agent.id,
+                    "version": version,
+                })
+        except Exception as e:
+            print(f"Error listing workflows: {e}")
+
+        return workflows
+
+    @staticmethod
+    def _get_latest_version_definition(agent: Any) -> tuple[Optional[int], Any]:
+        """Extract the latest version and definition from an agent object."""
+        version = None
+        definition = None
+
+        if hasattr(agent, "versions"):
+            try:
+                latest = agent.versions.get("latest", None)
+            except Exception:
+                latest = None
+
+            if latest:
+                if isinstance(latest, dict):
+                    version = latest.get("version")
+                    definition = latest.get("definition")
+                else:
+                    version = getattr(latest, "version", None)
+                    definition = getattr(latest, "definition", None)
+
+        return version, definition
+
+    @staticmethod
+    def _is_workflow_definition(definition: Any) -> bool:
+        """Check whether a definition represents a workflow agent."""
+        if not definition:
+            return False
+
+        if isinstance(definition, dict):
+            if "workflow" in definition:
+                return True
+            definition_type = definition.get("type") or definition.get("kind")
+            return isinstance(definition_type, str) and "workflow" in definition_type.lower()
+
+        if getattr(definition, "workflow", None):
+            return True
+
+        return hasattr(definition, "workflow")
 
     @staticmethod
     def build_templates(profile: IndustryProfile) -> List[WorkflowTemplate]:

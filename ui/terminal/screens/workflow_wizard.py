@@ -28,14 +28,25 @@ class WorkflowWizardScreen(Screen):
     def __init__(self):
         super().__init__()
         self.is_creating = False
+        self.is_loading_existing = False
         self.templates = []
         self.selected_template_ids = set()
         self.template_row_keys = {}
+        self.existing_workflows = []
 
     def compose(self) -> ComposeResult:
         yield Static("Workflow Builder", id="title", classes="screen-title")
 
         yield VerticalScroll(
+            # Existing Workflows Section
+            Horizontal(
+                Static("Existing Workflows in Azure:", classes="section-title"),
+                Button("Refresh", id="btn-refresh-existing-workflows", variant="default"),
+                classes="section-header-with-button",
+            ),
+            Static(id="existing-workflows-summary", classes="info-text"),
+            DataTable(id="existing-workflows-table"),
+
             # Templates Section
             Horizontal(
                 Static("Workflow Templates:", classes="section-title"),
@@ -96,16 +107,21 @@ class WorkflowWizardScreen(Screen):
         templates_table.add_columns("Sel", "Template", "Roles", "Description")
         templates_table.cursor_type = "row"
 
+        existing_table = self.query_one("#existing-workflows-table", DataTable)
+        existing_table.add_columns("Name", "Azure ID", "Version")
+
         workflows_table = self.query_one("#workflows-table", DataTable)
         workflows_table.add_columns("Name", "Template", "Org", "Version")
 
         self._update_config_summary()
         self._load_created_workflows()
+        self.action_refresh_existing_workflows()
         self.action_refresh_templates()
 
     def on_screen_resume(self) -> None:
         """Update when returning to this screen."""
         self._update_config_summary()
+        self.action_refresh_existing_workflows()
         self.action_refresh_templates()
 
     def _update_config_summary(self) -> None:
@@ -153,6 +169,59 @@ class WorkflowWizardScreen(Screen):
                 workflow.template_name,
                 workflow.org_id,
                 str(workflow.version),
+            )
+
+    def action_refresh_existing_workflows(self) -> None:
+        """Refresh existing workflows from Azure."""
+        if self.is_loading_existing:
+            self.notify("Already loading existing workflows...", severity="warning")
+            return
+
+        self.refresh_existing_workflows_async()
+
+    @work(thread=True)
+    def refresh_existing_workflows_async(self) -> None:
+        """Load existing workflows from Azure in background thread."""
+        self.is_loading_existing = True
+        self.app.call_from_thread(self._update_existing_summary, "Loading...")
+
+        try:
+            manager = WorkflowManager()
+            workflows = manager.list_workflows()
+            self.existing_workflows = workflows
+
+            self.app.call_from_thread(self._populate_existing_table, workflows)
+            self.app.call_from_thread(
+                self._update_existing_summary,
+                f"Found {len(workflows)} existing workflows in Azure AI Foundry project"
+            )
+
+        except Exception as e:
+            self.app.call_from_thread(
+                self._update_existing_summary,
+                f"Error loading workflows: {e}"
+            )
+            self.app.call_from_thread(self.notify, f"Error: {e}", severity="error")
+
+        finally:
+            self.is_loading_existing = False
+
+    def _update_existing_summary(self, message: str) -> None:
+        """Update the existing workflows summary text."""
+        summary = self.query_one("#existing-workflows-summary", Static)
+        summary.update(message)
+
+    def _populate_existing_table(self, workflows: list) -> None:
+        """Populate the existing workflows table."""
+        table = self.query_one("#existing-workflows-table", DataTable)
+        table.clear()
+
+        for workflow in workflows:
+            version = workflow.get("version")
+            table.add_row(
+                workflow.get("name", ""),
+                workflow.get("id", ""),
+                str(version) if version is not None else "Unknown",
             )
 
     def action_refresh_templates(self) -> None:
@@ -233,7 +302,9 @@ class WorkflowWizardScreen(Screen):
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """Handle button presses."""
         button_id = event.button.id
-        if button_id == "btn-refresh-templates":
+        if button_id == "btn-refresh-existing-workflows":
+            self.action_refresh_existing_workflows()
+        elif button_id == "btn-refresh-templates":
             self.action_refresh_templates()
         elif button_id == "btn-select-all":
             self.action_select_all()

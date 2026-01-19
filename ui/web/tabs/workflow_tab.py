@@ -13,6 +13,42 @@ from src.core.workflow_manager import WorkflowManager
 def create_workflow_tab():
     """Create the workflow tab components."""
 
+    # ===== Manage Existing Workflows Functions =====
+
+    def list_project_workflows():
+        """Fetch all workflow agents from Azure project."""
+        try:
+            manager = WorkflowManager()
+            workflows = manager.list_workflows()
+            return workflows
+        except Exception as e:
+            print(f"Error listing workflows: {e}")
+            return []
+
+    def get_project_workflows_table():
+        """Get project workflows as table data."""
+        workflows = list_project_workflows()
+        data = []
+        for workflow in workflows:
+            data.append([
+                workflow.get("name", ""),
+                workflow.get("id", ""),
+                workflow.get("version", "Unknown"),
+            ])
+        return data
+
+    def get_workflow_count_display():
+        """Get the current workflow count display text."""
+        workflows = list_project_workflows()
+        count = len(workflows)
+        if count == 0:
+            return "**No workflows found in the project**"
+        return f"**Total workflows in project: {count}**"
+
+    def refresh_project_workflows():
+        """Refresh the project workflows list."""
+        return get_workflow_count_display(), get_project_workflows_table()
+
     def get_current_config():
         state = get_state()
         models = ", ".join(state.selected_models) if state.selected_models else "None selected"
@@ -103,13 +139,28 @@ def create_workflow_tab():
     def create_workflows(selected_templates, org_count, workflow_count, progress=gr.Progress()):
         state = get_state()
         if not state.current_profile:
-            return "Error: Please select an industry profile first", get_created_workflows_table()
+            return (
+                "Error: Please select an industry profile first",
+                get_created_workflows_table(),
+                get_workflow_count_display(),
+                get_project_workflows_table(),
+            )
 
         if not state.selected_models:
-            return "Error: Please select at least one model first", get_created_workflows_table()
+            return (
+                "Error: Please select at least one model first",
+                get_created_workflows_table(),
+                get_workflow_count_display(),
+                get_project_workflows_table(),
+            )
 
         if not selected_templates:
-            return "Error: Select at least one workflow template", get_created_workflows_table()
+            return (
+                "Error: Select at least one workflow template",
+                get_created_workflows_table(),
+                get_workflow_count_display(),
+                get_project_workflows_table(),
+            )
 
         try:
             templates = WorkflowManager.build_templates(state.current_profile)
@@ -137,10 +188,39 @@ def create_workflow_tab():
             if result.failed:
                 status += f", {len(result.failed)} failed"
 
-            return status, get_created_workflows_table()
+            return (
+                status,
+                get_created_workflows_table(),
+                get_workflow_count_display(),
+                get_project_workflows_table(),
+            )
 
         except Exception as e:
-            return f"Error: {e}", get_created_workflows_table()
+            return (
+                f"Error: {e}",
+                get_created_workflows_table(),
+                get_workflow_count_display(),
+                get_project_workflows_table(),
+            )
+
+    gr.Markdown("## Manage Existing Workflows")
+    gr.Markdown("View workflows currently in your Azure AI Foundry project.")
+
+    with gr.Row():
+        workflow_count_display = gr.Markdown(
+            value=get_workflow_count_display(),
+        )
+        refresh_workflows_btn = gr.Button("Refresh", size="sm")
+
+    project_workflows_table = gr.Dataframe(
+        headers=["Name", "ID", "Version"],
+        value=get_project_workflows_table(),
+        label="Project Workflows",
+        interactive=False,
+        wrap=True,
+    )
+
+    gr.Markdown("---")
 
     gr.Markdown("## Workflow Builder")
     gr.Markdown("Batch create multi-agent workflows based on the selected industry profile.")
@@ -205,6 +285,11 @@ def create_workflow_tab():
         label="Created Workflows",
     )
 
+    refresh_workflows_btn.click(
+        fn=refresh_project_workflows,
+        outputs=[workflow_count_display, project_workflows_table],
+    )
+
     refresh_config_btn.click(
         fn=get_current_config,
         outputs=[config_display],
@@ -249,5 +334,5 @@ def create_workflow_tab():
     create_btn.click(
         fn=create_workflows,
         inputs=[template_selector, org_count, workflow_count],
-        outputs=[status_output, workflows_table],
+        outputs=[status_output, workflows_table, workflow_count_display, project_workflows_table],
     )
