@@ -2,11 +2,10 @@
 """
 Azure AI Foundry Agent Creation & Demo Toolkit
 
-Main entry point for running the toolkit via CLI, TUI, or Web UI.
+Main entry point for running the toolkit via CLI and TUI.
 
 Usage:
     python main.py tui          # Launch Textual TUI
-    python main.py web          # Launch Gradio Web UI
     python main.py generate     # Generate code from template
     python main.py list         # List available templates
 """
@@ -22,12 +21,6 @@ def run_tui():
     """Launch the Textual TUI application."""
     from ui.terminal.app import run_tui as launch_tui
     launch_tui()
-
-
-def run_web(args):
-    """Launch the Gradio Web UI."""
-    from ui.web.app import run_web_ui
-    run_web_ui(share=args.share, server_port=args.port)
 
 
 def list_templates():
@@ -152,7 +145,6 @@ def main():
         epilog="""
 Examples:
   python main.py tui                    # Launch terminal UI
-  python main.py web --port 8080        # Launch web UI on port 8080
   python main.py list                   # List available templates
   python main.py generate retail        # Generate code for retail template
   python main.py create retail -n 2     # Create 2 agents per type
@@ -163,11 +155,6 @@ Examples:
 
     # TUI command
     tui_parser = subparsers.add_parser("tui", help="Launch Textual TUI")
-
-    # Web command
-    web_parser = subparsers.add_parser("web", help="Launch Gradio Web UI")
-    web_parser.add_argument("--port", type=int, default=7860, help="Server port")
-    web_parser.add_argument("--share", action="store_true", help="Create public share link")
 
     # List command
     list_parser = subparsers.add_parser("list", help="List available templates")
@@ -190,8 +177,6 @@ Examples:
 
     if args.command == "tui":
         run_tui()
-    elif args.command == "web":
-        run_web(args)
     elif args.command == "list":
         list_templates()
     elif args.command == "generate":

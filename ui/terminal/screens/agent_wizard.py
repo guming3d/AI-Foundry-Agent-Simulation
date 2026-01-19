@@ -434,8 +434,8 @@ class AgentWizardScreen(Screen):
                     agent_id=agent_id,
                     name=agent_data.get("name", "Unknown"),
                     azure_id=agent_data.get("id", ""),
-                    version=agent_data.get("version", "1"),
-                    model=agent_data.get("model", ""),
+                    version=agent_data.get("version") or "1",
+                    model=agent_data.get("model") or "Unknown",
                     org_id=org_id,
                     agent_type=name_parts[1] if len(name_parts) > 1 else "Unknown"
                 )

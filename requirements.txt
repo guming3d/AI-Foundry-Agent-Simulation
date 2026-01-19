@@ -20,9 +20,6 @@ plotly>=5.18.0
 textual>=0.47.0
 rich>=13.7.0
 
-# UI - Web (Gradio)
-gradio>=4.19.0
-
 # Data validation
 pydantic>=2.5.0
 

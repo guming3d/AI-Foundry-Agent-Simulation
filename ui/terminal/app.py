@@ -87,6 +87,24 @@ class AgentToolkitApp(App):
         # Use call_later to ensure app is fully running before pushing screen
         self.call_later(self._push_initial_screen)
 
+    def notify(
+        self,
+        message: str,
+        *,
+        title: str | None = None,
+        severity: str = "information",
+        timeout: float = 3,
+        markup: bool = False,
+    ) -> None:
+        """Send a notification with safe defaults for non-markup messages."""
+        super().notify(
+            message,
+            title=title,
+            severity=severity,
+            timeout=timeout,
+            markup=markup,
+        )
+
     def _push_initial_screen(self) -> None:
         """Push the initial screen after app is fully running."""
         # Check if environment is configured

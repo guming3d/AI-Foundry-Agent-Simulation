@@ -1,11 +1,11 @@
 # Azure AI Foundry Control-Plane Batch Agent Operation
 
-A comprehensive toolkit for batch creation, testing, and management of AI agents at scale using Azure AI Foundry Control Plane features. Supports industry-specific templates, parallel agent operations, and real-time metrics collection through intuitive Terminal and Web interfaces.
+A comprehensive toolkit for batch creation, testing, and management of AI agents at scale using Azure AI Foundry Control Plane features. Supports industry-specific templates, parallel agent operations, and real-time metrics collection through an intuitive Terminal interface.
 
 ## Features
 
 - **Batch Agent Operations**: Create and manage 100+ AI agents simultaneously with multi-threaded processing
-- **Dual Interfaces**: Full-featured Terminal UI (Textual) and Web UI (Gradio) for interactive management
+- **Terminal Interface**: Full-featured Textual UI for interactive management
 - **Industry Templates**: Pre-configured profiles for Retail, Financial Services, Healthcare, and Manufacturing with specialized agent types
 - **Model Management**: Discover existing models and deploy new ones through Azure AI Foundry Control Plane
 - **Code Generation**: Automatically generate production-ready simulation scripts from templates
@@ -30,7 +30,6 @@ cp .env.example .env  # Edit with your PROJECT_ENDPOINT
 
 # 4. Launch the toolkit
 python main.py tui    # Terminal UI
-python main.py web    # Web UI (opens browser)
 ```
 
 ## Project Structure
@@ -65,7 +64,6 @@ python main.py web    # Web UI (opens browser)
 │
 └── ui/                   # User interfaces
     ├── terminal/        # Textual TUI
-    ├── web/             # Gradio Web UI
     └── shared/          # Shared state
 ```
 
@@ -74,10 +72,6 @@ python main.py web    # Web UI (opens browser)
 ```bash
 # Terminal UI
 python main.py tui
-
-# Web UI
-python main.py web
-python main.py web --port 8080 --share
 
 # List templates
 python main.py list

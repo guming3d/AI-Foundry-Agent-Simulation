@@ -1,7 +1,7 @@
 """
 Shared state manager for Azure AI Foundry Agent Toolkit UI.
 
-Provides centralized state management for both TUI and Web UI.
+Provides centralized state management for the UI.
 """
 
 from typing import List, Dict, Any, Optional
