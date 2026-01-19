@@ -31,7 +31,7 @@ class SetupScreen(Screen):
         width: 80%;
         max-width: 100;
         height: auto;
-        border: solid $accent;
+        border: round $accent;
         background: $surface;
         padding: 2;
     }
@@ -70,7 +70,7 @@ class SetupScreen(Screen):
     }
 
     .guide-section {
-        border: solid $primary;
+        border: round $primary;
         padding: 1;
         margin: 1 0;
         background: $boost;

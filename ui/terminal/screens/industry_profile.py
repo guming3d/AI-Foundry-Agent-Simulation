@@ -6,7 +6,7 @@ Allows users to browse, select, and customize industry profiles.
 
 from textual.app import ComposeResult
 from textual.screen import Screen
-from textual.widgets import Static, Button, DataTable, TextArea, Tree
+from textual.widgets import Static, Button, DataTable, TextArea, Tree, Header, Footer
 from textual.containers import Container, Vertical, Horizontal
 
 from ui.shared.state_manager import get_state_manager
@@ -27,6 +27,7 @@ class IndustryProfileScreen(Screen):
         self.current_profile_id = None
 
     def compose(self) -> ComposeResult:
+        yield Header()
         yield Container(
             Static("Industry Profiles", id="title", classes="screen-title"),
             Static("Select an industry profile to configure your agents.", classes="description"),
@@ -50,6 +51,7 @@ class IndustryProfileScreen(Screen):
             ),
             id="profile-container",
         )
+        yield Footer()
 
     def on_mount(self) -> None:
         """Initialize the profile list."""

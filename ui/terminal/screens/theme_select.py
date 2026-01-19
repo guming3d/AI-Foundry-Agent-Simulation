@@ -32,7 +32,7 @@ class ThemeSelectScreen(ModalScreen[str | None]):
         width: 60;
         height: auto;
         max-height: 80%;
-        border: thick $primary;
+        border: round $primary;
         background: $surface;
         padding: 1 2;
     }
@@ -54,14 +54,14 @@ class ThemeSelectScreen(ModalScreen[str | None]):
         height: auto;
         max-height: 15;
         margin-bottom: 1;
-        border: tall $secondary;
+        border: round $secondary;
     }
 
     #theme-info {
         height: auto;
         margin-bottom: 1;
         padding: 1;
-        border: solid $accent;
+        border: round $accent;
         background: $panel;
     }
 

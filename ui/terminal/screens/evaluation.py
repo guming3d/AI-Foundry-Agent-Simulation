@@ -4,7 +4,7 @@ Evaluation screen for running sample evaluations against agents.
 
 from textual.app import ComposeResult
 from textual.screen import Screen
-from textual.widgets import Static, Button, DataTable, ProgressBar, Log, Select
+from textual.widgets import Static, Button, DataTable, ProgressBar, Log, Select, Header, Footer
 from textual.containers import Horizontal, VerticalScroll
 from textual import work
 
@@ -40,6 +40,7 @@ class EvaluationScreen(Screen):
         self.models = []
 
     def compose(self) -> ComposeResult:
+        yield Header()
         yield Static("Sample Evaluations", id="title", classes="screen-title")
         yield Static(
             "Select evaluation templates and agents, then run evaluations.",
@@ -76,6 +77,7 @@ class EvaluationScreen(Screen):
             Log(id="evaluation-log", auto_scroll=True),
             id="evaluation-container",
         )
+        yield Footer()
 
     def on_mount(self) -> None:
         """Initialize tables."""

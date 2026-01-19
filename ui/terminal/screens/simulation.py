@@ -8,7 +8,7 @@ Supports both one-time simulations and long-running daemon simulations.
 import os
 from textual.app import ComposeResult
 from textual.screen import Screen
-from textual.widgets import Static, Button, Input, ProgressBar, Log, Select, DataTable, TabbedContent, TabPane, Label
+from textual.widgets import Static, Button, Input, ProgressBar, Log, Select, DataTable, TabbedContent, TabPane, Label, Header, Footer
 from textual.containers import Vertical, Horizontal, VerticalScroll, Grid
 from textual import work
 from textual.timer import Timer
@@ -31,7 +31,7 @@ class SimulationScreen(Screen):
     DEFAULT_CSS = """
     SimulationScreen {
         layout: vertical;
-        padding: 0 1;
+        padding: 0;
     }
 
     /* Common styles */
@@ -39,7 +39,7 @@ class SimulationScreen(Screen):
         height: auto;
         padding: 1;
         margin-bottom: 1;
-        border: solid $secondary;
+        border: round $secondary;
         background: $surface-darken-1;
     }
 
@@ -87,7 +87,7 @@ class SimulationScreen(Screen):
         height: auto;
         padding: 1;
         margin-bottom: 1;
-        border: solid $accent;
+        border: round $accent;
         background: $surface-darken-1;
     }
 
@@ -100,7 +100,7 @@ class SimulationScreen(Screen):
         height: auto;
         padding: 1;
         margin-bottom: 1;
-        border: solid $primary;
+        border: round $primary;
         background: $surface-darken-1;
     }
 
@@ -111,7 +111,7 @@ class SimulationScreen(Screen):
 
     #onetime-log {
         height: 1fr;
-        border: solid $primary;
+        border: round $primary;
         background: $surface-darken-1;
     }
 
@@ -125,7 +125,7 @@ class SimulationScreen(Screen):
         height: auto;
         padding: 1;
         margin-bottom: 1;
-        border: solid $accent;
+        border: round $accent;
         background: $surface-darken-1;
     }
 
@@ -146,7 +146,7 @@ class SimulationScreen(Screen):
         height: auto;
         padding: 1;
         margin-bottom: 1;
-        border: solid $primary;
+        border: round $primary;
         background: $surface-darken-1;
     }
 
@@ -159,7 +159,7 @@ class SimulationScreen(Screen):
 
     .metric-box {
         padding: 1;
-        border: tall $secondary;
+        border: round $secondary;
         background: $surface;
         height: auto;
         align: center middle;
@@ -183,7 +183,7 @@ class SimulationScreen(Screen):
 
     #daemon-log {
         height: 1fr;
-        border: solid $primary;
+        border: round $primary;
         background: $surface-darken-1;
     }
 
@@ -191,7 +191,7 @@ class SimulationScreen(Screen):
     .results-section {
         margin-bottom: 1;
         padding: 1;
-        border: solid $secondary;
+        border: round $secondary;
         background: $surface-darken-1;
     }
 
@@ -238,6 +238,7 @@ class SimulationScreen(Screen):
         self.app.pop_screen()
 
     def compose(self) -> ComposeResult:
+        yield Header()
         yield Static("Simulation Dashboard", id="title", classes="screen-title")
 
         with TabbedContent(id="sim-tabs"):
@@ -401,6 +402,7 @@ class SimulationScreen(Screen):
                     # Back button at bottom of results
                     with Horizontal(classes="button-row"):
                         yield Button("Back to Home", id="btn-back-results", variant="default")
+        yield Footer()
 
     def on_mount(self) -> None:
         """Initialize the screen."""

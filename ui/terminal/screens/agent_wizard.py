@@ -9,7 +9,7 @@ import csv
 from pathlib import Path
 from textual.app import ComposeResult
 from textual.screen import Screen
-from textual.widgets import Static, Button, Input, DataTable, ProgressBar
+from textual.widgets import Static, Button, Input, DataTable, ProgressBar, Header, Footer
 from textual.containers import Vertical, Horizontal, VerticalScroll
 from textual import work
 from rich.markup import escape
@@ -46,6 +46,7 @@ class AgentWizardScreen(Screen):
         self.agent_row_keys = {}  # Map agent_name -> row_key for updating selection indicators
 
     def compose(self) -> ComposeResult:
+        yield Header()
         yield Static("Agent Creation Wizard", id="title", classes="screen-title")
 
         yield VerticalScroll(
@@ -109,6 +110,7 @@ class AgentWizardScreen(Screen):
 
             id="wizard-container",
         )
+        yield Footer()
 
     def on_mount(self) -> None:
         """Initialize the screen."""

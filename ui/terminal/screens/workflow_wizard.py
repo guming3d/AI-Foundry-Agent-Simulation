@@ -6,7 +6,7 @@ Allows users to batch create multi-agent workflows based on industry profiles.
 
 from textual.app import ComposeResult
 from textual.screen import Screen
-from textual.widgets import Static, Button, Input, DataTable, ProgressBar
+from textual.widgets import Static, Button, Input, DataTable, ProgressBar, Header, Footer
 from textual.containers import VerticalScroll, Horizontal, Vertical
 from textual import work
 
@@ -37,6 +37,7 @@ class WorkflowWizardScreen(Screen):
         self.existing_workflows = []
 
     def compose(self) -> ComposeResult:
+        yield Header()
         yield Static("Workflow Builder", id="title", classes="screen-title")
 
         yield VerticalScroll(
@@ -106,6 +107,7 @@ class WorkflowWizardScreen(Screen):
 
             id="workflow-container",
         )
+        yield Footer()
 
     def on_mount(self) -> None:
         """Initialize the screen."""

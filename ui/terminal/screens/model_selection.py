@@ -6,7 +6,7 @@ Allows users to select models for agent deployment.
 
 from textual.app import ComposeResult
 from textual.screen import Screen
-from textual.widgets import Static, Button, DataTable, Checkbox, Label
+from textual.widgets import Static, Button, DataTable, Checkbox, Label, Header, Footer
 from textual.containers import Container, Vertical, Horizontal
 
 from ui.shared.state_manager import get_state_manager
@@ -30,6 +30,7 @@ class ModelSelectionScreen(Screen):
         self.selected_models = set()
 
     def compose(self) -> ComposeResult:
+        yield Header()
         yield Container(
             Static("Model Selection", id="title", classes="screen-title"),
             Static("Select models to use for your agents. These will be randomly assigned during agent creation.",
@@ -46,6 +47,7 @@ class ModelSelectionScreen(Screen):
             Static(id="status-bar", classes="status-bar"),
             id="model-container",
         )
+        yield Footer()
 
     def on_mount(self) -> None:
         """Initialize the model table."""

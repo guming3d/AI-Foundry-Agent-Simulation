@@ -7,7 +7,7 @@ and delete them individually or in bulk.
 
 from textual.app import ComposeResult
 from textual.screen import Screen
-from textual.widgets import Static, Button, DataTable, ProgressBar
+from textual.widgets import Static, Button, DataTable, ProgressBar, Header, Footer
 from textual.containers import Container, Vertical, Horizontal
 from textual import work
 
@@ -27,31 +27,31 @@ class AgentManagementScreen(Screen):
     DEFAULT_CSS = """
     AgentManagementScreen {
         layout: vertical;
-        padding: 0 1;
+        padding: 0;
     }
 
     #agents-table {
         height: 1fr;
         min-height: 12;
-        border: solid $primary;
+        border: round $primary;
         background: $surface-darken-1;
         margin: 0 0 1 0;
     }
 
     #progress-bar {
-        margin-top: 0;
+        margin-top: 1;
     }
 
     #progress-status {
         margin-bottom: 1;
         padding: 0 1;
-        border-left: solid $primary;
+        border-left: thick $primary;
         background: $surface-darken-1;
     }
 
     #status-message {
         padding: 0 1;
-        border-left: solid $secondary;
+        border-left: thick $secondary;
         background: $surface-darken-1;
     }
 
@@ -72,23 +72,28 @@ class AgentManagementScreen(Screen):
         self.app.pop_screen()
 
     def compose(self) -> ComposeResult:
-        yield Static("Manage Agents", id="title", classes="screen-title")
-        yield Static("View and manage all agents in your Azure AI Foundry project", classes="description")
+        yield Header()
+        yield Container(
+            Static("Manage Agents", id="title", classes="screen-title"),
+            Static("View and manage all agents in your Azure AI Foundry project", classes="description"),
 
-        yield Horizontal(
-            Button("Refresh [R]", id="btn-refresh", variant="primary"),
-            Button("Delete All [D]", id="btn-delete-all", variant="error"),
-            Button("Back [Esc]", id="btn-back"),
-            id="button-bar",
+            Horizontal(
+                Button("Refresh [R]", id="btn-refresh", variant="primary"),
+                Button("Delete All [D]", id="btn-delete-all", variant="error"),
+                Button("Back [Esc]", id="btn-back"),
+                id="button-bar",
+            ),
+
+            Static("Agents in Project:", classes="section-title"),
+            DataTable(id="agents-table"),
+
+            ProgressBar(id="progress-bar", total=100, show_eta=False),
+            Static("Ready", id="progress-status", classes="info-text"),
+
+            Static(id="status-message", classes="info-text"),
+            id="manage-agents-container"
         )
-
-        yield Static("Agents in Project:", classes="section-title")
-        yield DataTable(id="agents-table")
-
-        yield ProgressBar(id="progress-bar", total=100, show_eta=False)
-        yield Static("Ready", id="progress-status", classes="info-text")
-
-        yield Static(id="status-message", classes="info-text")
+        yield Footer()
 
     def on_mount(self) -> None:
         """Initialize the screen."""

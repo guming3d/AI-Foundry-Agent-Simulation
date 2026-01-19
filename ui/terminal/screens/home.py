@@ -7,7 +7,7 @@ for batch agent operations.
 
 from textual.app import ComposeResult
 from textual.screen import Screen
-from textual.widgets import Static, Button
+from textual.widgets import Static, Button, Header, Footer
 from textual.containers import Container, Vertical, Horizontal
 from textual import work
 
@@ -56,9 +56,10 @@ class HomeScreen(Screen):
         self.app.push_screen("evaluations")
 
     def compose(self) -> ComposeResult:
+        yield Header()
         yield Container(
             Static(LOGO, id="logo"),
-            Static("Welcome to Azure AI Foundry Control-Plane Batch Agent Operation", id="welcome"),
+            Static("Batch Agent Operation & Simulation", id="welcome"),
 
             # Navigation buttons
             Horizontal(
@@ -71,7 +72,7 @@ class HomeScreen(Screen):
 
             # Current Status - wrapped in bordered panel
             Vertical(
-                Static("Current Status:", classes="section-title"),
+                Static("System Status", classes="section-title"),
                 Static(id="status-models", classes="info-text"),
                 Static(id="status-profile", classes="info-text"),
                 Static(id="status-agents-azure", classes="info-text"),
@@ -91,6 +92,7 @@ class HomeScreen(Screen):
 
             id="home-container",
         )
+        yield Footer()
 
     def on_mount(self) -> None:
         """Update status on mount."""

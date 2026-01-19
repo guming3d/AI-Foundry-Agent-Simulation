@@ -5,41 +5,51 @@
 /* Global styles */
 Screen {
     background: $background;
+    align: center middle;
 }
 
 /* Title styles */
 #title, .screen-title {
     text-align: center;
     text-style: bold;
-    color: $primary;
-    padding: 0;
-    margin-bottom: 0;
+    color: $text;
+    background: $primary;
+    padding: 1;
+    margin-bottom: 1;
+    width: 100%;
+    border-bottom: heavy $primary-darken-2;
 }
 
 .description {
     color: $text-muted;
-    padding: 0 1;
-    margin-bottom: 0;
+    padding: 0 2;
+    margin-bottom: 1;
+    text-align: center;
 }
 
 /* Section titles */
 .section-title {
     text-style: bold;
     color: $secondary;
-    margin-top: 0;
-    margin-bottom: 0;
+    margin-top: 1;
+    margin-bottom: 1;
     padding-left: 1;
+    border-bottom: heavy $secondary;
+    width: 100%;
 }
 
 /* Home screen */
 #home-container {
-    padding: 0 1;
+    padding: 1 2;
+    height: 100%;
+    align: center middle;
 }
 
 #logo {
     text-align: center;
     color: $primary;
-    padding: 0;
+    padding: 1;
+    margin-bottom: 1;
 }
 
 #welcome {
@@ -47,22 +57,27 @@ Screen {
     color: $text;
     padding: 0 0 1 0;
     text-style: bold;
+    margin-bottom: 2;
 }
 
 #nav-buttons {
-    margin: 1 0;
+    margin: 2 0;
     align: center middle;
+    height: auto;
 }
 
 #nav-buttons Button {
-    margin: 0 1;
+    margin: 0 2;
+    min-width: 20;
 }
 
 #status-panel {
-    margin: 1 0;
-    padding: 1;
-    border: solid $secondary;
+    margin: 2 4;
+    padding: 1 2;
+    border: round $secondary;
     background: $surface-darken-1;
+    width: 80%;
+    height: auto;
 }
 
 #status-panel .info-text {
@@ -70,27 +85,26 @@ Screen {
 }
 
 #nav-buttons-extra {
-    margin: 0;
+    margin-top: 2;
     align: center middle;
 }
 
 #nav-buttons-extra Button {
-    margin: 0 1;
+    margin: 0 2;
 }
 
 /* Model selection screen */
 #model-container {
-    padding: 0 1;
+    padding: 0 2;
     height: 100%;
 }
 
 #model-table {
     height: 1fr;
-    min-height: 8;
-    max-height: 70%;
-    margin: 0;
-    border: solid $primary;
-    background: $surface-darken-1;
+    min-height: 10;
+    margin: 1 0;
+    border: round $primary;
+    background: $surface;
 }
 
 .status-bar {
@@ -103,7 +117,7 @@ Screen {
 
 /* Profile screen */
 #profile-container {
-    padding: 0 1;
+    padding: 0 2;
     height: 100%;
 }
 
@@ -121,14 +135,14 @@ Screen {
 #profile-table {
     height: 1fr;
     min-height: 8;
-    border: solid $primary;
-    background: $surface-darken-1;
+    border: round $primary;
+    background: $surface;
 }
 
 #profile-details-panel {
     width: 60%;
     padding-left: 1;
-    border-left: solid $primary;
+    border-left: heavy $primary;
     height: 100%;
     overflow-y: auto;
 }
@@ -136,47 +150,46 @@ Screen {
 #profile-details {
     height: auto;
     padding: 1;
-    border: solid $secondary;
-    background: $surface-darken-1;
+    border: round $secondary;
+    background: $surface;
 }
 
 /* Agent wizard screen */
 #wizard-container {
-    padding: 0 1;
+    padding: 0 2;
     height: 1fr;
 }
 
 #existing-agents-table {
-    height: auto;
+    height: 1fr;
     min-height: 6;
-    max-height: 12;
     margin: 0 0 1 0;
-    border: solid $success;
-    background: $surface-darken-1;
+    border: round $success;
+    background: $surface;
 }
 
 #existing-agents-summary {
     color: $text-muted;
     padding: 0 1;
-    border-left: solid $success;
+    border-left: thick $success;
     background: $surface-darken-1;
 }
 
 #delete-buttons {
     height: auto;
-    margin: 0 0 1 0;
+    margin: 1 0;
     align: left middle;
 }
 
 #delete-buttons Button {
-    margin-right: 1;
+    margin-right: 2;
 }
 
 #delete-status {
     color: $text-muted;
     padding: 0 1;
     margin-bottom: 1;
-    border-left: solid $warning;
+    border-left: thick $warning;
     background: $surface-darken-1;
 }
 
@@ -184,6 +197,7 @@ Screen {
     height: auto;
     align: left middle;
     padding: 0;
+    margin-bottom: 1;
 }
 
 .section-header-with-button Static {
@@ -192,7 +206,7 @@ Screen {
 
 .section-header-with-button Button {
     width: auto;
-    margin-left: 1;
+    margin-left: 2;
 }
 
 .small-button {
@@ -201,10 +215,10 @@ Screen {
 }
 
 #config-inputs {
-    margin: 0 0 1 0;
+    margin: 1 0;
     padding: 1;
-    border: solid $secondary;
-    background: $surface-darken-1;
+    border: round $secondary;
+    background: $surface;
 }
 
 #config-inputs Vertical {
@@ -217,15 +231,16 @@ Screen {
 }
 
 #workflow-container {
-    padding: 0 1;
+    padding: 0 2;
+    height: 1fr;
 }
 
 #existing-workflows-panel,
 #create-workflows-panel {
-    margin: 0 0 1 0;
+    margin: 1 0;
     padding: 1;
-    border: solid $secondary;
-    background: $surface-darken-1;
+    border: round $secondary;
+    background: $surface;
     height: auto;
 }
 
@@ -236,12 +251,11 @@ Screen {
 #existing-workflows-table,
 #workflow-templates-table,
 #workflows-table {
-    height: auto;
+    height: 1fr;
     min-height: 6;
-    max-height: 14;
     margin: 0 0 1 0;
-    border: solid $primary;
-    background: $surface-darken-1;
+    border: round $primary;
+    background: $surface;
 }
 
 .info-text {
@@ -250,11 +264,10 @@ Screen {
 }
 
 #agents-table {
-    height: auto;
-    min-height: 6;
-    max-height: 15;
-    border: solid $primary;
-    background: $surface-darken-1;
+    height: 1fr;
+    min-height: 10;
+    border: round $primary;
+    background: $surface;
 }
 
 /* Simulation screen - base styles only, detailed styles in screen's DEFAULT_CSS */
@@ -266,14 +279,14 @@ Screen {
 #progress-panel {
     height: auto;
     padding: 1;
-    border: solid $primary;
+    border: round $primary;
     background: $surface;
     margin-bottom: 1;
 }
 
 #log-panel {
     height: 1fr;
-    border: solid $primary;
+    border: round $primary;
     background: $surface;
 }
 
@@ -286,13 +299,14 @@ Screen {
 #metrics-grid {
     grid-size: 3;
     grid-columns: 1fr 1fr 1fr;
-    grid-gutter: 1;
+    grid-gutter: 2;
     height: auto;
+    margin: 1 0;
 }
 
 .metric-box {
-    padding: 1;
-    border: tall $primary;
+    padding: 2;
+    border: round $primary;
     background: $surface;
     align: center middle;
     text-align: center;
@@ -306,13 +320,14 @@ Screen {
 .metric-value {
     color: $accent;
     text-style: bold;
+    margin-top: 1;
 }
 
 /* Results section styling */
 .results-section {
     margin-bottom: 2;
     padding: 1;
-    border: thick $secondary;
+    border: round $secondary;
     background: $surface;
 }
 
@@ -328,11 +343,12 @@ Screen {
 .summary-text {
     padding: 1;
     margin-bottom: 1;
-    border-bottom: solid $panel;
+    border-bottom: heavy $panel;
 }
 
 .table-container {
     height: auto;
+    margin-top: 1;
 }
 
 .table-box {
@@ -353,7 +369,7 @@ Screen {
 }
 
 TabPane {
-    padding: 1;
+    padding: 1 2;
 }
 
 TabbedContent {
@@ -365,14 +381,15 @@ TabbedContent {
     color: $text;
     padding: 1;
     text-style: bold italic;
+    border-bottom: heavy $primary-darken-2;
 }
 
 /* Data tables */
 DataTable {
     height: 1fr;
     min-height: 6;
-    max-height: 20;
     scrollbar-gutter: stable;
+    border: round $primary;
 }
 
 DataTable > .datatable--header {
@@ -397,11 +414,12 @@ DataTable > .datatable--odd-row {
 /* Progress bars */
 ProgressBar {
     padding: 0;
+    margin: 1 0;
 }
 
 /* Radio buttons */
 RadioSet {
-    margin: 0;
+    margin: 1 0;
 }
 
 /* Inputs */
@@ -412,36 +430,44 @@ Input {
 /* Notifications */
 Toast {
     width: auto;
+    padding: 1 2;
 }
 
 /* Agent Management Screen */
 #manage-agents-container {
-    padding: 0 1;
+    padding: 0 2;
+}
+
+/* Evaluation Screen */
+#evaluation-container {
+    padding: 0 2;
+    height: 1fr;
 }
 
 /* Daemon Screen */
 #daemon-container {
-    padding: 0 1;
+    padding: 0 2;
 }
 
 #daemon-metrics {
     margin: 1 0;
     padding: 1;
-    border: solid $primary;
+    border: round $primary;
     background: $surface-darken-1;
 }
 
 .metric-row {
     height: auto;
+    margin: 1 0;
 }
 
 .metric-label {
-    width: 16;
+    width: 20;
     text-style: bold;
 }
 
 .metric-value {
-    width: 12;
+    width: 15;
 }
 
 .status-running {
@@ -457,11 +483,15 @@ Toast {
 Header {
     background: $primary;
     color: $text;
+    dock: top;
+    height: 1;
 }
 
 /* Footer styling */
 Footer {
-    background: $surface;
+    background: $surface-darken-2;
+    dock: bottom;
+    height: 1;
 }
 
 /* Button theming */
@@ -469,6 +499,8 @@ Button {
     background: $primary;
     color: $text;
     border: none;
+    height: 3;
+    min-width: 10;
 }
 
 Button:hover {
@@ -477,6 +509,7 @@ Button:hover {
 
 Button:focus {
     background: $primary-darken-1;
+    border: wide $accent;
 }
 
 Button.-primary {
@@ -500,21 +533,21 @@ Button.-error {
 Input {
     margin: 0;
     background: $surface;
-    border: tall $primary;
+    border: round $primary;
 }
 
 Input:focus {
-    border: tall $accent;
+    border: round $accent;
 }
 
 /* Select widgets */
 Select {
     background: $surface;
-    border: tall $primary;
+    border: round $primary;
 }
 
 Select:focus {
-    border: tall $accent;
+    border: round $accent;
 }
 
 /* General text colors */
