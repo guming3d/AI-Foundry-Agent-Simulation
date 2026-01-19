@@ -8,6 +8,16 @@ Screen {
     color: $text;
 }
 
+* {
+    scrollbar-color: $primary;
+    scrollbar-color-hover: $primary-lighten-1;
+    scrollbar-color-active: $primary-lighten-1;
+    scrollbar-background: $panel;
+    scrollbar-background-hover: $panel;
+    scrollbar-background-active: $panel;
+    scrollbar-corner-color: $panel;
+}
+
 /* Title styles */
 #title, .screen-title {
     width: 100%;
