@@ -283,7 +283,9 @@ class EvaluationScreen(Screen):
                 self._populate_templates_table()
 
         if table.id == "evaluation-agents-table":
-            agent_name = row_data[1] if row_data else None
+            agent_name = self.agent_row_keys.get(row_key)
+            if agent_name is None and row_data:
+                agent_name = row_data[1]
             if agent_name:
                 if agent_name in self.selected_agent_names:
                     self.selected_agent_names.discard(agent_name)
@@ -328,7 +330,7 @@ class EvaluationScreen(Screen):
                 name[:25] + "..." if len(name) > 25 else name,
                 agent.get("model", "N/A"),
             )
-            self.agent_row_keys[name] = row_key
+            self.agent_row_keys[row_key] = name
 
     def action_refresh_agents(self) -> None:
         """Refresh agents list."""

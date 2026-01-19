@@ -326,6 +326,7 @@ Button.-error {
 #wizard-container,
 #workflow-container {
     padding: 0 1;
+    height: 1fr;
 }
 
 /* Existing items panels */

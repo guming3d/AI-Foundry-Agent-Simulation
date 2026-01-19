@@ -29,6 +29,11 @@ class AgentWizardScreen(Screen):
 
     #wizard-container {
         padding: 0 1;
+        height: 1fr;
+    }
+
+    VerticalScroll {
+        height: 1fr;
     }
 
     /* Existing agents section - compact */
@@ -104,7 +109,8 @@ class AgentWizardScreen(Screen):
     /* Create buttons */
     #create-buttons {
         height: auto;
-        margin: 0;
+        margin: 0 0 1 0;
+        padding: 0 1;
         align: left middle;
     }
 
@@ -234,11 +240,6 @@ class AgentWizardScreen(Screen):
                     id="config-row",
                 ),
                 Static(id="total-agents"),
-                Horizontal(
-                    Button("Create Agents [C]", id="btn-create", variant="primary"),
-                    Button("Back", id="btn-back", variant="default"),
-                    id="create-buttons",
-                ),
                 Static("Tip: Use Daemon mode for continuous production traffic simulation", classes="tip-text"),
                 id="config-section",
             ),
@@ -259,6 +260,12 @@ class AgentWizardScreen(Screen):
             ),
 
             id="wizard-container",
+        )
+
+        yield Horizontal(
+            Button("Create Agents [C]", id="btn-create", variant="primary"),
+            Button("Back", id="btn-back", variant="default"),
+            id="create-buttons",
         )
 
     def on_mount(self) -> None:

@@ -24,6 +24,11 @@ class WorkflowWizardScreen(Screen):
 
     #workflow-container {
         padding: 0 1;
+        height: 1fr;
+    }
+
+    VerticalScroll {
+        height: 1fr;
     }
 
     /* Existing workflows section */
@@ -117,7 +122,8 @@ class WorkflowWizardScreen(Screen):
 
     #create-buttons {
         height: auto;
-        margin: 0;
+        margin: 0 0 1 0;
+        padding: 0 1;
         align: left middle;
     }
 
@@ -238,11 +244,6 @@ class WorkflowWizardScreen(Screen):
                     id="config-row",
                 ),
                 Static(id="total-workflows"),
-                Horizontal(
-                    Button("Create Workflows [C]", id="btn-create", variant="primary"),
-                    Button("Back", id="btn-back", variant="default"),
-                    id="create-buttons",
-                ),
                 Static("Workflows create prompt agents and a workflow agent to chain them.", classes="tip-text"),
                 id="create-section",
             ),
@@ -263,6 +264,12 @@ class WorkflowWizardScreen(Screen):
             ),
 
             id="workflow-container",
+        )
+
+        yield Horizontal(
+            Button("Create Workflows [C]", id="btn-create", variant="primary"),
+            Button("Back", id="btn-back", variant="default"),
+            id="create-buttons",
         )
 
     def on_mount(self) -> None:
