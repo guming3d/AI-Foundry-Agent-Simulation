@@ -17,6 +17,160 @@ from src.core.workflow_manager import WorkflowManager
 class WorkflowWizardScreen(Screen):
     """Screen for creating workflows from industry profiles."""
 
+    DEFAULT_CSS = """
+    WorkflowWizardScreen {
+        layout: vertical;
+    }
+
+    #workflow-container {
+        padding: 0 1;
+    }
+
+    /* Existing workflows section */
+    #existing-section {
+        height: auto;
+        margin: 0 0 1 0;
+        padding: 1;
+        border: solid $secondary-darken-1;
+        background: $surface-darken-1;
+    }
+
+    #existing-workflows-table {
+        height: auto;
+        min-height: 4;
+        max-height: 8;
+        margin: 0;
+    }
+
+    #existing-workflows-summary {
+        margin: 0 0 1 0;
+    }
+
+    /* Create section */
+    #create-section {
+        height: auto;
+        margin: 0 0 1 0;
+        padding: 1;
+        border: solid $primary-darken-2;
+        background: $surface-darken-1;
+    }
+
+    #templates-status {
+        margin: 0 0 1 0;
+    }
+
+    #workflow-templates-table {
+        height: auto;
+        min-height: 4;
+        max-height: 10;
+        margin: 0 0 1 0;
+    }
+
+    #template-buttons {
+        height: auto;
+        margin: 0 0 1 0;
+        align: left middle;
+    }
+
+    #template-buttons Button {
+        margin-right: 1;
+    }
+
+    /* Configuration row */
+    #config-summary {
+        margin: 0 0 1 0;
+        padding: 0 1;
+        border-left: solid $accent;
+        background: $surface-darken-2;
+    }
+
+    #config-buttons {
+        height: auto;
+        margin: 0 0 1 0;
+        align: left middle;
+    }
+
+    #config-buttons Button {
+        margin-right: 1;
+    }
+
+    #config-row {
+        height: auto;
+        margin: 0 0 1 0;
+    }
+
+    #config-row Vertical {
+        width: 1fr;
+        margin-right: 2;
+    }
+
+    #config-row Input {
+        width: 100%;
+    }
+
+    #total-workflows {
+        color: $accent;
+        text-style: bold;
+        padding: 0;
+        margin: 0 0 1 0;
+    }
+
+    #create-buttons {
+        height: auto;
+        margin: 0;
+        align: left middle;
+    }
+
+    #create-buttons Button {
+        margin-right: 1;
+    }
+
+    .tip-text {
+        color: $text-muted;
+        text-style: italic;
+        margin: 1 0 0 0;
+    }
+
+    /* Progress section */
+    #progress-section {
+        height: auto;
+        margin: 0 0 1 0;
+        padding: 1;
+        border: solid $success-darken-1;
+        background: $surface-darken-1;
+    }
+
+    #progress-bar {
+        margin: 0 0 1 0;
+    }
+
+    #progress-status {
+        margin: 0;
+    }
+
+    /* Recently created section */
+    #recent-section {
+        height: auto;
+        margin: 0;
+        padding: 1;
+        border: solid $success-darken-1;
+        background: $surface-darken-1;
+    }
+
+    #workflows-table {
+        height: auto;
+        min-height: 4;
+        max-height: 8;
+        margin: 0;
+    }
+
+    .section-header {
+        text-style: bold;
+        color: $primary;
+        margin: 0 0 1 0;
+    }
+    """
+
     BINDINGS = [
         ("escape", "app.pop_screen()", "Back"),
         ("c", "create_workflows", "Create Workflows"),
@@ -40,30 +194,32 @@ class WorkflowWizardScreen(Screen):
         yield Static("Workflow Builder", id="title", classes="screen-title")
 
         yield VerticalScroll(
+            # Existing Workflows Section
             Vertical(
                 Horizontal(
-                    Static("Existing Workflows", classes="section-title"),
+                    Static("Existing Workflows in Azure", classes="section-header"),
                     Button("Refresh", id="btn-refresh-existing-workflows", variant="default"),
                     classes="section-header-with-button",
                 ),
                 Static(id="existing-workflows-summary", classes="info-text"),
                 DataTable(id="existing-workflows-table"),
-                id="existing-workflows-panel",
+                id="existing-section",
             ),
+
+            # Create New Workflows Section
             Vertical(
                 Horizontal(
-                    Static("Create New Workflows", classes="section-title"),
-                    Button("Refresh Templates [R]", id="btn-refresh-templates", variant="default"),
+                    Static("Create New Workflows", classes="section-header"),
+                    Button("Refresh [R]", id="btn-refresh-templates", variant="default"),
                     classes="section-header-with-button",
                 ),
                 Static(id="templates-status", classes="info-text"),
                 DataTable(id="workflow-templates-table"),
                 Horizontal(
-                    Button("Select All [S]", id="btn-select-all", variant="primary"),
-                    Button("Deselect All [U]", id="btn-deselect-all", variant="primary"),
+                    Button("Select All", id="btn-select-all", variant="primary"),
+                    Button("Deselect", id="btn-deselect-all", variant="default"),
                     id="template-buttons",
                 ),
-                Static("Current Configuration:", classes="section-title"),
                 Static(id="config-summary", classes="info-text"),
                 Horizontal(
                     Button("Select Profile [P]", id="btn-profile", variant="default"),
@@ -74,34 +230,36 @@ class WorkflowWizardScreen(Screen):
                     Vertical(
                         Static("Organizations:", classes="label"),
                         Input(value="1", id="org-count", type="integer"),
-                        id="org-input",
                     ),
                     Vertical(
                         Static("Workflows per template:", classes="label"),
                         Input(value="1", id="workflow-count", type="integer"),
-                        id="workflow-input",
                     ),
-                    id="config-inputs",
+                    id="config-row",
                 ),
-                Static(id="total-workflows", classes="info-text"),
+                Static(id="total-workflows"),
                 Horizontal(
                     Button("Create Workflows [C]", id="btn-create", variant="primary"),
-                    id="button-bar",
+                    Button("Back", id="btn-back", variant="default"),
+                    id="create-buttons",
                 ),
-                Static(
-                    "Tip: Workflows are created as workflow agents and reference new prompt agents.",
-                    classes="info-text",
-                ),
-                Static("Progress:", classes="section-title"),
-                ProgressBar(id="progress-bar", total=100, show_eta=False),
-                Static(id="progress-status", classes="info-text"),
-                Static("Recently Created Workflows:", classes="section-title"),
-                DataTable(id="workflows-table"),
-                id="create-workflows-panel",
+                Static("Workflows create prompt agents and a workflow agent to chain them.", classes="tip-text"),
+                id="create-section",
             ),
-            Horizontal(
-                Button("Back", id="btn-back"),
-                id="workflow-footer",
+
+            # Progress Section
+            Vertical(
+                Static("Progress", classes="section-header"),
+                ProgressBar(id="progress-bar", total=100, show_eta=False),
+                Static("Ready", id="progress-status", classes="info-text"),
+                id="progress-section",
+            ),
+
+            # Recently Created Workflows
+            Vertical(
+                Static("Recently Created Workflows", classes="section-header"),
+                DataTable(id="workflows-table"),
+                id="recent-section",
             ),
 
             id="workflow-container",
@@ -135,13 +293,10 @@ class WorkflowWizardScreen(Screen):
         state = get_state()
         summary = self.query_one("#config-summary", Static)
 
-        models = ", ".join(state.selected_models) if state.selected_models else "None selected (press M)"
-        profile = state.current_profile.metadata.name if state.current_profile else "None selected (press P)"
+        models = ", ".join(state.selected_models) if state.selected_models else "None (press M)"
+        profile = state.current_profile.metadata.name if state.current_profile else "None (press P)"
 
-        summary.update(f"""
-  Profile: {profile}
-  Models: {models}
-        """)
+        summary.update(f"Profile: {profile} | Models: {models}")
 
     def _update_total_workflows(self) -> None:
         """Update total workflows display."""
@@ -157,11 +312,10 @@ class WorkflowWizardScreen(Screen):
         total = org_count * workflow_count * selected_count
         if selected_count:
             total_label.update(
-                f"Total workflows to create: {total} "
-                f"({org_count} orgs × {workflow_count} per template × {selected_count} templates)"
+                f"Total: {total} workflows ({org_count} orgs x {workflow_count} per template x {selected_count} templates)"
             )
         else:
-            total_label.update("Total workflows to create: 0 (select templates)")
+            total_label.update("Total: 0 (select templates)")
 
     def _load_created_workflows(self) -> None:
         """Load recently created workflows from state."""
@@ -199,13 +353,13 @@ class WorkflowWizardScreen(Screen):
             self.app.call_from_thread(self._populate_existing_table, workflows)
             self.app.call_from_thread(
                 self._update_existing_summary,
-                f"Found {len(workflows)} existing workflows in Azure AI Foundry project"
+                f"Found {len(workflows)} workflows in Azure"
             )
 
         except Exception as e:
             self.app.call_from_thread(
                 self._update_existing_summary,
-                f"Error loading workflows: {e}"
+                f"Error: {e}"
             )
             self.app.call_from_thread(self.notify, f"Error: {e}", severity="error")
 
@@ -226,8 +380,8 @@ class WorkflowWizardScreen(Screen):
             version = workflow.get("version")
             table.add_row(
                 workflow.get("name", ""),
-                workflow.get("id", ""),
-                str(version) if version is not None else "Unknown",
+                workflow.get("id", "")[:16] + "..." if len(workflow.get("id", "")) > 16 else workflow.get("id", ""),
+                str(version) if version is not None else "N/A",
             )
 
     def action_refresh_templates(self) -> None:
@@ -239,7 +393,7 @@ class WorkflowWizardScreen(Screen):
             self.templates = []
             self.selected_template_ids = set()
             self._populate_templates_table([])
-            status.update("Select an industry profile (P) to view workflow templates.")
+            status.update("Select an industry profile (P) to view workflow templates")
             self._update_total_workflows()
             return
 
@@ -248,9 +402,9 @@ class WorkflowWizardScreen(Screen):
         self._populate_templates_table(self.templates)
 
         if not self.templates:
-            status.update("No workflow templates available for this profile.")
+            status.update("No workflow templates available for this profile")
         else:
-            status.update(f"Loaded {len(self.templates)} templates for {state.current_profile.metadata.name}.")
+            status.update(f"Loaded {len(self.templates)} templates for {state.current_profile.metadata.name}")
 
         self._update_total_workflows()
 
@@ -271,8 +425,8 @@ class WorkflowWizardScreen(Screen):
             row_key = table.add_row(
                 "[X]" if is_selected else "[ ]",
                 template.name,
-                roles_display,
-                template.description,
+                roles_display[:30] + "..." if len(roles_display) > 30 else roles_display,
+                template.description[:40] + "..." if len(template.description) > 40 else template.description,
             )
             self.template_row_keys[template.id] = row_key
 

@@ -8,7 +8,7 @@ for batch agent operations.
 from textual.app import ComposeResult
 from textual.screen import Screen
 from textual.widgets import Static, Button
-from textual.containers import Container, Vertical, Horizontal
+from textual.containers import Container, Vertical, Horizontal, Grid
 from textual import work
 
 from ui.shared.state_manager import get_state
@@ -17,19 +17,99 @@ from .theme_select import ThemeSelectScreen
 from ui.terminal.preferences import get_preferences
 
 
+# Compact ASCII logo
 LOGO = """
-    _    ___   _____                     _
-   / \\  |_ _| |  ___|__  _   _ _ __   __| |_ __ _   _
-  / _ \\  | |  | |_ / _ \\| | | | '_ \\ / _` | '__| | | |
- / ___ \\ | |  |  _| (_) | |_| | | | | (_| | |  | |_| |
-/_/   \\_\\___| |_|  \\___/ \\__,_|_| |_|\\__,_|_|   \\__, |
-                                                |___/
-      Control-Plane Batch Agent Operation
-"""
+ ╔═══════════════════════════════════════════════════════════╗
+ ║     █████╗ ██╗    ███████╗ ██████╗ ██╗   ██╗███╗   ██╗    ║
+ ║    ██╔══██╗██║    ██╔════╝██╔═══██╗██║   ██║████╗  ██║    ║
+ ║    ███████║██║    █████╗  ██║   ██║██║   ██║██╔██╗ ██║    ║
+ ║    ██╔══██║██║    ██╔══╝  ██║   ██║██║   ██║██║╚██╗██║    ║
+ ║    ██║  ██║██║    ██║     ╚██████╔╝╚██████╔╝██║ ╚████║    ║
+ ║    ╚═╝  ╚═╝╚═╝    ╚═╝      ╚═════╝  ╚═════╝ ╚═╝  ╚═══╝    ║
+ ║           Control-Plane  Batch Agent Operation            ║
+ ╚═══════════════════════════════════════════════════════════╝"""
 
 
 class HomeScreen(Screen):
     """Home screen with navigation and status."""
+
+    DEFAULT_CSS = """
+    HomeScreen {
+        layout: vertical;
+    }
+
+    #home-container {
+        padding: 0 2;
+        align: center top;
+    }
+
+    #logo {
+        text-align: center;
+        color: $primary;
+        padding: 0;
+        margin: 0;
+    }
+
+    #nav-buttons {
+        margin: 1 0;
+        height: auto;
+        align: center middle;
+    }
+
+    #nav-buttons Button {
+        margin: 0 1;
+        min-width: 16;
+    }
+
+    /* Status Grid - Dashboard style */
+    #status-grid {
+        grid-size: 3 2;
+        grid-columns: 1fr 1fr 1fr;
+        grid-rows: auto auto;
+        grid-gutter: 1;
+        margin: 0 0 1 0;
+        padding: 0 4;
+        height: auto;
+    }
+
+    .status-card {
+        padding: 1;
+        border: round $primary-darken-2;
+        background: $surface;
+        height: auto;
+        min-height: 4;
+    }
+
+    .status-card-header {
+        color: $text-muted;
+        text-style: bold;
+        margin-bottom: 0;
+    }
+
+    .status-card-value {
+        color: $accent;
+        text-style: bold;
+    }
+
+    .status-card-value.text-success {
+        color: $success;
+    }
+
+    .status-card-value.text-warning {
+        color: $warning;
+    }
+
+    /* Bottom buttons */
+    #nav-buttons-extra {
+        margin: 0;
+        height: auto;
+        align: center middle;
+    }
+
+    #nav-buttons-extra Button {
+        margin: 0 1;
+    }
+    """
 
     BINDINGS = [
         ("a", "go_agents", "Agents"),
@@ -58,32 +138,54 @@ class HomeScreen(Screen):
     def compose(self) -> ComposeResult:
         yield Container(
             Static(LOGO, id="logo"),
-            Static("Welcome to Azure AI Foundry Control-Plane Batch Agent Operation", id="welcome"),
 
             # Navigation buttons
             Horizontal(
                 Button("Agents [A]", id="btn-agents", variant="primary"),
                 Button("Workflows [W]", id="btn-workflows", variant="primary"),
                 Button("Evaluations [E]", id="btn-evaluations", variant="primary"),
-                Button("Simulate [S]", id="btn-simulate", variant="primary"),
+                Button("Simulate [S]", id="btn-simulate", variant="success"),
                 id="nav-buttons",
             ),
 
-            # Current Status - wrapped in bordered panel
-            Vertical(
-                Static("Current Status:", classes="section-title"),
-                Static(id="status-models", classes="info-text"),
-                Static(id="status-profile", classes="info-text"),
-                Static(id="status-agents-azure", classes="info-text"),
-                Static(id="status-agents-session", classes="info-text"),
-                Static(id="status-workflows-session", classes="info-text"),
-                Static(id="status-evaluations", classes="info-text"),
-                id="status-panel",
+            # Status Dashboard Grid
+            Grid(
+                Vertical(
+                    Static("Models Selected", classes="status-card-header"),
+                    Static("0", id="status-models-value", classes="status-card-value"),
+                    classes="status-card",
+                ),
+                Vertical(
+                    Static("Industry Profile", classes="status-card-header"),
+                    Static("None", id="status-profile-value", classes="status-card-value"),
+                    classes="status-card",
+                ),
+                Vertical(
+                    Static("Agents in Azure", classes="status-card-header"),
+                    Static("Loading...", id="status-azure-value", classes="status-card-value"),
+                    classes="status-card",
+                ),
+                Vertical(
+                    Static("Session Agents", classes="status-card-header"),
+                    Static("0", id="status-session-agents-value", classes="status-card-value"),
+                    classes="status-card",
+                ),
+                Vertical(
+                    Static("Session Workflows", classes="status-card-header"),
+                    Static("0", id="status-session-workflows-value", classes="status-card-value"),
+                    classes="status-card",
+                ),
+                Vertical(
+                    Static("Evaluations Run", classes="status-card-header"),
+                    Static("0", id="status-evaluations-value", classes="status-card-value"),
+                    classes="status-card",
+                ),
+                id="status-grid",
             ),
 
             # Settings row with theme button and exit
             Horizontal(
-                Button("Theme", id="btn-theme", variant="default"),
+                Button("Theme [T]", id="btn-theme", variant="default"),
                 Button("Setup [C]", id="btn-setup", variant="default"),
                 Button("Exit [Q]", id="btn-exit", variant="error"),
                 id="nav-buttons-extra",
@@ -106,49 +208,49 @@ class HomeScreen(Screen):
         """Update the status display."""
         state = get_state()
 
-        models_status = self.query_one("#status-models", Static)
+        # Models
+        models_value = self.query_one("#status-models-value", Static)
         models_count = len(state.selected_models)
+        models_value.update(str(models_count) if models_count else "None")
         if models_count:
-            models_status.update(f"  Models: {models_count} selected")
+            models_value.remove_class("text-warning")
+            models_value.add_class("text-success")
         else:
-            models_status.update("  Models: None selected")
+            models_value.remove_class("text-success")
+            models_value.add_class("text-warning")
 
-        profile_status = self.query_one("#status-profile", Static)
+        # Profile
+        profile_value = self.query_one("#status-profile-value", Static)
         if state.current_profile:
-            profile_status.update(f"  Profile: {state.current_profile.metadata.name}")
+            profile_value.update(state.current_profile.metadata.name)
+            profile_value.remove_class("text-warning")
+            profile_value.add_class("text-success")
         else:
-            profile_status.update("  Profile: None selected")
+            profile_value.update("None")
+            profile_value.remove_class("text-success")
+            profile_value.add_class("text-warning")
 
-        # Azure agents status
-        azure_status = self.query_one("#status-agents-azure", Static)
+        # Azure agents
+        azure_value = self.query_one("#status-azure-value", Static)
         if self.is_loading_agents:
-            azure_status.update("  Agents in Azure: Loading...")
-        elif self.azure_agent_count > 0:
-            azure_status.update(f"  Agents in Azure: {self.azure_agent_count} existing")
+            azure_value.update("Loading...")
         else:
-            azure_status.update("  Agents in Azure: 0 (no agents deployed)")
+            azure_value.update(str(self.azure_agent_count))
 
-        # Session agents status
-        session_status = self.query_one("#status-agents-session", Static)
+        # Session agents
+        session_agents_value = self.query_one("#status-session-agents-value", Static)
         session_count = len(state.created_agents)
-        if session_count:
-            session_status.update(f"  Agents in Session: {session_count} created this session")
-        else:
-            session_status.update("  Agents in Session: None created")
+        session_agents_value.update(str(session_count))
 
-        workflows_status = self.query_one("#status-workflows-session", Static)
+        # Session workflows
+        workflows_value = self.query_one("#status-session-workflows-value", Static)
         workflows_count = len(state.created_workflows)
-        if workflows_count:
-            workflows_status.update(f"  Workflows in Session: {workflows_count} created this session")
-        else:
-            workflows_status.update("  Workflows in Session: None created")
+        workflows_value.update(str(workflows_count))
 
-        evaluations_status = self.query_one("#status-evaluations", Static)
+        # Evaluations
+        evaluations_value = self.query_one("#status-evaluations-value", Static)
         evaluation_count = len(state.evaluation_runs)
-        if evaluation_count:
-            evaluations_status.update(f"  Evaluations: {evaluation_count} run(s) this session")
-        else:
-            evaluations_status.update("  Evaluations: None run yet")
+        evaluations_value.update(str(evaluation_count))
 
     @work(thread=True)
     def _load_azure_agent_count(self) -> None:

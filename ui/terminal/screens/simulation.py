@@ -38,24 +38,24 @@ class SimulationScreen(Screen):
     .config-section {
         height: auto;
         padding: 1;
-        margin-bottom: 1;
-        border: solid $secondary;
+        margin: 0 0 1 0;
+        border: solid $secondary-darken-1;
         background: $surface-darken-1;
     }
 
     .config-section-title {
         text-style: bold;
         color: $primary;
-        margin-bottom: 1;
+        margin: 0 0 1 0;
     }
 
     .config-row {
         height: auto;
-        margin-bottom: 1;
+        margin: 0 0 1 0;
     }
 
     .config-row:last-of-type {
-        margin-bottom: 0;
+        margin: 0;
     }
 
     .input-label {
@@ -69,7 +69,8 @@ class SimulationScreen(Screen):
 
     .button-row {
         height: auto;
-        padding: 1 0;
+        padding: 0;
+        margin: 0 0 1 0;
         align: center middle;
     }
 
@@ -80,14 +81,14 @@ class SimulationScreen(Screen):
     /* One-time simulation tab */
     #onetime-config {
         height: auto;
-        margin-bottom: 1;
+        margin: 0 0 1 0;
     }
 
     #onetime-type-section {
         height: auto;
         padding: 1;
-        margin-bottom: 1;
-        border: solid $accent;
+        margin: 0 0 1 0;
+        border: solid $accent-darken-1;
         background: $surface-darken-1;
     }
 
@@ -99,33 +100,33 @@ class SimulationScreen(Screen):
     #onetime-progress-section {
         height: auto;
         padding: 1;
-        margin-bottom: 1;
-        border: solid $primary;
+        margin: 0 0 1 0;
+        border: solid $primary-darken-2;
         background: $surface-darken-1;
     }
 
     #onetime-log-section {
         height: 1fr;
-        min-height: 8;
+        min-height: 6;
     }
 
     #onetime-log {
         height: 1fr;
-        border: solid $primary;
+        border: solid $primary-darken-2;
         background: $surface-darken-1;
     }
 
     /* Daemon simulation tab */
     #daemon-config {
         height: auto;
-        margin-bottom: 1;
+        margin: 0 0 1 0;
     }
 
     #daemon-status-section {
         height: auto;
         padding: 1;
-        margin-bottom: 1;
-        border: solid $accent;
+        margin: 0 0 1 0;
+        border: solid $accent-darken-1;
         background: $surface-darken-1;
     }
 
@@ -145,8 +146,8 @@ class SimulationScreen(Screen):
     #daemon-metrics-section {
         height: auto;
         padding: 1;
-        margin-bottom: 1;
-        border: solid $primary;
+        margin: 0 0 1 0;
+        border: solid $primary-darken-2;
         background: $surface-darken-1;
     }
 
@@ -159,9 +160,10 @@ class SimulationScreen(Screen):
 
     .metric-box {
         padding: 1;
-        border: tall $secondary;
+        border: round $secondary-darken-1;
         background: $surface;
         height: auto;
+        min-height: 4;
         align: center middle;
         text-align: center;
     }
@@ -178,20 +180,20 @@ class SimulationScreen(Screen):
 
     #daemon-log-section {
         height: 1fr;
-        min-height: 8;
+        min-height: 6;
     }
 
     #daemon-log {
         height: 1fr;
-        border: solid $primary;
+        border: solid $primary-darken-2;
         background: $surface-darken-1;
     }
 
     /* Results tab */
     .results-section {
-        margin-bottom: 1;
+        margin: 0 0 1 0;
         padding: 1;
-        border: solid $secondary;
+        border: solid $secondary-darken-1;
         background: $surface-darken-1;
     }
 
@@ -201,12 +203,13 @@ class SimulationScreen(Screen):
         color: $text;
         text-style: bold;
         padding: 0 1;
-        margin-bottom: 1;
+        margin: 0 0 1 0;
     }
 
     .summary-text {
-        padding: 1;
-        margin-bottom: 1;
+        padding: 0 1;
+        margin: 0 0 1 0;
+        border-bottom: dashed $panel;
     }
 
     .table-container {
@@ -221,7 +224,7 @@ class SimulationScreen(Screen):
     .table-title {
         text-style: bold;
         color: $accent;
-        margin-bottom: 1;
+        margin: 0 0 1 0;
         text-align: center;
     }
     """

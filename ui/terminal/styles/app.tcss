@@ -1,76 +1,113 @@
 /* Azure AI Foundry Agent Toolkit - Textual CSS Styles */
-/* This stylesheet uses Textual theme variables for full theme support.
+/* Professional theme with optimized space utilization.
    Press 't' to cycle through available themes. */
 
-/* Global styles */
+/* ============================================
+   GLOBAL STYLES
+   ============================================ */
+
 Screen {
     background: $background;
+    padding: 0;
 }
 
-/* Title styles */
+/* ============================================
+   TYPOGRAPHY
+   ============================================ */
+
+/* Screen title - compact header bar */
 #title, .screen-title {
-    text-align: center;
+    background: $primary;
+    color: $text;
     text-style: bold;
-    color: $primary;
-    padding: 0;
-    margin-bottom: 0;
+    text-align: center;
+    padding: 0 1;
+    margin: 0 0 1 0;
+    width: 100%;
 }
 
 .description {
     color: $text-muted;
     padding: 0 1;
-    margin-bottom: 0;
+    margin: 0 0 1 0;
 }
 
-/* Section titles */
+/* Section headers - subtle but clear */
 .section-title {
     text-style: bold;
-    color: $secondary;
-    margin-top: 0;
-    margin-bottom: 0;
-    padding-left: 1;
+    color: $primary;
+    padding: 0 0 0 1;
+    margin: 1 0 0 0;
+    border-bottom: solid $primary-darken-2;
 }
 
-/* Home screen */
+.label {
+    color: $text-muted;
+    padding: 0 1 0 0;
+}
+
+/* ============================================
+   HOME SCREEN - Dashboard Style
+   ============================================ */
+
 #home-container {
-    padding: 0 1;
+    padding: 0 2;
+    align: center top;
 }
 
 #logo {
     text-align: center;
     color: $primary;
     padding: 0;
+    margin: 0;
 }
 
 #welcome {
     text-align: center;
-    color: $text;
-    padding: 0 0 1 0;
+    color: $accent;
     text-style: bold;
+    padding: 0;
+    margin: 0 0 1 0;
 }
 
+/* Navigation buttons - card-like appearance */
 #nav-buttons {
-    margin: 1 0;
+    margin: 0 0 1 0;
+    height: auto;
     align: center middle;
 }
 
 #nav-buttons Button {
     margin: 0 1;
+    min-width: 18;
 }
 
+/* Status panel - dashboard cards */
 #status-panel {
-    margin: 1 0;
+    margin: 0;
     padding: 1;
-    border: solid $secondary;
-    background: $surface-darken-1;
+    border: round $primary;
+    background: $surface;
+    height: auto;
+}
+
+#status-panel .section-title {
+    margin: 0 0 1 0;
+    padding: 0;
+    border: none;
+    color: $primary;
 }
 
 #status-panel .info-text {
-    padding: 0 1;
+    padding: 0;
+    margin: 0;
+    color: $text;
 }
 
+/* Bottom nav buttons */
 #nav-buttons-extra {
-    margin: 0;
+    margin: 1 0 0 0;
+    height: auto;
     align: center middle;
 }
 
@@ -78,300 +115,15 @@ Screen {
     margin: 0 1;
 }
 
-/* Model selection screen */
-#model-container {
-    padding: 0 1;
-    height: 100%;
-}
+/* ============================================
+   DATA TABLES - Compact & Responsive
+   ============================================ */
 
-#model-table {
-    height: 1fr;
-    min-height: 8;
-    max-height: 70%;
-    margin: 0;
-    border: solid $primary;
-    background: $surface-darken-1;
-}
-
-.status-bar {
-    dock: bottom;
-    height: 1;
-    padding: 0 1;
-    background: $primary-darken-2;
-    color: $text;
-}
-
-/* Profile screen */
-#profile-container {
-    padding: 0 1;
-    height: 100%;
-}
-
-#main-content {
-    height: 1fr;
-    min-height: 15;
-}
-
-#profile-list {
-    width: 40%;
-    padding-right: 1;
-    height: 100%;
-}
-
-#profile-table {
-    height: 1fr;
-    min-height: 8;
-    border: solid $primary;
-    background: $surface-darken-1;
-}
-
-#profile-details-panel {
-    width: 60%;
-    padding-left: 1;
-    border-left: solid $primary;
-    height: 100%;
-    overflow-y: auto;
-}
-
-#profile-details {
-    height: auto;
-    padding: 1;
-    border: solid $secondary;
-    background: $surface-darken-1;
-}
-
-/* Agent wizard screen */
-#wizard-container {
-    padding: 0 1;
-    height: 1fr;
-}
-
-#existing-agents-table {
-    height: auto;
-    min-height: 6;
-    max-height: 12;
-    margin: 0 0 1 0;
-    border: solid $success;
-    background: $surface-darken-1;
-}
-
-#existing-agents-summary {
-    color: $text-muted;
-    padding: 0 1;
-    border-left: solid $success;
-    background: $surface-darken-1;
-}
-
-#delete-buttons {
-    height: auto;
-    margin: 0 0 1 0;
-    align: left middle;
-}
-
-#delete-buttons Button {
-    margin-right: 1;
-}
-
-#delete-status {
-    color: $text-muted;
-    padding: 0 1;
-    margin-bottom: 1;
-    border-left: solid $warning;
-    background: $surface-darken-1;
-}
-
-.section-header-with-button {
-    height: auto;
-    align: left middle;
-    padding: 0;
-}
-
-.section-header-with-button Static {
-    width: 1fr;
-}
-
-.section-header-with-button Button {
-    width: auto;
-    margin-left: 1;
-}
-
-.small-button {
-    min-width: 15;
-    height: 1;
-}
-
-#config-inputs {
-    margin: 0 0 1 0;
-    padding: 1;
-    border: solid $secondary;
-    background: $surface-darken-1;
-}
-
-#config-inputs Vertical {
-    width: 1fr;
-    padding: 0 1;
-}
-
-#config-inputs Input {
-    width: 100%;
-}
-
-#workflow-container {
-    padding: 0 1;
-}
-
-#existing-workflows-panel,
-#create-workflows-panel {
-    margin: 0 0 1 0;
-    padding: 1;
-    border: solid $secondary;
-    background: $surface-darken-1;
-    height: auto;
-}
-
-#create-workflows-panel {
-    padding-bottom: 2;
-}
-
-#existing-workflows-table,
-#workflow-templates-table,
-#workflows-table {
-    height: auto;
-    min-height: 6;
-    max-height: 14;
-    margin: 0 0 1 0;
-    border: solid $primary;
-    background: $surface-darken-1;
-}
-
-.info-text {
-    color: $text-muted;
-    padding: 0 1;
-}
-
-#agents-table {
-    height: auto;
-    min-height: 6;
-    max-height: 15;
-    border: solid $primary;
-    background: $surface-darken-1;
-}
-
-/* Simulation screen - base styles only, detailed styles in screen's DEFAULT_CSS */
-#execution-panel {
-    margin-top: 1;
-    height: 1fr;
-}
-
-#progress-panel {
-    height: auto;
-    padding: 1;
-    border: solid $primary;
-    background: $surface;
-    margin-bottom: 1;
-}
-
-#log-panel {
-    height: 1fr;
-    border: solid $primary;
-    background: $surface;
-}
-
-#sim-log {
-    height: 1fr;
-    border: none;
-}
-
-/* Daemon Metrics Dashboard */
-#metrics-grid {
-    grid-size: 3;
-    grid-columns: 1fr 1fr 1fr;
-    grid-gutter: 1;
-    height: auto;
-}
-
-.metric-box {
-    padding: 1;
-    border: tall $primary;
-    background: $surface;
-    align: center middle;
-    text-align: center;
-}
-
-.metric-header {
-    color: $text-muted;
-    text-style: bold;
-}
-
-.metric-value {
-    color: $accent;
-    text-style: bold;
-}
-
-/* Results section styling */
-.results-section {
-    margin-bottom: 2;
-    padding: 1;
-    border: thick $secondary;
-    background: $surface;
-}
-
-.results-header {
-    text-align: center;
-    background: $secondary;
-    color: $text;
-    text-style: bold;
-    padding: 0 1;
-    margin-bottom: 1;
-}
-
-.summary-text {
-    padding: 1;
-    margin-bottom: 1;
-    border-bottom: solid $panel;
-}
-
-.table-container {
-    height: auto;
-}
-
-.table-box {
-    width: 1fr;
-    margin: 0 1;
-}
-
-.table-title {
-    text-style: bold;
-    color: $accent;
-    margin-bottom: 1;
-    text-align: center;
-}
-
-/* General improvements */
-.hidden {
-    display: none;
-}
-
-TabPane {
-    padding: 1;
-}
-
-TabbedContent {
-    margin-top: 1;
-}
-
-.screen-title {
-    background: $primary;
-    color: $text;
-    padding: 1;
-    text-style: bold italic;
-}
-
-/* Data tables */
 DataTable {
-    height: 1fr;
-    min-height: 6;
-    max-height: 20;
+    height: auto;
+    min-height: 4;
+    max-height: 14;
+    margin: 0;
     scrollbar-gutter: stable;
 }
 
@@ -394,81 +146,74 @@ DataTable > .datatable--odd-row {
     background: $surface-darken-1;
 }
 
-/* Progress bars */
-ProgressBar {
-    padding: 0;
+/* Table containers */
+#model-table,
+#profile-table,
+#existing-agents-table,
+#agents-table,
+#existing-workflows-table,
+#workflow-templates-table,
+#workflows-table,
+#evaluation-templates-table,
+#evaluation-agents-table {
+    border: solid $primary-darken-2;
+    background: $surface-darken-1;
+    margin: 0 0 1 0;
 }
 
-/* Radio buttons */
-RadioSet {
-    margin: 0;
-}
+/* ============================================
+   FORMS & INPUTS
+   ============================================ */
 
-/* Inputs */
 Input {
     margin: 0;
+    background: $surface;
+    border: tall $primary-darken-2;
+    height: 3;
 }
 
-/* Notifications */
-Toast {
-    width: auto;
+Input:focus {
+    border: tall $accent;
 }
 
-/* Agent Management Screen */
-#manage-agents-container {
-    padding: 0 1;
+Select {
+    background: $surface;
+    border: tall $primary-darken-2;
+    height: 3;
 }
 
-/* Daemon Screen */
-#daemon-container {
-    padding: 0 1;
+Select:focus {
+    border: tall $accent;
 }
 
-#daemon-metrics {
-    margin: 1 0;
+/* Compact config inputs */
+#config-inputs {
+    margin: 0 0 1 0;
     padding: 1;
-    border: solid $primary;
+    border: solid $secondary-darken-1;
     background: $surface-darken-1;
-}
-
-.metric-row {
     height: auto;
 }
 
-.metric-label {
-    width: 16;
-    text-style: bold;
+#config-inputs Vertical {
+    width: 1fr;
+    padding: 0 1;
 }
 
-.metric-value {
-    width: 12;
+#config-inputs Input {
+    width: 100%;
 }
 
-.status-running {
-    color: $success;
-    text-style: bold;
-}
+/* ============================================
+   BUTTONS
+   ============================================ */
 
-.status-stopped {
-    color: $error;
-}
-
-/* Header styling for theme compatibility */
-Header {
-    background: $primary;
-    color: $text;
-}
-
-/* Footer styling */
-Footer {
-    background: $surface;
-}
-
-/* Button theming */
 Button {
     background: $primary;
     color: $text;
     border: none;
+    height: 3;
+    min-width: 12;
 }
 
 Button:hover {
@@ -496,28 +241,476 @@ Button.-error {
     background: $error;
 }
 
-/* Input fields */
-Input {
+/* Small/compact buttons */
+.small-button {
+    min-width: 12;
+    height: 3;
+}
+
+/* Button rows */
+#button-bar,
+#delete-buttons,
+#config-buttons,
+#template-buttons {
+    height: auto;
+    margin: 0 0 1 0;
+    align: left middle;
+}
+
+#button-bar Button,
+#delete-buttons Button,
+#config-buttons Button,
+#template-buttons Button {
+    margin-right: 1;
+}
+
+/* ============================================
+   PANELS & SECTIONS
+   ============================================ */
+
+/* Section header with inline button */
+.section-header-with-button {
+    height: auto;
+    align: left middle;
+    padding: 0;
+    margin: 0 0 1 0;
+}
+
+.section-header-with-button Static {
+    width: 1fr;
+}
+
+.section-header-with-button .section-title {
     margin: 0;
+    border: none;
+}
+
+.section-header-with-button Button {
+    width: auto;
+    margin-left: 1;
+    height: 3;
+}
+
+/* Info text - muted helper text */
+.info-text {
+    color: $text-muted;
+    padding: 0 1;
+    margin: 0 0 1 0;
+}
+
+/* Summary panels */
+#config-summary,
+#existing-agents-summary,
+#existing-workflows-summary,
+#templates-status {
+    color: $text;
+    padding: 0 1;
+    margin: 0 0 1 0;
+    border-left: solid $accent;
+    background: $surface-darken-1;
+}
+
+/* Delete/action status */
+#delete-status {
+    color: $text-muted;
+    padding: 0 1;
+    margin: 0 0 1 0;
+    border-left: solid $warning;
+    background: $surface-darken-1;
+}
+
+/* ============================================
+   WIZARD SCREENS (Agent, Workflow)
+   ============================================ */
+
+#wizard-container,
+#workflow-container {
+    padding: 0 1;
+}
+
+/* Existing items panels */
+#existing-workflows-panel,
+#create-workflows-panel {
+    margin: 0 0 1 0;
+    padding: 1;
+    border: solid $secondary-darken-1;
+    background: $surface-darken-1;
+    height: auto;
+}
+
+/* Total count display */
+#total-agents,
+#total-workflows {
+    color: $accent;
+    text-style: bold;
+    padding: 0 1;
+    margin: 0 0 1 0;
+}
+
+/* ============================================
+   MODEL SELECTION SCREEN
+   ============================================ */
+
+#model-container {
+    padding: 0 1;
+    height: 100%;
+}
+
+#model-table {
+    height: 1fr;
+    min-height: 6;
+    max-height: 80%;
+    margin: 0 0 1 0;
+}
+
+/* ============================================
+   PROFILE SELECTION SCREEN
+   ============================================ */
+
+#profile-container {
+    padding: 0 1;
+    height: 100%;
+}
+
+#main-content {
+    height: 1fr;
+    min-height: 12;
+}
+
+#profile-list {
+    width: 35%;
+    padding-right: 1;
+    height: 100%;
+}
+
+#profile-table {
+    height: 1fr;
+    min-height: 6;
+}
+
+#profile-details-panel {
+    width: 65%;
+    padding-left: 1;
+    border-left: solid $primary-darken-2;
+    height: 100%;
+    overflow-y: auto;
+}
+
+#profile-details {
+    height: auto;
+    padding: 1;
+    border: solid $secondary-darken-1;
+    background: $surface-darken-1;
+}
+
+/* ============================================
+   PROGRESS BARS
+   ============================================ */
+
+ProgressBar {
+    padding: 0;
+    margin: 0 0 1 0;
+}
+
+#progress-bar,
+#evaluation-progress,
+#onetime-progress {
+    margin: 0 0 1 0;
+}
+
+#progress-status,
+#evaluation-status,
+#onetime-status {
+    color: $text-muted;
+    padding: 0 1;
+    margin: 0 0 1 0;
+}
+
+/* ============================================
+   TABS
+   ============================================ */
+
+TabbedContent {
+    margin: 0;
+}
+
+TabPane {
+    padding: 1;
+}
+
+/* ============================================
+   METRICS DASHBOARD
+   ============================================ */
+
+#metrics-grid {
+    grid-size: 3;
+    grid-columns: 1fr 1fr 1fr;
+    grid-gutter: 1;
+    height: auto;
+    margin: 0 0 1 0;
+}
+
+.metric-box {
+    padding: 1;
+    border: round $secondary-darken-1;
     background: $surface;
-    border: tall $primary;
+    height: auto;
+    align: center middle;
+    text-align: center;
+    min-height: 4;
 }
 
-Input:focus {
-    border: tall $accent;
+.metric-header {
+    color: $text-muted;
+    text-style: bold;
 }
 
-/* Select widgets */
-Select {
+.metric-value {
+    color: $accent;
+    text-style: bold;
+}
+
+/* Daemon metrics panel */
+#daemon-metrics {
+    margin: 0 0 1 0;
+    padding: 1;
+    border: solid $primary-darken-2;
+    background: $surface-darken-1;
+}
+
+.metric-row {
+    height: auto;
+}
+
+.metric-label {
+    width: 16;
+    text-style: bold;
+}
+
+/* ============================================
+   STATUS INDICATORS
+   ============================================ */
+
+.status-running {
+    color: $success;
+    text-style: bold;
+}
+
+.status-stopped {
+    color: $error;
+}
+
+/* ============================================
+   RESULTS SECTIONS
+   ============================================ */
+
+.results-section {
+    margin: 0 0 1 0;
+    padding: 1;
+    border: solid $secondary-darken-1;
+    background: $surface-darken-1;
+}
+
+.results-header {
+    text-align: center;
+    background: $primary;
+    color: $text;
+    text-style: bold;
+    padding: 0 1;
+    margin: 0 0 1 0;
+}
+
+.summary-text {
+    padding: 0 1;
+    margin: 0 0 1 0;
+    border-bottom: dashed $panel;
+}
+
+.table-container {
+    height: auto;
+}
+
+.table-box {
+    width: 1fr;
+    margin: 0 1;
+}
+
+.table-title {
+    text-style: bold;
+    color: $accent;
+    margin: 0 0 1 0;
+    text-align: center;
+}
+
+/* ============================================
+   LOG WIDGETS
+   ============================================ */
+
+Log {
+    height: 1fr;
+    min-height: 6;
+    border: solid $primary-darken-2;
+    background: $surface-darken-1;
+}
+
+#sim-log,
+#onetime-log,
+#daemon-log,
+#evaluation-log {
+    height: 1fr;
+    min-height: 6;
+    border: none;
+}
+
+/* Log sections */
+#onetime-log-section,
+#daemon-log-section {
+    height: 1fr;
+    min-height: 8;
+}
+
+/* ============================================
+   DAEMON & SIMULATION SCREENS
+   ============================================ */
+
+#daemon-container {
+    padding: 0 1;
+}
+
+/* Config sections */
+.config-section {
+    height: auto;
+    padding: 1;
+    margin: 0 0 1 0;
+    border: solid $secondary-darken-1;
+    background: $surface-darken-1;
+}
+
+.config-section-title {
+    text-style: bold;
+    color: $primary;
+    margin: 0 0 1 0;
+}
+
+.config-row {
+    height: auto;
+    margin: 0 0 1 0;
+}
+
+.config-row:last-of-type {
+    margin: 0;
+}
+
+.input-label {
+    width: 14;
+    padding-right: 1;
+}
+
+.input-field {
+    width: 12;
+}
+
+.button-row {
+    height: auto;
+    padding: 0;
+    margin: 0 0 1 0;
+    align: center middle;
+}
+
+.button-row Button {
+    margin: 0 1;
+}
+
+/* Status section */
+#daemon-status-section,
+#onetime-type-section {
+    height: auto;
+    padding: 1;
+    margin: 0 0 1 0;
+    border: solid $accent-darken-1;
+    background: $surface-darken-1;
+}
+
+#daemon-status {
+    text-style: bold;
+    text-align: center;
+}
+
+/* Metrics section */
+#daemon-metrics-section {
+    height: auto;
+    padding: 1;
+    margin: 0 0 1 0;
+    border: solid $primary-darken-2;
+    background: $surface-darken-1;
+}
+
+/* Progress section */
+#onetime-progress-section {
+    height: auto;
+    padding: 1;
+    margin: 0 0 1 0;
+    border: solid $primary-darken-2;
+    background: $surface-darken-1;
+}
+
+/* ============================================
+   AGENT MANAGEMENT SCREEN
+   ============================================ */
+
+#manage-agents-container {
+    padding: 0 1;
+}
+
+/* ============================================
+   EVALUATION SCREEN
+   ============================================ */
+
+#evaluation-container {
+    padding: 0 1;
+}
+
+/* ============================================
+   SETUP SCREEN
+   ============================================ */
+
+#setup-container {
+    padding: 1 2;
+}
+
+/* ============================================
+   STATUS BAR
+   ============================================ */
+
+.status-bar {
+    dock: bottom;
+    height: 1;
+    padding: 0 1;
+    background: $primary-darken-2;
+    color: $text;
+}
+
+/* ============================================
+   HEADER & FOOTER
+   ============================================ */
+
+Header {
+    background: $primary;
+    color: $text;
+}
+
+Footer {
     background: $surface;
-    border: tall $primary;
 }
 
-Select:focus {
-    border: tall $accent;
+/* ============================================
+   UTILITY CLASSES
+   ============================================ */
+
+.hidden {
+    display: none;
 }
 
-/* General text colors */
 .text-success {
     color: $success;
 }
@@ -535,13 +728,37 @@ Select:focus {
 }
 
 .text-primary {
-    color: $text-primary;
+    color: $primary;
 }
 
 .text-secondary {
-    color: $text-secondary;
+    color: $secondary;
 }
 
 .text-accent {
-    color: $text-accent;
+    color: $accent;
+}
+
+/* ============================================
+   SCROLLABLE CONTAINERS
+   ============================================ */
+
+VerticalScroll {
+    scrollbar-gutter: stable;
+}
+
+/* ============================================
+   RADIO & CHECKBOX
+   ============================================ */
+
+RadioSet {
+    margin: 0;
+}
+
+/* ============================================
+   TOAST NOTIFICATIONS
+   ============================================ */
+
+Toast {
+    width: auto;
 }

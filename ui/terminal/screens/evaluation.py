@@ -5,7 +5,7 @@ Evaluation screen for running sample evaluations against agents.
 from textual.app import ComposeResult
 from textual.screen import Screen
 from textual.widgets import Static, Button, DataTable, ProgressBar, Log, Select
-from textual.containers import Horizontal, VerticalScroll
+from textual.containers import Horizontal, Vertical, VerticalScroll
 from textual import work
 
 from ui.shared.state_manager import get_state_manager
@@ -17,6 +17,130 @@ from src.core.model_manager import ModelManager
 
 class EvaluationScreen(Screen):
     """Screen for running sample evaluations."""
+
+    DEFAULT_CSS = """
+    EvaluationScreen {
+        layout: vertical;
+    }
+
+    #evaluation-container {
+        padding: 0 1;
+    }
+
+    /* Templates and Agents side by side */
+    #selection-row {
+        height: auto;
+        margin: 0 0 1 0;
+    }
+
+    #templates-section {
+        width: 1fr;
+        margin-right: 1;
+        padding: 1;
+        border: solid $primary-darken-2;
+        background: $surface-darken-1;
+    }
+
+    #agents-section {
+        width: 1fr;
+        padding: 1;
+        border: solid $secondary-darken-1;
+        background: $surface-darken-1;
+    }
+
+    #evaluation-templates-table,
+    #evaluation-agents-table {
+        height: auto;
+        min-height: 4;
+        max-height: 10;
+        margin: 0 0 1 0;
+    }
+
+    .section-buttons {
+        height: auto;
+        margin: 0;
+        align: left middle;
+    }
+
+    .section-buttons Button {
+        margin-right: 1;
+    }
+
+    /* Model selection row */
+    #model-section {
+        height: auto;
+        margin: 0 0 1 0;
+        padding: 1;
+        border: solid $accent-darken-1;
+        background: $surface-darken-1;
+    }
+
+    #model-row {
+        height: auto;
+        align: left middle;
+    }
+
+    #model-row Static {
+        margin-right: 1;
+    }
+
+    #evaluation-model {
+        width: 40;
+    }
+
+    #model-row Button {
+        margin-left: 1;
+    }
+
+    /* Run section */
+    #run-section {
+        height: auto;
+        margin: 0 0 1 0;
+        padding: 1;
+        border: solid $success-darken-1;
+        background: $surface-darken-1;
+    }
+
+    #run-buttons {
+        height: auto;
+        margin: 0 0 1 0;
+        align: left middle;
+    }
+
+    #run-buttons Button {
+        margin-right: 1;
+    }
+
+    #evaluation-progress {
+        margin: 0 0 1 0;
+    }
+
+    #evaluation-status {
+        margin: 0;
+    }
+
+    /* Log section */
+    #log-section {
+        height: 1fr;
+        min-height: 8;
+        margin: 0;
+        padding: 1;
+        border: solid $primary-darken-2;
+        background: $surface-darken-1;
+    }
+
+    #evaluation-log {
+        height: 1fr;
+        min-height: 6;
+        border: none;
+    }
+
+    .section-header {
+        text-style: bold;
+        color: $primary;
+        margin: 0 0 1 0;
+    }
+    """
 
     BINDINGS = [
         ("escape", "app.pop_screen()", "Back"),
@@ -41,39 +165,71 @@ class EvaluationScreen(Screen):
 
     def compose(self) -> ComposeResult:
         yield Static("Sample Evaluations", id="title", classes="screen-title")
-        yield Static(
-            "Select evaluation templates and agents, then run evaluations.",
-            classes="description",
-        )
 
         yield VerticalScroll(
-            Static("Evaluation Templates", classes="section-title"),
-            DataTable(id="evaluation-templates-table"),
+            # Templates and Agents side by side
             Horizontal(
-                Button("Select All Templates", id="btn-select-all-templates", variant="primary"),
-                Button("Clear Templates", id="btn-clear-templates", variant="default"),
+                # Templates Section
+                Vertical(
+                    Static("Evaluation Templates", classes="section-header"),
+                    DataTable(id="evaluation-templates-table"),
+                    Horizontal(
+                        Button("Select All", id="btn-select-all-templates", variant="primary"),
+                        Button("Clear", id="btn-clear-templates", variant="default"),
+                        classes="section-buttons",
+                    ),
+                    id="templates-section",
+                ),
+                # Agents Section
+                Vertical(
+                    Horizontal(
+                        Static("Agents", classes="section-header"),
+                        Button("Refresh [R]", id="btn-refresh-agents", variant="default"),
+                        classes="section-header-with-button",
+                    ),
+                    DataTable(id="evaluation-agents-table"),
+                    Horizontal(
+                        Button("Select All", id="btn-select-all-agents", variant="primary"),
+                        Button("Clear", id="btn-clear-agents", variant="default"),
+                        classes="section-buttons",
+                    ),
+                    id="agents-section",
+                ),
+                id="selection-row",
             ),
-            Static("Evaluation Model", classes="section-title"),
-            Horizontal(
-                Select([], id="evaluation-model", allow_blank=True),
-                Button("Refresh Models", id="btn-refresh-models", variant="primary"),
+
+            # Model Selection
+            Vertical(
+                Static("Evaluation Model", classes="section-header"),
+                Horizontal(
+                    Static("Model:", classes="label"),
+                    Select([], id="evaluation-model", allow_blank=True),
+                    Button("Refresh", id="btn-refresh-models", variant="default"),
+                    id="model-row",
+                ),
+                id="model-section",
             ),
-            Static("Agents", classes="section-title"),
-            DataTable(id="evaluation-agents-table"),
-            Horizontal(
-                Button("Refresh Agents [R]", id="btn-refresh-agents", variant="primary"),
-                Button("Select All Agents", id="btn-select-all-agents", variant="default"),
-                Button("Clear Agents", id="btn-clear-agents", variant="default"),
+
+            # Run Section
+            Vertical(
+                Static("Run Evaluations", classes="section-header"),
+                Horizontal(
+                    Button("Run Evaluations [Enter]", id="btn-run", variant="success"),
+                    Button("Back [Esc]", id="btn-back", variant="default"),
+                    id="run-buttons",
+                ),
+                ProgressBar(id="evaluation-progress", total=100, show_eta=False),
+                Static("Ready", id="evaluation-status", classes="info-text"),
+                id="run-section",
             ),
-            Horizontal(
-                Button("Run Evaluations [Enter]", id="btn-run", variant="success"),
-                Button("Back [Esc]", id="btn-back"),
+
+            # Execution Log
+            Vertical(
+                Static("Execution Log", classes="section-header"),
+                Log(id="evaluation-log", auto_scroll=True),
+                id="log-section",
             ),
-            Static("Progress", classes="section-title"),
-            ProgressBar(id="evaluation-progress", total=100, show_eta=False),
-            Static("Ready", id="evaluation-status", classes="info-text"),
-            Static("Execution Log", classes="section-title"),
-            Log(id="evaluation-log", auto_scroll=True),
+
             id="evaluation-container",
         )
 
@@ -82,6 +238,7 @@ class EvaluationScreen(Screen):
         templates_table = self.query_one("#evaluation-templates-table", DataTable)
         templates_table.add_columns("Sel", "ID", "Name", "Evaluators")
         templates_table.cursor_type = "row"
+
         agents_table = self.query_one("#evaluation-agents-table", DataTable)
         agents_table.add_columns("Sel", "Name", "Model")
         agents_table.cursor_type = "row"
@@ -151,8 +308,8 @@ class EvaluationScreen(Screen):
             row_key = table.add_row(
                 "[X]" if is_selected else "[ ]",
                 template.id,
-                template.display_name,
-                evaluators,
+                template.display_name[:20] + "..." if len(template.display_name) > 20 else template.display_name,
+                evaluators[:25] + "..." if len(evaluators) > 25 else evaluators,
             )
             self.template_row_keys[template.id] = row_key
 
@@ -168,7 +325,7 @@ class EvaluationScreen(Screen):
             is_selected = name in self.selected_agent_names
             row_key = table.add_row(
                 "[X]" if is_selected else "[ ]",
-                name,
+                name[:25] + "..." if len(name) > 25 else name,
                 agent.get("model", "N/A"),
             )
             self.agent_row_keys[name] = row_key
@@ -228,11 +385,11 @@ class EvaluationScreen(Screen):
         finally:
             self.is_loading_models = False
 
-
     def action_select_all_templates(self) -> None:
         """Select all evaluation templates."""
         self.selected_template_ids = {template.id for template in self.templates}
         self._populate_templates_table()
+        self.notify(f"Selected {len(self.selected_template_ids)} template(s)")
 
     def action_clear_templates(self) -> None:
         """Clear template selection."""
@@ -244,6 +401,7 @@ class EvaluationScreen(Screen):
         agents = getattr(self, "agents", [])
         self.selected_agent_names = {agent.get("name", "") for agent in agents if agent.get("name")}
         self._populate_agents_table()
+        self.notify(f"Selected {len(self.selected_agent_names)} agent(s)")
 
     def action_clear_agents(self) -> None:
         """Clear agent selection."""

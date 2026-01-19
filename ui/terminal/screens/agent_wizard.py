@@ -5,7 +5,6 @@ Guides users through agent creation from industry profiles,
 and allows managing existing agents.
 """
 
-import csv
 from pathlib import Path
 from textual.app import ComposeResult
 from textual.screen import Screen
@@ -22,6 +21,150 @@ from src.models.agent import CreatedAgent
 
 class AgentWizardScreen(Screen):
     """Screen for creating agents from industry profiles."""
+
+    DEFAULT_CSS = """
+    AgentWizardScreen {
+        layout: vertical;
+    }
+
+    #wizard-container {
+        padding: 0 1;
+    }
+
+    /* Existing agents section - compact */
+    #existing-section {
+        height: auto;
+        margin: 0 0 1 0;
+        padding: 1;
+        border: solid $secondary-darken-1;
+        background: $surface-darken-1;
+    }
+
+    #existing-agents-table {
+        height: auto;
+        min-height: 4;
+        max-height: 10;
+        margin: 0 0 1 0;
+    }
+
+    #existing-agents-summary {
+        margin: 0 0 1 0;
+    }
+
+    /* Action buttons row */
+    #action-buttons {
+        height: auto;
+        margin: 0;
+        align: left middle;
+    }
+
+    #action-buttons Button {
+        margin-right: 1;
+        min-width: 14;
+    }
+
+    /* Configuration section */
+    #config-section {
+        height: auto;
+        margin: 0 0 1 0;
+        padding: 1;
+        border: solid $primary-darken-2;
+        background: $surface-darken-1;
+    }
+
+    #config-summary {
+        margin: 0 0 1 0;
+        padding: 0 1;
+        border-left: solid $accent;
+        background: $surface-darken-2;
+    }
+
+    /* Config row with inputs side by side */
+    #config-row {
+        height: auto;
+        margin: 0 0 1 0;
+    }
+
+    #config-row Vertical {
+        width: 1fr;
+        margin-right: 2;
+    }
+
+    #config-row Input {
+        width: 100%;
+    }
+
+    #total-agents {
+        color: $accent;
+        text-style: bold;
+        padding: 0;
+        margin: 0 0 1 0;
+    }
+
+    /* Create buttons */
+    #create-buttons {
+        height: auto;
+        margin: 0;
+        align: left middle;
+    }
+
+    #create-buttons Button {
+        margin-right: 1;
+    }
+
+    /* Delete status */
+    #delete-status {
+        margin: 1 0 0 0;
+        padding: 0 1;
+        border-left: solid $warning;
+        background: $surface-darken-2;
+    }
+
+    /* Progress section */
+    #progress-section {
+        height: auto;
+        margin: 0 0 1 0;
+        padding: 1;
+        border: solid $success-darken-1;
+        background: $surface-darken-1;
+    }
+
+    #progress-bar {
+        margin: 0 0 1 0;
+    }
+
+    #progress-status {
+        margin: 0;
+    }
+
+    /* Recently created section */
+    #recent-section {
+        height: auto;
+        margin: 0;
+        padding: 1;
+        border: solid $success-darken-1;
+        background: $surface-darken-1;
+    }
+
+    #agents-table {
+        height: auto;
+        min-height: 4;
+        max-height: 8;
+        margin: 0;
+    }
+
+    .section-header {
+        text-style: bold;
+        color: $primary;
+        margin: 0 0 1 0;
+    }
+
+    .tip-text {
+        color: $text-muted;
+        text-style: italic;
+        margin: 1 0 0 0;
+    }
+    """
 
     BINDINGS = [
         ("escape", "app.pop_screen()", "Back"),
@@ -43,69 +186,77 @@ class AgentWizardScreen(Screen):
         self.delete_confirmed = False
         self.existing_agents = []
         self.selected_agent_names = set()
-        self.agent_row_keys = {}  # Map agent_name -> row_key for updating selection indicators
+        self.agent_row_keys = {}
 
     def compose(self) -> ComposeResult:
         yield Static("Agent Creation Wizard", id="title", classes="screen-title")
 
         yield VerticalScroll(
             # Existing Agents Section
-            Horizontal(
-                Static("Existing Agents in Azure:", classes="section-title"),
-                Button("Refresh [R]", id="btn-refresh-existing", variant="default"),
-                classes="section-header-with-button",
+            Vertical(
+                Horizontal(
+                    Static("Existing Agents in Azure", classes="section-header"),
+                    Button("Refresh [R]", id="btn-refresh-existing", variant="default"),
+                    classes="section-header-with-button",
+                ),
+                Static(id="existing-agents-summary", classes="info-text"),
+                DataTable(id="existing-agents-table"),
+                Horizontal(
+                    Button("Select All", id="btn-select-all", variant="primary"),
+                    Button("Deselect", id="btn-deselect-all", variant="default"),
+                    Button("Use Selected", id="btn-use-selected", variant="success"),
+                    Button("Delete Sel.", id="btn-delete-selected", variant="warning"),
+                    Button("Delete All", id="btn-delete-all", variant="error"),
+                    id="action-buttons",
+                ),
+                Static(id="delete-status", classes="info-text"),
+                id="existing-section",
             ),
-            Static(id="existing-agents-summary", classes="info-text"),
-            DataTable(id="existing-agents-table"),
-            Horizontal(
-                Button("Select All [S]", id="btn-select-all", variant="primary"),
-                Button("Deselect All [U]", id="btn-deselect-all", variant="primary"),
-                Button("Use Selected [Enter]", id="btn-use-selected", variant="success"),
-                Button("Delete Selected", id="btn-delete-selected", variant="warning"),
-                Button("Delete All [D]", id="btn-delete-all", variant="error"),
-                id="delete-buttons",
-            ),
-            Static(id="delete-status", classes="info-text"),
 
             # Configuration Section
-            Static("Current Configuration:", classes="section-title"),
-            Static(id="config-summary", classes="info-text"),
-            Horizontal(
-                Button("Select Profile [P]", id="btn-profile", variant="default"),
-                Button("Select Models [M]", id="btn-models", variant="default"),
-                id="config-buttons",
-            ),
-
-            Horizontal(
-                Vertical(
-                    Static("Organizations:", classes="label"),
-                    Input(value="1", id="org-count", type="integer"),
-                    id="org-input",
+            Vertical(
+                Static("Create New Agents", classes="section-header"),
+                Static(id="config-summary", classes="info-text"),
+                Horizontal(
+                    Button("Select Profile [P]", id="btn-profile", variant="default"),
+                    Button("Select Models [M]", id="btn-models", variant="default"),
+                    id="config-buttons",
                 ),
-                Vertical(
-                    Static("Agents per type:", classes="label"),
-                    Input(value="1", id="agent-count", type="integer"),
-                    id="agent-input",
+                Horizontal(
+                    Vertical(
+                        Static("Organizations:", classes="label"),
+                        Input(value="1", id="org-count", type="integer"),
+                    ),
+                    Vertical(
+                        Static("Agents per type:", classes="label"),
+                        Input(value="1", id="agent-count", type="integer"),
+                    ),
+                    id="config-row",
                 ),
-                id="config-inputs",
+                Static(id="total-agents"),
+                Horizontal(
+                    Button("Create Agents [C]", id="btn-create", variant="primary"),
+                    Button("Back", id="btn-back", variant="default"),
+                    id="create-buttons",
+                ),
+                Static("Tip: Use Daemon mode for continuous production traffic simulation", classes="tip-text"),
+                id="config-section",
             ),
-            Static(id="total-agents", classes="info-text"),
-
-            Horizontal(
-                Button("Create Agents [C]", id="btn-create", variant="primary"),
-                Button("Back", id="btn-back"),
-                id="button-bar",
-            ),
-            Static("Tip: Use Daemon for continuous production traffic simulation", classes="info-text"),
 
             # Progress Section
-            Static("Progress:", classes="section-title"),
-            ProgressBar(id="progress-bar", total=100, show_eta=False),
-            Static(id="progress-status", classes="info-text"),
+            Vertical(
+                Static("Progress", classes="section-header"),
+                ProgressBar(id="progress-bar", total=100, show_eta=False),
+                Static("Ready", id="progress-status", classes="info-text"),
+                id="progress-section",
+            ),
 
             # Recently Created Agents
-            Static("Recently Created Agents:", classes="section-title"),
-            DataTable(id="agents-table"),
+            Vertical(
+                Static("Recently Created Agents", classes="section-header"),
+                DataTable(id="agents-table"),
+                id="recent-section",
+            ),
 
             id="wizard-container",
         )
@@ -138,23 +289,18 @@ class AgentWizardScreen(Screen):
         state = get_state()
         summary = self.query_one("#config-summary", Static)
 
-        models = ", ".join(state.selected_models) if state.selected_models else "None selected (press M)"
-        profile = state.current_profile.metadata.name if state.current_profile else "None selected (press P)"
+        models = ", ".join(state.selected_models) if state.selected_models else "None (press M)"
+        profile = state.current_profile.metadata.name if state.current_profile else "None (press P)"
 
         # Get agent type names
         if state.current_profile and state.current_profile.agent_types:
             agent_type_names = [at.name for at in state.current_profile.agent_types]
-            agent_types_display = f"{len(agent_type_names)} types: " + ", ".join(agent_type_names[:5])
-            if len(agent_type_names) > 5:
-                agent_types_display += f", ... ({len(agent_type_names) - 5} more)"
+            types_count = len(agent_type_names)
+            agent_types_display = f"{types_count} types"
         else:
-            agent_types_display = "None selected"
+            agent_types_display = "None"
 
-        summary.update(f"""
-  Profile: {profile}
-  Agent Types: {agent_types_display}
-  Models: {models}
-        """)
+        summary.update(f"Profile: {profile} | Types: {agent_types_display} | Models: {models}")
 
     def _update_total_agents(self) -> None:
         """Update the total agents count with calculation breakdown."""
@@ -171,14 +317,12 @@ class AgentWizardScreen(Screen):
         agent_types = len(state.current_profile.agent_types) if state.current_profile else 0
         total = org_count * agent_count * agent_types
 
-        # Show calculation breakdown
         if agent_types > 0:
             total_label.update(
-                f"Total agents to create: {total} "
-                f"({org_count} orgs × {agent_count} agents/type × {agent_types} types)"
+                f"Total: {total} agents ({org_count} orgs x {agent_count} agents/type x {agent_types} types)"
             )
         else:
-            total_label.update(f"Total agents to create: {total}")
+            total_label.update(f"Total: {total} (select a profile first)")
 
     def _load_created_agents(self) -> None:
         """Load recently created agents from state into the table."""
@@ -216,13 +360,13 @@ class AgentWizardScreen(Screen):
             self.app.call_from_thread(self._populate_existing_table, agents)
             self.app.call_from_thread(
                 self._update_existing_summary,
-                f"Found {len(agents)} existing agents in Azure AI Foundry project"
+                f"Found {len(agents)} agents in Azure"
             )
 
         except Exception as e:
             self.app.call_from_thread(
                 self._update_existing_summary,
-                f"Error loading agents: {e}"
+                f"Error: {e}"
             )
             self.app.call_from_thread(self.notify, f"Error: {e}", severity="error")
 
@@ -242,7 +386,7 @@ class AgentWizardScreen(Screen):
             row_key = table.add_row(
                 "[X]" if is_selected else "[ ]",
                 agent_name,
-                agent.get("id", "N/A")[:20] + "..." if len(agent.get("id", "")) > 20 else agent.get("id", "N/A"),
+                agent.get("id", "N/A")[:16] + "..." if len(agent.get("id", "")) > 16 else agent.get("id", "N/A"),
                 str(agent.get("version", "N/A")),
                 agent.get("model", "N/A"),
             )
@@ -362,7 +506,7 @@ class AgentWizardScreen(Screen):
         if table.id != "existing-agents-table":
             return
 
-        # Get the agent name from the selected row (column 1, not 0 since 0 is the checkbox)
+        # Get the agent name from the selected row
         row_key = event.row_key
         row_data = table.get_row(row_key)
         agent_name = row_data[1] if row_data and len(row_data) > 1 else None
@@ -382,13 +526,9 @@ class AgentWizardScreen(Screen):
         """Update the delete status display."""
         count = len(self.selected_agent_names)
         if count == 0:
-            self._update_delete_status_text(
-                "Select agents: Click rows to toggle selection. Use 'Use Selected' to prepare for simulation, or 'Delete Selected' to remove."
-            )
+            self._update_delete_status_text("Click rows to select agents for simulation or deletion")
         else:
-            self._update_delete_status_text(
-                f"Selected {count} agent(s) - Use for simulation [Enter] or Delete [Del]"
-            )
+            self._update_delete_status_text(f"Selected {count} agent(s)")
 
     def action_select_all(self) -> None:
         """Select all agents in the table."""
@@ -428,27 +568,26 @@ class AgentWizardScreen(Screen):
     def use_selected_async(self) -> None:
         """Export selected agents to CSV in background thread."""
         selected_count = len(self.selected_agent_names)
-        
+
         self.app.call_from_thread(
             self._update_delete_status_text,
-            f"Exporting {selected_count} selected agent(s) to CSV..."
+            f"Exporting {selected_count} agent(s) to CSV..."
         )
 
         try:
             # Filter existing agents to only include selected ones
             selected_agents_data = [
-                agent for agent in self.existing_agents 
+                agent for agent in self.existing_agents
                 if agent.get("name") in self.selected_agent_names
             ]
 
             # Convert to CreatedAgent objects
             created_agents = []
             for agent_data in selected_agents_data:
-                # Extract org_id and agent_id from name format: {org_id}-{agent_type}-{agent_id}
                 name_parts = agent_data.get("name", "").split("-")
                 org_id = name_parts[0] if len(name_parts) > 0 else "UNKNOWN"
                 agent_id = name_parts[-1] if len(name_parts) > 2 else "AG001"
-                
+
                 created_agent = CreatedAgent(
                     agent_id=agent_id,
                     name=agent_data.get("name", "Unknown"),
@@ -478,7 +617,7 @@ class AgentWizardScreen(Screen):
 
             self.app.call_from_thread(
                 self._update_delete_status_text,
-                f"Successfully exported {selected_count} agent(s) to CSV for simulation"
+                f"Exported {selected_count} agent(s) for simulation"
             )
             self.app.call_from_thread(
                 self.notify,
@@ -488,7 +627,7 @@ class AgentWizardScreen(Screen):
         except Exception as e:
             self.app.call_from_thread(
                 self._update_delete_status_text,
-                f"Error exporting agents: {e}"
+                f"Error: {e}"
             )
             self.app.call_from_thread(
                 self.notify,
@@ -566,7 +705,7 @@ class AgentWizardScreen(Screen):
             # First click - show confirmation
             self.delete_confirmed = True
             self._update_delete_status_text(
-                f"Are you sure? Click 'Delete All' again to confirm deletion of {len(self.existing_agents)} agents."
+                f"Click 'Delete All' again to confirm deletion of {len(self.existing_agents)} agents"
             )
             self.notify("Click 'Delete All' again to confirm", severity="warning")
 
