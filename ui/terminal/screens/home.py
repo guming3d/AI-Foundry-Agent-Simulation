@@ -7,11 +7,11 @@ for batch agent operations.
 
 from textual.app import ComposeResult
 from textual.screen import Screen
-from textual.widgets import Static, Button, Label
-from textual.containers import Container, Vertical, Horizontal, Center
+from textual.widgets import Static, Button
+from textual.containers import Container, Vertical, Horizontal
 from textual import work
 
-from ui.shared.state_manager import get_state, get_state_manager
+from ui.shared.state_manager import get_state
 from src.core.agent_manager import AgentManager
 from .theme_select import ThemeSelectScreen
 from ui.terminal.preferences import get_preferences
@@ -32,8 +32,6 @@ class HomeScreen(Screen):
     """Home screen with navigation and status."""
 
     BINDINGS = [
-        ("m", "go_models", "Models"),
-        ("p", "go_profiles", "Profiles"),
         ("a", "go_agents", "Agents"),
         ("w", "go_workflows", "Workflows"),
         ("e", "go_evaluations", "Evaluations"),
@@ -44,12 +42,6 @@ class HomeScreen(Screen):
         super().__init__()
         self.azure_agent_count = 0
         self.is_loading_agents = False
-
-    def action_go_models(self) -> None:
-        self.app.push_screen("models")
-
-    def action_go_profiles(self) -> None:
-        self.app.push_screen("profiles")
 
     def action_go_agents(self) -> None:
         self.app.push_screen("agents")
@@ -63,70 +55,13 @@ class HomeScreen(Screen):
     def action_go_evaluations(self) -> None:
         self.app.push_screen("evaluations")
 
-    def _get_workflow_status(self) -> dict:
-        """Get the completion status of each workflow step."""
-        state = get_state()
-
-        return {
-            "models": len(state.selected_models) > 0,
-            "profiles": state.current_profile is not None,
-            "agents": len(state.created_agents) > 0,
-            "workflows": len(state.created_workflows) > 0,
-            "evaluations": len(state.evaluation_runs) > 0,
-            "simulation": bool(state.operation_summary) or bool(state.guardrail_summary),
-        }
-
-    def _get_next_step(self) -> str:
-        """Get the next incomplete workflow step."""
-        status = self._get_workflow_status()
-
-        steps = ["models", "profiles", "agents", "workflows", "evaluations", "simulation"]
-        for step in steps:
-            if not status.get(step, False):
-                return step
-
-        return "simulation"
-
-    def _format_step(self, step_num: int, name: str, key: str, completed: bool, is_next: bool) -> str:
-        """Format a workflow step for display."""
-        if completed:
-            marker = "[X]"
-            style = "green"
-        elif is_next:
-            marker = "[>]"
-            style = "blue"
-        else:
-            marker = "[ ]"
-            style = "dim"
-
-        return f"{marker} {step_num}. {name} [{key}]"
-
     def compose(self) -> ComposeResult:
         yield Container(
             Static(LOGO, id="logo"),
             Static("Welcome to Azure AI Foundry Control-Plane Batch Agent Operation", id="welcome"),
 
-            # Workflow Stepper
-            Static("Workflow Progress:", classes="section-title"),
+            # Navigation buttons
             Horizontal(
-                Static(id="step-1"),
-                Static(" -> ", classes="step-arrow"),
-                Static(id="step-2"),
-                Static(" -> ", classes="step-arrow"),
-                Static(id="step-3"),
-                Static(" -> ", classes="step-arrow"),
-                Static(id="step-4"),
-                Static(" -> ", classes="step-arrow"),
-                Static(id="step-5"),
-                Static(" -> ", classes="step-arrow"),
-                Static(id="step-6"),
-                id="workflow-stepper",
-            ),
-
-            # Navigation buttons - Main workflow
-            Horizontal(
-                Button("Models [M]", id="btn-models", variant="primary"),
-                Button("Profiles [P]", id="btn-profiles", variant="primary"),
                 Button("Agents [A]", id="btn-agents", variant="primary"),
                 Button("Workflows [W]", id="btn-workflows", variant="primary"),
                 Button("Evaluations [E]", id="btn-evaluations", variant="primary"),
@@ -160,47 +95,12 @@ class HomeScreen(Screen):
     def on_mount(self) -> None:
         """Update status on mount."""
         self._update_status()
-        self._update_stepper()
         self._load_azure_agent_count()
 
     def on_screen_resume(self) -> None:
         """Update status when returning to this screen."""
         self._update_status()
-        self._update_stepper()
         self._load_azure_agent_count()
-
-    def _update_stepper(self) -> None:
-        """Update the workflow stepper display."""
-        status = self._get_workflow_status()
-        next_step = self._get_next_step()
-
-        steps = [
-            ("models", "Models", "M"),
-            ("profiles", "Profile", "P"),
-            ("agents", "Agents", "A"),
-            ("workflows", "Workflows", "W"),
-            ("evaluations", "Evaluate", "E"),
-            ("simulation", "Simulate", "S"),
-        ]
-
-        for i, (step_id, name, key) in enumerate(steps, 1):
-            completed = status.get(step_id, False)
-            is_next = step_id == next_step and not completed
-
-            widget = self.query_one(f"#step-{i}", Static)
-
-            if completed:
-                widget.update(f"[X]{i}.{name}")
-                widget.remove_class("step-pending", "step-next")
-                widget.add_class("step-completed")
-            elif is_next:
-                widget.update(f"[>]{i}.{name}")
-                widget.remove_class("step-pending", "step-completed")
-                widget.add_class("step-next")
-            else:
-                widget.update(f"[ ]{i}.{name}")
-                widget.remove_class("step-completed", "step-next")
-                widget.add_class("step-pending")
 
     def _update_status(self) -> None:
         """Update the status display."""
@@ -272,11 +172,7 @@ class HomeScreen(Screen):
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """Handle button presses."""
         button_id = event.button.id
-        if button_id == "btn-models":
-            self.app.push_screen("models")
-        elif button_id == "btn-profiles":
-            self.app.push_screen("profiles")
-        elif button_id == "btn-agents":
+        if button_id == "btn-agents":
             self.app.push_screen("agents")
         elif button_id == "btn-workflows":
             self.app.push_screen("workflows")

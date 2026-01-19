@@ -20,6 +20,8 @@ class WorkflowWizardScreen(Screen):
     BINDINGS = [
         ("escape", "app.pop_screen()", "Back"),
         ("c", "create_workflows", "Create Workflows"),
+        ("m", "choose_models", "Models"),
+        ("p", "choose_profile", "Profile"),
         ("r", "refresh_templates", "Refresh Templates"),
         ("s", "select_all", "Select All"),
         ("u", "deselect_all", "Deselect All"),
@@ -38,65 +40,69 @@ class WorkflowWizardScreen(Screen):
         yield Static("Workflow Builder", id="title", classes="screen-title")
 
         yield VerticalScroll(
-            # Existing Workflows Section
-            Horizontal(
-                Static("Existing Workflows in Azure:", classes="section-title"),
-                Button("Refresh", id="btn-refresh-existing-workflows", variant="default"),
-                classes="section-header-with-button",
-            ),
-            Static(id="existing-workflows-summary", classes="info-text"),
-            DataTable(id="existing-workflows-table"),
-
-            # Templates Section
-            Horizontal(
-                Static("Workflow Templates:", classes="section-title"),
-                Button("Refresh [R]", id="btn-refresh-templates", variant="default"),
-                classes="section-header-with-button",
-            ),
-            Static(id="templates-status", classes="info-text"),
-            DataTable(id="workflow-templates-table"),
-            Horizontal(
-                Button("Select All [S]", id="btn-select-all", variant="primary"),
-                Button("Deselect All [U]", id="btn-deselect-all", variant="primary"),
-                id="template-buttons",
-            ),
-
-            # Configuration Section
-            Static("Current Configuration:", classes="section-title"),
-            Static(id="config-summary", classes="info-text"),
-            Horizontal(
-                Vertical(
-                    Static("Organizations:", classes="label"),
-                    Input(value="1", id="org-count", type="integer"),
-                    id="org-input",
+            Vertical(
+                Horizontal(
+                    Static("Existing Workflows", classes="section-title"),
+                    Button("Refresh", id="btn-refresh-existing-workflows", variant="default"),
+                    classes="section-header-with-button",
                 ),
-                Vertical(
-                    Static("Workflows per template:", classes="label"),
-                    Input(value="1", id="workflow-count", type="integer"),
-                    id="workflow-input",
-                ),
-                id="config-inputs",
+                Static(id="existing-workflows-summary", classes="info-text"),
+                DataTable(id="existing-workflows-table"),
+                id="existing-workflows-panel",
             ),
-            Static(id="total-workflows", classes="info-text"),
-
+            Vertical(
+                Horizontal(
+                    Static("Create New Workflows", classes="section-title"),
+                    Button("Refresh Templates [R]", id="btn-refresh-templates", variant="default"),
+                    classes="section-header-with-button",
+                ),
+                Static(id="templates-status", classes="info-text"),
+                DataTable(id="workflow-templates-table"),
+                Horizontal(
+                    Button("Select All [S]", id="btn-select-all", variant="primary"),
+                    Button("Deselect All [U]", id="btn-deselect-all", variant="primary"),
+                    id="template-buttons",
+                ),
+                Static("Current Configuration:", classes="section-title"),
+                Static(id="config-summary", classes="info-text"),
+                Horizontal(
+                    Button("Select Profile [P]", id="btn-profile", variant="default"),
+                    Button("Select Models [M]", id="btn-models", variant="default"),
+                    id="config-buttons",
+                ),
+                Horizontal(
+                    Vertical(
+                        Static("Organizations:", classes="label"),
+                        Input(value="1", id="org-count", type="integer"),
+                        id="org-input",
+                    ),
+                    Vertical(
+                        Static("Workflows per template:", classes="label"),
+                        Input(value="1", id="workflow-count", type="integer"),
+                        id="workflow-input",
+                    ),
+                    id="config-inputs",
+                ),
+                Static(id="total-workflows", classes="info-text"),
+                Horizontal(
+                    Button("Create Workflows [C]", id="btn-create", variant="primary"),
+                    id="button-bar",
+                ),
+                Static(
+                    "Tip: Workflows are created as workflow agents and reference new prompt agents.",
+                    classes="info-text",
+                ),
+                Static("Progress:", classes="section-title"),
+                ProgressBar(id="progress-bar", total=100, show_eta=False),
+                Static(id="progress-status", classes="info-text"),
+                Static("Recently Created Workflows:", classes="section-title"),
+                DataTable(id="workflows-table"),
+                id="create-workflows-panel",
+            ),
             Horizontal(
-                Button("Create Workflows [C]", id="btn-create", variant="primary"),
                 Button("Back", id="btn-back"),
-                id="button-bar",
+                id="workflow-footer",
             ),
-            Static(
-                "Tip: Workflows are created as workflow agents and reference new prompt agents.",
-                classes="info-text",
-            ),
-
-            # Progress Section
-            Static("Progress:", classes="section-title"),
-            ProgressBar(id="progress-bar", total=100, show_eta=False),
-            Static(id="progress-status", classes="info-text"),
-
-            # Created Workflows
-            Static("Recently Created Workflows:", classes="section-title"),
-            DataTable(id="workflows-table"),
 
             id="workflow-container",
         )
@@ -129,8 +135,8 @@ class WorkflowWizardScreen(Screen):
         state = get_state()
         summary = self.query_one("#config-summary", Static)
 
-        models = ", ".join(state.selected_models) if state.selected_models else "None selected"
-        profile = state.current_profile.metadata.name if state.current_profile else "None selected"
+        models = ", ".join(state.selected_models) if state.selected_models else "None selected (press M)"
+        profile = state.current_profile.metadata.name if state.current_profile else "None selected (press P)"
 
         summary.update(f"""
   Profile: {profile}
@@ -233,7 +239,7 @@ class WorkflowWizardScreen(Screen):
             self.templates = []
             self.selected_template_ids = set()
             self._populate_templates_table([])
-            status.update("Select an industry profile to view workflow templates.")
+            status.update("Select an industry profile (P) to view workflow templates.")
             self._update_total_workflows()
             return
 
@@ -306,6 +312,10 @@ class WorkflowWizardScreen(Screen):
             self.action_refresh_existing_workflows()
         elif button_id == "btn-refresh-templates":
             self.action_refresh_templates()
+        elif button_id == "btn-profile":
+            self.action_choose_profile()
+        elif button_id == "btn-models":
+            self.action_choose_models()
         elif button_id == "btn-select-all":
             self.action_select_all()
         elif button_id == "btn-deselect-all":
@@ -345,11 +355,11 @@ class WorkflowWizardScreen(Screen):
 
         state = get_state()
         if not state.current_profile:
-            self.notify("Please select an industry profile first.", severity="error")
+            self.notify("Select an industry profile (P) before creating workflows.", severity="error")
             return
 
         if not state.selected_models:
-            self.notify("Please select at least one model first.", severity="error")
+            self.notify("Select at least one model (M) before creating workflows.", severity="error")
             return
 
         if not self.selected_template_ids:
@@ -407,6 +417,14 @@ class WorkflowWizardScreen(Screen):
 
         finally:
             self.is_creating = False
+
+    def action_choose_models(self) -> None:
+        """Navigate to model selection."""
+        self.app.push_screen("models")
+
+    def action_choose_profile(self) -> None:
+        """Navigate to profile selection."""
+        self.app.push_screen("profiles")
 
     def _update_progress(self, current: int, total: int, message: str) -> None:
         """Update progress bar and status."""

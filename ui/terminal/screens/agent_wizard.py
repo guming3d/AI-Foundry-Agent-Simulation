@@ -9,8 +9,8 @@ import csv
 from pathlib import Path
 from textual.app import ComposeResult
 from textual.screen import Screen
-from textual.widgets import Static, Button, Input, DataTable, ProgressBar, Label
-from textual.containers import Container, Vertical, Horizontal, VerticalScroll
+from textual.widgets import Static, Button, Input, DataTable, ProgressBar
+from textual.containers import Vertical, Horizontal, VerticalScroll
 from textual import work
 from rich.markup import escape
 
@@ -26,6 +26,8 @@ class AgentWizardScreen(Screen):
     BINDINGS = [
         ("escape", "app.pop_screen()", "Back"),
         ("c", "create_agents", "Create Agents"),
+        ("m", "choose_models", "Models"),
+        ("p", "choose_profile", "Profile"),
         ("r", "refresh_existing", "Refresh Existing"),
         ("d", "delete_all_agents", "Delete All"),
         ("s", "select_all", "Select All"),
@@ -68,6 +70,11 @@ class AgentWizardScreen(Screen):
             # Configuration Section
             Static("Current Configuration:", classes="section-title"),
             Static(id="config-summary", classes="info-text"),
+            Horizontal(
+                Button("Select Profile [P]", id="btn-profile", variant="default"),
+                Button("Select Models [M]", id="btn-models", variant="default"),
+                id="config-buttons",
+            ),
 
             Horizontal(
                 Vertical(
@@ -131,8 +138,8 @@ class AgentWizardScreen(Screen):
         state = get_state()
         summary = self.query_one("#config-summary", Static)
 
-        models = ", ".join(state.selected_models) if state.selected_models else "None selected"
-        profile = state.current_profile.metadata.name if state.current_profile else "None selected"
+        models = ", ".join(state.selected_models) if state.selected_models else "None selected (press M)"
+        profile = state.current_profile.metadata.name if state.current_profile else "None selected (press P)"
 
         # Get agent type names
         if state.current_profile and state.current_profile.agent_types:
@@ -257,6 +264,10 @@ class AgentWizardScreen(Screen):
 
         if button_id == "btn-create":
             self.action_create_agents()
+        elif button_id == "btn-profile":
+            self.action_choose_profile()
+        elif button_id == "btn-models":
+            self.action_choose_models()
         elif button_id == "btn-back":
             self.app.pop_screen()
         elif button_id == "btn-refresh-existing":
@@ -277,11 +288,11 @@ class AgentWizardScreen(Screen):
         state = get_state()
 
         if not state.current_profile:
-            self.notify("Please select an industry profile first", severity="warning")
+            self.notify("Select an industry profile (P) before creating agents", severity="warning")
             return
 
         if not state.selected_models:
-            self.notify("Please select at least one model", severity="warning")
+            self.notify("Select at least one model (M) before creating agents", severity="warning")
             return
 
         if self.is_creating:
@@ -336,6 +347,14 @@ class AgentWizardScreen(Screen):
 
         finally:
             self.is_creating = False
+
+    def action_choose_models(self) -> None:
+        """Navigate to model selection."""
+        self.app.push_screen("models")
+
+    def action_choose_profile(self) -> None:
+        """Navigate to profile selection."""
+        self.app.push_screen("profiles")
 
     def on_data_table_row_selected(self, event: DataTable.RowSelected) -> None:
         """Handle row selection in the existing agents table."""

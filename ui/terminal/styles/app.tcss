@@ -69,46 +69,6 @@ Screen {
     padding: 0 1;
 }
 
-/* Workflow stepper */
-#workflow-stepper {
-    height: auto;
-    align: center middle;
-    padding: 1;
-    margin: 1 0;
-    border: solid $primary;
-    background: $surface-darken-1;
-}
-
-#workflow-stepper Static {
-    width: auto;
-    padding: 0 1;
-}
-
-.step-arrow {
-    color: $text-muted;
-}
-
-.step-completed {
-    color: $success;
-    text-style: bold;
-}
-
-.step-next {
-    color: $primary;
-    text-style: bold;
-}
-
-.step-pending {
-    color: $text-muted;
-}
-
-#next-step-hint {
-    text-align: center;
-    color: $text-muted;
-    padding: 0;
-    margin-bottom: 1;
-}
-
 #nav-buttons-extra {
     margin: 0;
     align: center middle;
@@ -254,6 +214,34 @@ Screen {
 
 #config-inputs Input {
     width: 100%;
+}
+
+#workflow-container {
+    padding: 0 1;
+}
+
+#existing-workflows-panel,
+#create-workflows-panel {
+    margin: 0 0 1 0;
+    padding: 1;
+    border: solid $secondary;
+    background: $surface-darken-1;
+    height: auto;
+}
+
+#create-workflows-panel {
+    padding-bottom: 2;
+}
+
+#existing-workflows-table,
+#workflow-templates-table,
+#workflows-table {
+    height: auto;
+    min-height: 6;
+    max-height: 14;
+    margin: 0 0 1 0;
+    border: solid $primary;
+    background: $surface-darken-1;
 }
 
 .info-text {
