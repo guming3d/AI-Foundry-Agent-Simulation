@@ -2,7 +2,8 @@
 Custom themes for Azure AI Foundry Agent Toolkit TUI.
 
 Provides multiple theme options following Textual's theme system:
-- Azure Dark: Default dark theme with Azure branding colors
+- Cyber Ops: High-tech neon palette for a technical vibe
+- Azure Dark: Azure branding colors
 - Azure Light: Light theme variant
 - Nord: Popular dark theme with cool colors
 - High Contrast: Accessibility-focused high contrast theme
@@ -19,7 +20,32 @@ Usage:
 from textual.theme import Theme
 
 
-# Azure Dark Theme - Default
+# Cyber Ops Theme - High-tech, neon-inspired palette
+CYBER_OPS = Theme(
+    name="cyber-ops",
+    primary="#23C9FF",       # Neon cyan
+    secondary="#7CFF6B",     # Neon green
+    accent="#FFB454",        # Amber accent
+    foreground="#DCE7F8",    # Cool light text
+    background="#0B0E12",    # Deep graphite
+    surface="#111722",       # Panel surface
+    panel="#1B2332",         # Panel background
+    success="#43F2A1",       # Mint green
+    warning="#FFC857",       # Bright amber
+    error="#FF5C5C",         # Neon red
+    dark=True,
+    variables={
+        "block-cursor-text-style": "none",
+        "footer-key-foreground": "#23C9FF",
+        "footer-description-foreground": "#9AA8C2",
+        "input-selection-background": "#23C9FF 35%",
+        "input-cursor-foreground": "#23C9FF",
+        "button-color-foreground": "#DCE7F8",
+    },
+)
+
+
+# Azure Dark Theme
 # Uses Azure's brand colors: #0078D4 (Azure Blue), with complementary colors
 AZURE_DARK = Theme(
     name="azure-dark",
@@ -240,6 +266,7 @@ DRACULA = Theme(
 
 # List of all custom themes for iteration
 APP_THEMES = [
+    CYBER_OPS,
     AZURE_DARK,
     AZURE_LIGHT,
     NORD,
@@ -255,7 +282,7 @@ APP_THEMES = [
 THEME_NAMES = [theme.name for theme in APP_THEMES]
 
 # Default theme
-DEFAULT_THEME = "azure-dark"
+DEFAULT_THEME = "cyber-ops"
 
 
 def register_app_themes(app) -> None:

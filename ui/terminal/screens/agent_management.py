@@ -34,7 +34,7 @@ class AgentManagementScreen(Screen):
         height: 1fr;
         min-height: 12;
         border: solid $primary;
-        background: $surface-darken-1;
+        background: $surface;
         margin: 0 0 1 0;
     }
 
@@ -46,13 +46,13 @@ class AgentManagementScreen(Screen):
         margin-bottom: 1;
         padding: 0 1;
         border-left: solid $primary;
-        background: $surface-darken-1;
+        background: $panel;
     }
 
     #status-message {
         padding: 0 1;
         border-left: solid $secondary;
-        background: $surface-darken-1;
+        background: $panel;
     }
 
     .warning-text {

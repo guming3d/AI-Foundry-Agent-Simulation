@@ -76,6 +76,7 @@ class DaemonScreen(Screen):
         padding: 0 1;
         margin: 1 0;
         border: solid $primary;
+        background: $panel;
     }
 
     #metrics-grid {
@@ -113,6 +114,7 @@ class DaemonScreen(Screen):
     #daemon-log {
         height: 1fr;
         border: solid $secondary;
+        background: $panel;
     }
     """
 

@@ -5,15 +5,19 @@
 /* Global styles */
 Screen {
     background: $background;
+    color: $text;
 }
 
 /* Title styles */
 #title, .screen-title {
+    width: 100%;
     text-align: center;
     text-style: bold;
     color: $primary;
-    padding: 0;
-    margin-bottom: 0;
+    border: solid $primary;
+    background: $background;
+    padding: 0 1;
+    margin-bottom: 1;
 }
 
 .description {
@@ -39,12 +43,16 @@ Screen {
 #logo {
     text-align: center;
     color: $primary;
-    padding: 0;
+    text-style: bold;
+    padding: 1 2;
+    margin-bottom: 1;
+    border: solid $primary;
+    background: $surface-darken-1;
 }
 
 #welcome {
     text-align: center;
-    color: $text;
+    color: $secondary;
     padding: 0 0 1 0;
     text-style: bold;
 }
@@ -61,8 +69,8 @@ Screen {
 #status-panel {
     margin: 1 0;
     padding: 1;
-    border: solid $secondary;
-    background: $surface-darken-1;
+    border: solid $primary;
+    background: $panel;
 }
 
 #status-panel .info-text {
@@ -90,7 +98,7 @@ Screen {
     max-height: 70%;
     margin: 0;
     border: solid $primary;
-    background: $surface-darken-1;
+    background: $surface;
 }
 
 .status-bar {
@@ -122,13 +130,13 @@ Screen {
     height: 1fr;
     min-height: 8;
     border: solid $primary;
-    background: $surface-darken-1;
+    background: $surface;
 }
 
 #profile-details-panel {
     width: 60%;
     padding-left: 1;
-    border-left: solid $primary;
+    border-left: solid $panel;
     height: 100%;
     overflow-y: auto;
 }
@@ -137,7 +145,7 @@ Screen {
     height: auto;
     padding: 1;
     border: solid $secondary;
-    background: $surface-darken-1;
+    background: $surface;
 }
 
 /* Agent wizard screen */
@@ -152,14 +160,14 @@ Screen {
     max-height: 12;
     margin: 0 0 1 0;
     border: solid $success;
-    background: $surface-darken-1;
+    background: $surface;
 }
 
 #existing-agents-summary {
     color: $text-muted;
     padding: 0 1;
     border-left: solid $success;
-    background: $surface-darken-1;
+    background: $surface;
 }
 
 #delete-buttons {
@@ -177,7 +185,7 @@ Screen {
     padding: 0 1;
     margin-bottom: 1;
     border-left: solid $warning;
-    background: $surface-darken-1;
+    background: $surface;
 }
 
 .section-header-with-button {
@@ -204,7 +212,7 @@ Screen {
     margin: 0 0 1 0;
     padding: 1;
     border: solid $secondary;
-    background: $surface-darken-1;
+    background: $panel;
 }
 
 #config-inputs Vertical {
@@ -225,7 +233,7 @@ Screen {
     margin: 0 0 1 0;
     padding: 1;
     border: solid $secondary;
-    background: $surface-darken-1;
+    background: $panel;
     height: auto;
 }
 
@@ -241,7 +249,7 @@ Screen {
     max-height: 14;
     margin: 0 0 1 0;
     border: solid $primary;
-    background: $surface-darken-1;
+    background: $surface;
 }
 
 .info-text {
@@ -254,7 +262,7 @@ Screen {
     min-height: 6;
     max-height: 15;
     border: solid $primary;
-    background: $surface-darken-1;
+    background: $surface;
 }
 
 /* Simulation screen - base styles only, detailed styles in screen's DEFAULT_CSS */
@@ -267,14 +275,14 @@ Screen {
     height: auto;
     padding: 1;
     border: solid $primary;
-    background: $surface;
+    background: $panel;
     margin-bottom: 1;
 }
 
 #log-panel {
     height: 1fr;
     border: solid $primary;
-    background: $surface;
+    background: $panel;
 }
 
 #sim-log {
@@ -292,7 +300,7 @@ Screen {
 
 .metric-box {
     padding: 1;
-    border: tall $primary;
+    border: solid $primary;
     background: $surface;
     align: center middle;
     text-align: center;
@@ -312,17 +320,18 @@ Screen {
 .results-section {
     margin-bottom: 2;
     padding: 1;
-    border: thick $secondary;
-    background: $surface;
+    border: solid $secondary;
+    background: $panel;
 }
 
 .results-header {
     text-align: center;
-    background: $secondary;
-    color: $text;
+    background: $background;
+    color: $secondary;
     text-style: bold;
     padding: 0 1;
     margin-bottom: 1;
+    border: solid $secondary;
 }
 
 .summary-text {
@@ -361,10 +370,11 @@ TabbedContent {
 }
 
 .screen-title {
-    background: $primary;
-    color: $text;
-    padding: 1;
-    text-style: bold italic;
+    background: $background;
+    color: $primary;
+    padding: 0 1;
+    text-style: bold;
+    border: solid $primary;
 }
 
 /* Data tables */
@@ -376,14 +386,14 @@ DataTable {
 }
 
 DataTable > .datatable--header {
-    background: $primary-darken-1;
-    color: $text;
+    background: $panel;
+    color: $secondary;
     text-style: bold;
 }
 
 DataTable > .datatable--cursor {
     background: $primary;
-    color: $text;
+    color: $background;
 }
 
 DataTable > .datatable--even-row {
@@ -455,66 +465,103 @@ Toast {
 
 /* Header styling for theme compatibility */
 Header {
-    background: $primary;
-    color: $text;
+    background: $background;
+    color: $primary;
 }
 
 /* Footer styling */
 Footer {
-    background: $surface;
+    background: $background;
 }
 
 /* Button theming */
 Button {
-    background: $primary;
-    color: $text;
-    border: none;
+    background: transparent;
+    color: $primary;
+    border: solid $primary;
+    padding: 0 1;
+    text-style: bold;
 }
 
 Button:hover {
-    background: $primary-lighten-1;
+    background: transparent;
+    color: $primary-lighten-1;
+    border: solid $primary-lighten-1;
 }
 
 Button:focus {
-    background: $primary-darken-1;
+    background: transparent;
+    color: $secondary;
+    border: solid $secondary;
 }
 
 Button.-primary {
-    background: $primary;
+    background: transparent;
+    color: $primary;
+    border: solid $primary;
+}
+
+Button.-primary:hover {
+    background: transparent;
+    color: $primary-lighten-1;
+    border: solid $primary-lighten-1;
 }
 
 Button.-success {
-    background: $success;
+    background: transparent;
+    color: $success;
+    border: solid $success;
+}
+
+Button.-success:hover {
+    background: transparent;
+    color: $success-lighten-1;
+    border: solid $success-lighten-1;
 }
 
 Button.-warning {
-    background: $warning;
-    color: $background;
+    background: transparent;
+    color: $warning;
+    border: solid $warning;
+}
+
+Button.-warning:hover {
+    background: transparent;
+    color: $warning-lighten-1;
+    border: solid $warning-lighten-1;
 }
 
 Button.-error {
-    background: $error;
+    background: transparent;
+    color: $error;
+    border: solid $error;
+}
+
+Button.-error:hover {
+    background: transparent;
+    color: $error-lighten-1;
+    border: solid $error-lighten-1;
 }
 
 /* Input fields */
 Input {
     margin: 0;
     background: $surface;
-    border: tall $primary;
+    border: solid $primary;
 }
 
 Input:focus {
-    border: tall $accent;
+    border: solid $accent;
 }
 
 /* Select widgets */
 Select {
     background: $surface;
-    border: tall $primary;
+    border: solid $primary;
 }
 
 Select:focus {
-    border: tall $accent;
+    border: solid $accent;
 }
 
 /* General text colors */

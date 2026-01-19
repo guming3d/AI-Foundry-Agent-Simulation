@@ -40,7 +40,7 @@ class SimulationScreen(Screen):
         padding: 1;
         margin-bottom: 1;
         border: solid $secondary;
-        background: $surface-darken-1;
+        background: $panel;
     }
 
     .config-section-title {
@@ -88,7 +88,7 @@ class SimulationScreen(Screen):
         padding: 1;
         margin-bottom: 1;
         border: solid $accent;
-        background: $surface-darken-1;
+        background: $panel;
     }
 
     #sim-type {
@@ -101,7 +101,7 @@ class SimulationScreen(Screen):
         padding: 1;
         margin-bottom: 1;
         border: solid $primary;
-        background: $surface-darken-1;
+        background: $panel;
     }
 
     #onetime-log-section {
@@ -112,7 +112,7 @@ class SimulationScreen(Screen):
     #onetime-log {
         height: 1fr;
         border: solid $primary;
-        background: $surface-darken-1;
+        background: $panel;
     }
 
     /* Daemon simulation tab */
@@ -126,7 +126,7 @@ class SimulationScreen(Screen):
         padding: 1;
         margin-bottom: 1;
         border: solid $accent;
-        background: $surface-darken-1;
+        background: $panel;
     }
 
     #daemon-status {
@@ -147,7 +147,7 @@ class SimulationScreen(Screen):
         padding: 1;
         margin-bottom: 1;
         border: solid $primary;
-        background: $surface-darken-1;
+        background: $panel;
     }
 
     #metrics-grid {
@@ -159,7 +159,7 @@ class SimulationScreen(Screen):
 
     .metric-box {
         padding: 1;
-        border: tall $secondary;
+        border: solid $secondary;
         background: $surface;
         height: auto;
         align: center middle;
@@ -184,7 +184,7 @@ class SimulationScreen(Screen):
     #daemon-log {
         height: 1fr;
         border: solid $primary;
-        background: $surface-darken-1;
+        background: $panel;
     }
 
     /* Results tab */
@@ -192,16 +192,17 @@ class SimulationScreen(Screen):
         margin-bottom: 1;
         padding: 1;
         border: solid $secondary;
-        background: $surface-darken-1;
+        background: $panel;
     }
 
     .results-header {
         text-align: center;
-        background: $primary;
-        color: $text;
+        background: $background;
+        color: $secondary;
         text-style: bold;
         padding: 0 1;
         margin-bottom: 1;
+        border: solid $secondary;
     }
 
     .summary-text {
