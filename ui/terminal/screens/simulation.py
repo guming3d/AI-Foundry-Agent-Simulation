@@ -62,7 +62,16 @@ class SimulationScreen(Screen):
 
     #sim-setup {
         height: auto;
-        margin-bottom: 1;
+        margin-bottom: 0;
+        padding: 0 1;
+    }
+
+    #sim-setup .config-section-title {
+        margin-bottom: 0;
+    }
+
+    #sim-setup .config-row {
+        margin-bottom: 0;
     }
 
     #sim-profile {
@@ -70,11 +79,11 @@ class SimulationScreen(Screen):
     }
 
     #sim-agents-table {
-        height: 8;
-        min-height: 6;
+        height: 6;
+        min-height: 4;
         border: solid $secondary;
         background: $surface;
-        margin-bottom: 1;
+        margin-bottom: 0;
     }
 
     .input-label {
@@ -619,7 +628,7 @@ class SimulationScreen(Screen):
         if self.selected_profile_id and any(opt[1] == self.selected_profile_id for opt in options):
             select.value = self.selected_profile_id
         else:
-            select.value = None
+            select.clear()
 
     def action_refresh_agents(self) -> None:
         """Refresh the agents list from the project."""
