@@ -1,5 +1,5 @@
 """
-Azure SDK client factory for Azure AI Foundry Agent Toolkit.
+Azure SDK client factory for Microsoft Foundry Agent Toolkit.
 
 Provides centralized client management with:
 - Singleton pattern for connection reuse
@@ -66,7 +66,7 @@ class AzureClientFactory:
         Set a custom endpoint (resets existing clients).
 
         Args:
-            endpoint: Azure AI Foundry project endpoint URL
+            endpoint: Microsoft Foundry project endpoint URL
         """
         with self._client_lock:
             if endpoint != self._endpoint:
@@ -136,7 +136,7 @@ class AzureClientFactory:
 
     def test_connection(self) -> bool:
         """
-        Test the connection to Azure AI Foundry.
+        Test the connection to Microsoft Foundry.
 
         Returns:
             True if connection successful, False otherwise
@@ -262,7 +262,7 @@ def create_openai_client(endpoint: str = None, credential: DefaultAzureCredentia
 
 def test_azure_connection(endpoint: str = None) -> bool:
     """
-    Test connection to Azure AI Foundry.
+    Test connection to Microsoft Foundry.
 
     Args:
         endpoint: Optional custom endpoint

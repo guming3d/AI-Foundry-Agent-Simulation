@@ -1,5 +1,5 @@
 """
-Shared state manager for Azure AI Foundry Agent Toolkit UI.
+Shared state manager for Microsoft Foundry Agent Toolkit UI.
 
 Provides centralized state management for the UI.
 """

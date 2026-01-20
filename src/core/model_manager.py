@@ -1,5 +1,5 @@
 """
-Model management for Azure AI Foundry Agent Toolkit.
+Model management for Microsoft Foundry Agent Toolkit.
 
 Provides model discovery and deployment:
 - List available model deployments
@@ -47,10 +47,10 @@ class ModelInfo:
 
 class ModelManager:
     """
-    Manager for Azure AI Foundry model deployments.
+    Manager for Microsoft Foundry model deployments.
 
     Handles model discovery, deployment, and validation.
-    All model information is fetched dynamically from Azure AI Foundry.
+    All model information is fetched dynamically from Microsoft Foundry.
     """
 
     def __init__(self):
@@ -59,7 +59,7 @@ class ModelManager:
 
     def list_available_models(self, refresh: bool = False) -> List[ModelInfo]:
         """
-        List all available model deployments from Azure AI Foundry.
+        List all available model deployments from Microsoft Foundry.
 
         Args:
             refresh: Force refresh of cached models
@@ -74,7 +74,7 @@ class ModelManager:
         client = get_project_client()
 
         try:
-            # List deployments from Azure AI Foundry
+            # List deployments from Microsoft Foundry
             deployments = client.deployments.list()
 
             for deployment in deployments:
@@ -104,11 +104,11 @@ class ModelManager:
                 models.append(model_info)
 
             if not models:
-                print("WARNING: No model deployments found in Azure AI Foundry project.")
-                print("Please deploy models in your Azure AI Foundry project before creating agents.")
+                print("WARNING: No model deployments found in Microsoft Foundry project.")
+                print("Please deploy models in your Microsoft Foundry project before creating agents.")
 
         except Exception as e:
-            print(f"ERROR: Failed to list models from Azure AI Foundry: {e}")
+            print(f"ERROR: Failed to list models from Microsoft Foundry: {e}")
             print("Please check your PROJECT_ENDPOINT and Azure credentials.")
             print("No models available - cannot proceed with agent creation.")
 
@@ -292,7 +292,7 @@ def validate_model(model_name: str) -> bool:
 
 def get_default_models() -> List[str]:
     """
-    Get the list of available models from Azure AI Foundry.
+    Get the list of available models from Microsoft Foundry.
 
     Returns:
         List of deployed model names

@@ -1,5 +1,5 @@
 """
-Template loader for Azure AI Foundry Agent Toolkit.
+Template loader for Microsoft Foundry Agent Toolkit.
 
 Loads and validates industry profile YAML templates with:
 - YAML parsing with error handling

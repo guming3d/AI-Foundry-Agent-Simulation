@@ -1,7 +1,7 @@
 """
 Agent management screen for the Textual TUI application.
 
-Allows users to view all agents in the Azure AI Foundry project
+Allows users to view all agents in the Microsoft Foundry project
 and delete them individually or in bulk.
 """
 
@@ -16,7 +16,7 @@ from src.core.agent_manager import AgentManager
 
 
 class AgentManagementScreen(Screen):
-    """Screen for managing agents in the Azure AI Foundry project."""
+    """Screen for managing agents in the Microsoft Foundry project."""
 
     BINDINGS = [
         ("escape", "go_back", "Back"),
@@ -73,7 +73,7 @@ class AgentManagementScreen(Screen):
 
     def compose(self) -> ComposeResult:
         yield Static("Manage Agents", id="title", classes="screen-title")
-        yield Static("View and manage all agents in your Azure AI Foundry project", classes="description")
+        yield Static("View and manage all agents in your Microsoft Foundry project", classes="description")
 
         yield Horizontal(
             Button("Refresh [R]", id="btn-refresh", variant="primary"),

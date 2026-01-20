@@ -199,7 +199,7 @@ class WorkflowWizardScreen(Screen):
             self.app.call_from_thread(self._populate_existing_table, workflows)
             self.app.call_from_thread(
                 self._update_existing_summary,
-                f"Found {len(workflows)} existing workflows in Azure AI Foundry project"
+                f"Found {len(workflows)} existing workflows in Microsoft Foundry project"
             )
 
         except Exception as e:

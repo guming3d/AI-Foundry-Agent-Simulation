@@ -1,5 +1,5 @@
 """
-Main code generator orchestrator for Azure AI Foundry Agent Toolkit.
+Main code generator orchestrator for Microsoft Foundry Agent Toolkit.
 
 Coordinates generation of all simulation artifacts from industry profiles.
 """
@@ -44,7 +44,7 @@ class GeneratedArtifact:
 
 class CodeGenerator:
     """
-    Main code generator for Azure AI Foundry Agent Toolkit.
+    Main code generator for Microsoft Foundry Agent Toolkit.
 
     Generates all simulation code artifacts from industry profiles:
     - Operations simulation script

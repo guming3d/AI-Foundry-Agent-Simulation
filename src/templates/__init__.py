@@ -1,5 +1,5 @@
 """
-Template management for Azure AI Foundry Agent Toolkit.
+Template management for Microsoft Foundry Agent Toolkit.
 
 This module provides:
 - YAML template loading and validation

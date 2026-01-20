@@ -1,5 +1,5 @@
 """
-Thread-safe metrics collector for Azure AI Foundry Agent Toolkit.
+Thread-safe metrics collector for Microsoft Foundry Agent Toolkit.
 
 Provides centralized metrics collection with:
 - Thread-safe metric appending

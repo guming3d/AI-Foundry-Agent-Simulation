@@ -1,5 +1,5 @@
 # Industry Profile: Manufacturing
-# Azure AI Foundry Agent Creation & Demo Toolkit
+# Microsoft Foundry Bootstrap
 # Extended version with 10 agent types for 100+ agent deployments
 
 metadata:
@@ -32,7 +32,7 @@ organization:
     - name: "Plant Operations"
       code: "PLANT"
 
-# Model preferences (optional - actual models are dynamically fetched from Azure AI Foundry)
+# Model preferences (optional - actual models are dynamically fetched from Microsoft Foundry)
 # These preferences guide model selection when multiple models are available
 # The system will automatically use whatever models are deployed in your project
 models:

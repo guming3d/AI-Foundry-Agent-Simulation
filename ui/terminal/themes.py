@@ -1,5 +1,5 @@
 """
-Custom themes for Azure AI Foundry Agent Toolkit TUI.
+Custom themes for Microsoft Foundry Agent Toolkit TUI.
 
 Provides multiple theme options following Textual's theme system:
 - Cyber Ops: High-tech neon palette for a technical vibe

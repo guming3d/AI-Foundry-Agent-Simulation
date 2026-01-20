@@ -1,5 +1,5 @@
 """
-User interfaces for Azure AI Foundry Agent Toolkit.
+User interfaces for Microsoft Foundry Agent Toolkit.
 
 This module provides:
 - Terminal UI (Textual-based)

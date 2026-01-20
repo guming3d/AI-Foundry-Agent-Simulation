@@ -1,5 +1,5 @@
 """
-Template renderer for Azure AI Foundry Agent Toolkit.
+Template renderer for Microsoft Foundry Agent Toolkit.
 
 Renders Jinja2 templates for code generation:
 - Simulation script generation

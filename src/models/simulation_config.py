@@ -1,5 +1,5 @@
 """
-Simulation configuration data models for Azure AI Foundry Agent Toolkit.
+Simulation configuration data models for Microsoft Foundry Agent Toolkit.
 
 These models define the structure for simulation and daemon configuration,
 including load profiles and execution parameters.

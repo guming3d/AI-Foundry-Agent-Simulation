@@ -1,5 +1,5 @@
 """
-Evaluation engine that uses Azure AI Foundry eval runs.
+Evaluation engine that uses Microsoft Foundry eval runs.
 
 Creates evaluation groups and runs them against selected agents using
 project-scoped OpenAI evals, then persists run metadata and outputs.

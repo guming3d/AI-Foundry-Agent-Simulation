@@ -216,7 +216,7 @@ class AgentWizardScreen(Screen):
             self.app.call_from_thread(self._populate_existing_table, agents)
             self.app.call_from_thread(
                 self._update_existing_summary,
-                f"Found {len(agents)} existing agents in Azure AI Foundry project"
+                f"Found {len(agents)} existing agents in Microsoft Foundry project"
             )
 
         except Exception as e:

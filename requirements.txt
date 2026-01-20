@@ -1,4 +1,4 @@
-# Azure AI Foundry Agent Creation & Demo Toolkit
+# Microsoft Foundry Bootstrap
 # Install with: pip install -r requirements.txt
 
 # Azure SDK

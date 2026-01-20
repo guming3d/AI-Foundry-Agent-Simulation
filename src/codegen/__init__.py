@@ -1,5 +1,5 @@
 """
-Code generation engine for Azure AI Foundry Agent Toolkit.
+Code generation engine for Microsoft Foundry Agent Toolkit.
 
 This module provides:
 - Simulation script generation

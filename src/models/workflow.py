@@ -1,5 +1,5 @@
 """
-Workflow models for Azure AI Foundry Agent Toolkit.
+Workflow models for Microsoft Foundry Agent Toolkit.
 
 Defines workflow templates, roles, and created workflow records.
 """
@@ -34,7 +34,7 @@ class WorkflowTemplate(BaseModel):
 
 
 class CreatedWorkflow(BaseModel):
-    """Represents a workflow created in Azure AI Foundry."""
+    """Represents a workflow created in Microsoft Foundry."""
 
     name: str = Field(..., description="Workflow agent name")
     azure_id: str = Field(..., description="Azure workflow agent ID")

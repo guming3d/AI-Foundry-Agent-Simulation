@@ -1,5 +1,5 @@
 """
-Environment validation for Azure AI Foundry Agent Toolkit.
+Environment validation for Microsoft Foundry Agent Toolkit.
 
 Validates required environment variables and provides setup guidance.
 """
@@ -77,7 +77,7 @@ class EnvValidator:
         else:
             guide += "1. Your .env file exists but needs configuration\n\n"
 
-        guide += "2. Add your Azure AI Foundry project endpoint:\n"
+        guide += "2. Add your Microsoft Foundry project endpoint:\n"
         guide += "   PROJECT_ENDPOINT=https://your-project.services.ai.azure.com/api/projects/your-project\n\n"
 
         guide += "3. How to find your project endpoint:\n"
@@ -99,7 +99,7 @@ class EnvValidator:
         Update or create .env file with PROJECT_ENDPOINT.
 
         Args:
-            project_endpoint: The Azure AI Foundry project endpoint URL
+            project_endpoint: The Microsoft Foundry project endpoint URL
 
         Returns:
             Tuple of (success, message)

@@ -1,5 +1,5 @@
 """
-Data models for the Azure AI Foundry Agent Toolkit.
+Data models for the Microsoft Foundry Agent Toolkit.
 
 This module contains Pydantic models for:
 - Agent configuration and management

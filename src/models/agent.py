@@ -1,5 +1,5 @@
 """
-Agent data models for Azure AI Foundry Agent Toolkit.
+Agent data models for Microsoft Foundry Agent Toolkit.
 
 These models define the structure for agent creation, configuration,
 and management within the toolkit.
@@ -65,7 +65,7 @@ class Agent(BaseModel):
 
 
 class CreatedAgent(BaseModel):
-    """Represents an agent that has been created in Azure AI Foundry."""
+    """Represents an agent that has been created in Microsoft Foundry."""
 
     agent_id: str = Field(..., description="Local agent ID")
     name: str = Field(..., description="Full agent name")

@@ -117,6 +117,7 @@ class DaemonRunner:
 
     def __init__(
         self,
+        agents: Optional[List[CreatedAgent]] = None,
         agents_csv: str = "created_agents_results.csv",
         profile: Optional[IndustryProfile] = None,
     ):
@@ -124,12 +125,13 @@ class DaemonRunner:
         Initialize the daemon runner.
 
         Args:
+            agents: Optional list of agents to use (preferred over CSV)
             agents_csv: Path to the agents CSV file
             profile: Optional industry profile for query templates
         """
         self.agents_csv = agents_csv
         self.profile = profile
-        self.agents: List[CreatedAgent] = []
+        self.agents: List[CreatedAgent] = agents or []
         self.query_templates: Dict[str, List[str]] = {}
         self.guardrail_tests: Dict[str, List[str]] = {}
 
@@ -141,8 +143,9 @@ class DaemonRunner:
         self._log_callback: Optional[Callable[[str], None]] = None
         self._metrics_callback: Optional[Callable[[Dict], None]] = None
 
-        # Load agents
-        self._load_agents()
+        # Load agents from CSV only if none provided
+        if not self.agents:
+            self._load_agents()
 
         # Load templates from profile
         if profile:

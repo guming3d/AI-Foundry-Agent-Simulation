@@ -1,5 +1,5 @@
 """
-Terminal UI (TUI) for Azure AI Foundry Agent Toolkit.
+Terminal UI (TUI) for Microsoft Foundry Agent Toolkit.
 
 Built with Textual library for a rich terminal experience.
 Includes theme support with multiple built-in themes.

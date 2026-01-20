@@ -1,9 +1,9 @@
 """
-Azure AI Foundry Agent Creation & Demo Toolkit
+Microsoft Foundry Bootstrap
 
 A comprehensive toolkit for creating, testing, and demonstrating AI agents
-with Azure AI Foundry Control Plane.
+with Microsoft Foundry Control Plane.
 """
 
 __version__ = "1.0.0"
-__author__ = "Azure AI Foundry Team"
+__author__ = "Microsoft Foundry Team"

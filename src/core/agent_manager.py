@@ -1,5 +1,5 @@
 """
-Agent management for Azure AI Foundry Agent Toolkit.
+Agent management for Microsoft Foundry Agent Toolkit.
 
 Provides CRUD operations for AI agents:
 - Create agents from industry profiles
@@ -22,7 +22,7 @@ from ..models.industry_profile import IndustryProfile, AgentType
 
 class AgentManager:
     """
-    Manager for Azure AI Foundry agents.
+    Manager for Microsoft Foundry agents.
 
     Handles agent creation, listing, and deletion with support for
     industry profiles and batch operations.
@@ -34,7 +34,7 @@ class AgentManager:
 
         Args:
             models: List of available models for random assignment.
-                   If not provided, models will be fetched from Azure AI Foundry.
+                   If not provided, models will be fetched from Microsoft Foundry.
         """
         self.models = models or []
 
@@ -88,7 +88,7 @@ Please assist users with tasks related to your area of expertise while maintaini
 
     def create_agent(self, request: AgentCreateRequest) -> CreatedAgent:
         """
-        Create a single agent in Azure AI Foundry.
+        Create a single agent in Microsoft Foundry.
 
         Args:
             request: Agent creation request
@@ -145,7 +145,7 @@ Please assist users with tasks related to your area of expertise while maintaini
 
         if not available_models:
             raise ValueError(
-                "No models provided. Please select models from your Azure AI Foundry project."
+                "No models provided. Please select models from your Microsoft Foundry project."
             )
 
         # Calculate total agents

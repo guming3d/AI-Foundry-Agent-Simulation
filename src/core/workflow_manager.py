@@ -1,5 +1,5 @@
 """
-Workflow management for Azure AI Foundry Agent Toolkit.
+Workflow management for Microsoft Foundry Agent Toolkit.
 
 Provides workflow template building and batch workflow creation.
 """
@@ -412,7 +412,7 @@ class WorkflowManager:
             raise ValueError("No industry profile selected. Please select a profile first.")
 
         if not available_models:
-            raise ValueError("No models provided. Please select models from your Azure AI Foundry project.")
+            raise ValueError("No models provided. Please select models from your Microsoft Foundry project.")
 
         templates = [t for t in self.build_templates(profile) if t.id in template_ids]
         if not templates:

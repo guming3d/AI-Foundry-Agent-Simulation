@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Azure AI Foundry Agent Creation & Demo Toolkit
+Microsoft Foundry Bootstrap
 
 Main entry point for running the toolkit via CLI and TUI.
 
@@ -140,7 +140,7 @@ def create_agents(args):
 def main():
     """Main entry point."""
     parser = argparse.ArgumentParser(
-        description="Azure AI Foundry Agent Creation & Demo Toolkit",
+        description="Microsoft Foundry Bootstrap",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:

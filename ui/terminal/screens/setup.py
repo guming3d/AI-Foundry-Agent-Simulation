@@ -101,7 +101,7 @@ class SetupScreen(Screen):
                 )
 
             # Input section
-            yield Label("Enter your Azure AI Foundry Project Endpoint:", classes="input-label")
+            yield Label("Enter your Microsoft Foundry Project Endpoint:", classes="input-label")
             yield Input(
                 placeholder="https://your-project.services.ai.azure.com/api/projects/your-project",
                 id="endpoint-input"

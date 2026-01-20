@@ -1,5 +1,5 @@
 """
-Industry profile data models for Azure AI Foundry Agent Toolkit.
+Industry profile data models for Microsoft Foundry Agent Toolkit.
 
 These models define the structure for industry-specific templates
 that configure agent types, query templates, and guardrail tests.

@@ -1,5 +1,5 @@
 """
-Main Textual TUI application for Azure AI Foundry Control-Plane Batch Agent Operation.
+Main Textual TUI application for Microsoft Foundry Bootstrap.
 
 Provides a rich terminal interface for:
 - Batch agent creation (100+ agents)
@@ -34,13 +34,13 @@ from src.core.env_validator import EnvValidator
 
 class AgentToolkitApp(App):
     """
-    Azure AI Foundry Control-Plane Batch Agent Operation TUI Application.
+    Microsoft Foundry Bootstrap TUI Application.
 
     A terminal-based interface for batch creating, testing, and managing
-    AI agents at scale with Azure AI Foundry Control Plane.
+    AI agents at scale with Microsoft Foundry Control Plane.
     """
 
-    TITLE = "Azure AI Foundry Control-Plane Batch Agent Operation"
+    TITLE = "Microsoft Foundry Bootstrap"
     SUB_TITLE = "Batch Create, Test, and Monitor AI Agents at Scale"
 
     CSS_PATH = "styles/app.tcss"

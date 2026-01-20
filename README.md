@@ -1,13 +1,13 @@
-# Azure AI Foundry Control-Plane Batch Agent Operation
+# Microsoft Foundry Bootstrap
 
-A comprehensive toolkit for batch creation, testing, and management of AI agents at scale using Azure AI Foundry Control Plane features. Supports industry-specific templates, parallel agent operations, and real-time metrics collection through an intuitive Terminal interface.
+A comprehensive toolkit for batch creation, testing, and management of AI agents at scale using Microsoft Foundry Control Plane features. Supports industry-specific templates, parallel agent operations, and real-time metrics collection through an intuitive Terminal interface.
 
 ## Features
 
 - **Batch Agent Operations**: Create and manage 100+ AI agents simultaneously with multi-threaded processing
 - **Terminal Interface**: Full-featured Textual UI for interactive management
 - **Industry Templates**: Pre-configured profiles for Retail, Financial Services, Healthcare, and Manufacturing with specialized agent types
-- **Model Management**: Discover existing models and deploy new ones through Azure AI Foundry Control Plane
+- **Model Management**: Discover existing models and deploy new ones through Microsoft Foundry Control Plane
 - **Code Generation**: Automatically generate production-ready simulation scripts from templates
 - **Metrics & Visualization**: Real-time performance tracking with Plotly-powered dashboards
 - **Agent Registry**: Centralized tracking of created agents with CSV-based persistence

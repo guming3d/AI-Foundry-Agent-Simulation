@@ -5,10 +5,9 @@ Allows users to run simulations and monitor progress.
 Supports both one-time simulations and long-running daemon simulations.
 """
 
-import os
 from textual.app import ComposeResult
 from textual.screen import Screen
-from textual.widgets import Static, Button, Input, ProgressBar, Log, Select, DataTable, TabbedContent, TabPane, Label
+from textual.widgets import Static, Button, Input, ProgressBar, Log, Select, DataTable, TabbedContent, TabPane
 from textual.containers import Vertical, Horizontal, VerticalScroll, Grid
 from textual import work
 from textual.timer import Timer
@@ -17,6 +16,9 @@ from ui.shared.state_manager import get_state_manager, get_state
 from src.core.simulation_engine import SimulationEngine, SimulationConfig
 from src.core.daemon_runner import DaemonRunner, DaemonConfig
 from src.core import config
+from src.core.agent_manager import AgentManager
+from src.models.agent import CreatedAgent
+from src.templates.template_loader import TemplateLoader
 
 
 class SimulationScreen(Screen):
@@ -56,6 +58,23 @@ class SimulationScreen(Screen):
 
     .config-row:last-of-type {
         margin-bottom: 0;
+    }
+
+    #sim-setup {
+        height: auto;
+        margin-bottom: 1;
+    }
+
+    #sim-profile {
+        width: 1fr;
+    }
+
+    #sim-agents-table {
+        height: 8;
+        min-height: 6;
+        border: solid $secondary;
+        background: $surface;
+        margin-bottom: 1;
     }
 
     .input-label {
@@ -233,6 +252,14 @@ class SimulationScreen(Screen):
         self.simulation_active = False
         self.daemon: DaemonRunner = None
         self.metrics_timer: Timer = None
+        self.template_loader = TemplateLoader()
+        self.profiles = []
+        self.selected_profile_id = None
+        self.selected_profile = None
+        self.agents = []
+        self.selected_agent_names = set()
+        self.agent_row_keys = {}
+        self.is_loading_agents = False
 
     def action_go_back(self) -> None:
         """Go back to previous screen."""
@@ -240,6 +267,19 @@ class SimulationScreen(Screen):
 
     def compose(self) -> ComposeResult:
         yield Static("Simulation Dashboard", id="title", classes="screen-title")
+
+        with Vertical(id="sim-setup", classes="config-section"):
+            yield Static("Simulation Setup", classes="config-section-title")
+            with Horizontal(classes="config-row"):
+                yield Static("Profile:", classes="input-label")
+                yield Select([], id="sim-profile", allow_blank=True)
+                yield Button("Refresh Profiles", id="btn-refresh-profiles", variant="default")
+            yield Static("Agents", classes="section-title")
+            yield DataTable(id="sim-agents-table")
+            with Horizontal(classes="button-row"):
+                yield Button("Refresh Agents", id="btn-refresh-agents", variant="primary")
+                yield Button("Select All", id="btn-select-all-agents", variant="default")
+                yield Button("Clear", id="btn-clear-agents", variant="default")
 
         with TabbedContent(id="sim-tabs"):
             # Tab 1: One-Time Simulation
@@ -405,6 +445,17 @@ class SimulationScreen(Screen):
 
     def on_mount(self) -> None:
         """Initialize the screen."""
+        agents_table = self.query_one("#sim-agents-table", DataTable)
+        agents_table.add_columns("Sel", "Name", "Model")
+        agents_table.cursor_type = "row"
+
+        state = get_state()
+        if state.current_profile_id:
+            self.selected_profile_id = state.current_profile_id
+            self.selected_profile = state.current_profile
+
+        self._load_profiles()
+        self.action_refresh_agents()
         self._init_onetime_log()
         self._init_daemon_log()
         self._setup_results_tables()
@@ -414,28 +465,26 @@ class SimulationScreen(Screen):
 
     def _init_onetime_log(self) -> None:
         """Initialize the one-time simulation log."""
-        state = get_state()
         log = self.query_one("#onetime-log", Log)
 
         log.write_line("[*] One-Time Simulation")
         log.write_line("=" * 40)
 
-        if not state.current_profile:
-            log.write_line("[!] Warning: No industry profile selected")
+        if not self.selected_profile:
+            log.write_line("[!] Warning: No profile selected")
         else:
-            log.write_line(f"[+] Profile: {state.current_profile.metadata.name}")
+            log.write_line(f"[+] Profile: {self.selected_profile.metadata.name}")
 
-        if not state.created_agents:
-            log.write_line("[!] Warning: No agents created in session")
+        if not self.selected_agent_names:
+            log.write_line("[!] Warning: No agents selected")
         else:
-            log.write_line(f"[+] Session Agents: {len(state.created_agents)}")
+            log.write_line(f"[+] Selected Agents: {len(self.selected_agent_names)}")
 
         log.write_line("")
         log.write_line("[*] Configure settings above and click 'Start Simulation'")
 
     def _init_daemon_log(self) -> None:
         """Initialize the daemon simulation log."""
-        state = get_state()
         log = self.query_one("#daemon-log", Log)
 
         log.write_line("[*] Long-Running Daemon Simulation")
@@ -446,10 +495,15 @@ class SimulationScreen(Screen):
         log.write_line("    - Randomized call counts per batch")
         log.write_line("")
 
-        if not state.current_profile:
-            log.write_line("[!] Warning: No industry profile selected")
+        if not self.selected_profile:
+            log.write_line("[!] Warning: No profile selected")
         else:
-            log.write_line(f"[+] Profile: {state.current_profile.metadata.name}")
+            log.write_line(f"[+] Profile: {self.selected_profile.metadata.name}")
+
+        if not self.selected_agent_names:
+            log.write_line("[!] Warning: No agents selected")
+        else:
+            log.write_line(f"[+] Selected Agents: {len(self.selected_agent_names)}")
 
         log.write_line("")
         log.write_line("[*] Configure settings above and click 'Start Daemon'")
@@ -462,6 +516,15 @@ class SimulationScreen(Screen):
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """Handle button presses."""
         button_id = event.button.id
+
+        if button_id == "btn-refresh-agents":
+            self.action_refresh_agents()
+        elif button_id == "btn-select-all-agents":
+            self.action_select_all_agents()
+        elif button_id == "btn-clear-agents":
+            self.action_clear_agents()
+        elif button_id == "btn-refresh-profiles":
+            self._load_profiles()
 
         # One-time simulation buttons
         if button_id == "btn-onetime-run":
@@ -481,6 +544,46 @@ class SimulationScreen(Screen):
         elif button_id in ("btn-back-onetime", "btn-back-daemon", "btn-back-results"):
             self.app.pop_screen()
 
+    def on_data_table_row_selected(self, event: DataTable.RowSelected) -> None:
+        """Toggle selection when an agent row is selected."""
+        table = event.data_table
+        if table.id != "sim-agents-table":
+            return
+
+        row_data = table.get_row(event.row_key)
+        agent_name = row_data[1] if row_data else None
+        if not agent_name:
+            return
+
+        if agent_name in self.selected_agent_names:
+            self.selected_agent_names.discard(agent_name)
+        else:
+            self.selected_agent_names.add(agent_name)
+
+        self._populate_agents_table()
+
+    def on_select_changed(self, event: Select.Changed) -> None:
+        """Handle profile selection changes."""
+        if event.select.id != "sim-profile":
+            return
+
+        profile_id = event.value
+        if not profile_id:
+            self.selected_profile_id = None
+            self.selected_profile = None
+            get_state_manager().clear_profile()
+            return
+
+        try:
+            profile = self.template_loader.load_template(profile_id)
+        except Exception as exc:
+            self.notify(f"Error loading profile: {exc}", severity="error")
+            return
+
+        self.selected_profile_id = profile_id
+        self.selected_profile = profile
+        get_state_manager().set_profile(profile, profile_id)
+
     def action_run_current(self) -> None:
         """Run simulation based on current tab."""
         tabs = self.query_one("#sim-tabs", TabbedContent)
@@ -497,6 +600,123 @@ class SimulationScreen(Screen):
         elif tabs.active == "tab-daemon":
             self.action_stop_daemon()
 
+    def _load_profiles(self) -> None:
+        """Load profile options for selection."""
+        template_ids = self.template_loader.list_templates()
+        options = []
+
+        for template_id in template_ids:
+            try:
+                info = self.template_loader.get_template_info(template_id)
+                label = f"{info['name']} ({info['id']})"
+            except Exception:
+                label = template_id
+            options.append((label, template_id))
+
+        select = self.query_one("#sim-profile", Select)
+        select.set_options(options)
+
+        if self.selected_profile_id and any(opt[1] == self.selected_profile_id for opt in options):
+            select.value = self.selected_profile_id
+        else:
+            select.value = None
+
+    def action_refresh_agents(self) -> None:
+        """Refresh the agents list from the project."""
+        if self.is_loading_agents:
+            self.notify("Already loading agents...", severity="warning")
+            return
+        self.refresh_agents_async()
+
+    @work(thread=True)
+    def refresh_agents_async(self) -> None:
+        """Load agents in a background thread."""
+        self.is_loading_agents = True
+        self.app.call_from_thread(self.notify, "Loading agents...", severity="information")
+
+        try:
+            manager = AgentManager()
+            agents = manager.list_agents()
+            self.agents = agents
+            self.app.call_from_thread(self._populate_agents_table, agents)
+            self.app.call_from_thread(self.notify, f"Loaded {len(agents)} agents")
+        except Exception as exc:
+            self.app.call_from_thread(self.notify, f"Error: {exc}", severity="error")
+        finally:
+            self.is_loading_agents = False
+
+    def action_select_all_agents(self) -> None:
+        """Select all agents."""
+        self.selected_agent_names = {
+            agent.get("name", "") for agent in self.agents if agent.get("name")
+        }
+        self._populate_agents_table()
+
+    def action_clear_agents(self) -> None:
+        """Clear agent selection."""
+        self.selected_agent_names.clear()
+        self._populate_agents_table()
+
+    def _populate_agents_table(self, agents=None) -> None:
+        """Populate the agents table with selection state."""
+        table = self.query_one("#sim-agents-table", DataTable)
+        table.clear()
+        self.agent_row_keys.clear()
+
+        agents = agents or self.agents
+        for agent in agents:
+            name = agent.get("name", "Unknown")
+            is_selected = name in self.selected_agent_names
+            row_key = table.add_row(
+                "[X]" if is_selected else "[ ]",
+                name,
+                agent.get("model", "N/A"),
+            )
+            self.agent_row_keys[name] = row_key
+
+    def _to_created_agent(self, agent: dict) -> CreatedAgent:
+        """Convert a project agent dict into a CreatedAgent."""
+        name = agent.get("name") or "Unknown"
+        azure_id = agent.get("id") or ""
+        version = agent.get("version")
+        try:
+            version = int(version) if version is not None else 1
+        except (ValueError, TypeError):
+            version = 1
+
+        model = agent.get("model") or "unknown"
+        parts = name.split("-") if name else []
+        org_id = parts[0] if len(parts) >= 1 else "UNKNOWN"
+        agent_type = parts[1] if len(parts) >= 2 else None
+        agent_id = parts[2] if len(parts) >= 3 else (parts[-1] if parts else "UNKNOWN")
+
+        return CreatedAgent(
+            agent_id=agent_id or "UNKNOWN",
+            name=name,
+            azure_id=azure_id,
+            version=version,
+            model=model,
+            org_id=org_id,
+            agent_type=agent_type,
+        )
+
+    def _get_selected_agents(self) -> list[CreatedAgent]:
+        """Return the selected agents as CreatedAgent objects."""
+        selected = []
+        for agent in self.agents:
+            name = agent.get("name")
+            if name and name in self.selected_agent_names:
+                selected.append(self._to_created_agent(agent))
+        return selected
+
+    def _require_profile(self, log: Log) -> object | None:
+        """Return selected profile or emit a user-facing error."""
+        if not self.selected_profile:
+            self.notify("Select a profile before starting simulations", severity="error")
+            log.write_line("[X] No profile selected. Choose one in Simulation Setup.")
+            return None
+        return self.selected_profile
+
     # ==================== One-Time Simulation ====================
 
     def action_run_onetime(self) -> None:
@@ -505,7 +725,6 @@ class SimulationScreen(Screen):
             self.notify("Simulation already running", severity="warning")
             return
 
-        state = get_state()
         log = self.query_one("#onetime-log", Log)
 
         # Get configuration
@@ -521,17 +740,22 @@ class SimulationScreen(Screen):
         # Get simulation type
         sim_type = self.query_one("#sim-type", Select).value
 
-        # Check agents CSV
-        agents_csv = state.agents_csv_path
-        if not os.path.exists(agents_csv):
-            self.notify("Agents CSV not found. Create agents first.", severity="error")
-            log.write_line(f"[X] Agents CSV not found: {agents_csv}")
+        profile = self._require_profile(log)
+        if not profile:
+            return
+
+        selected_agents = self._get_selected_agents()
+        if not selected_agents:
+            self.notify("Select at least one agent to run a simulation", severity="error")
+            log.write_line("[X] No agents selected. Choose agents in Simulation Setup.")
             return
 
         log.write_line("")
         log.write_line("=" * 40)
         log.write_line(f"[>] Starting {sim_type} simulation...")
         log.write_line(f"    Calls: {num_calls}, Threads: {threads}, Delay: {delay}s")
+        log.write_line(f"    Profile: {profile.metadata.name}")
+        log.write_line(f"    Agents: {len(selected_agents)} selected")
         log.write_line("=" * 40)
 
         # Create config
@@ -542,19 +766,14 @@ class SimulationScreen(Screen):
         )
 
         # Create engine
-        query_templates = state.current_profile.get_query_templates_dict() if state.current_profile else {}
-        guardrail_tests = state.current_profile.guardrail_tests.get_all_tests() if state.current_profile else {}
+        query_templates = profile.get_query_templates_dict()
+        guardrail_tests = profile.guardrail_tests.get_all_tests()
 
         self.engine = SimulationEngine(
-            agents_csv=agents_csv,
+            agents=selected_agents,
             query_templates=query_templates,
             guardrail_tests=guardrail_tests,
         )
-
-        if len(self.engine.agents) == 0:
-            self.notify("No agents found in CSV", severity="error")
-            log.write_line("[X] No agents found in CSV file")
-            return
 
         log.write_line(f"[+] Loaded {len(self.engine.agents)} agents")
 
@@ -645,7 +864,6 @@ class SimulationScreen(Screen):
             self.notify("Daemon is already running", severity="warning")
             return
 
-        state = get_state()
         log = self.query_one("#daemon-log", Log)
 
         # Get configuration
@@ -661,11 +879,14 @@ class SimulationScreen(Screen):
             log.write_line("[X] Invalid configuration values")
             return
 
-        # Check agents CSV
-        agents_csv = state.agents_csv_path
-        if not os.path.exists(agents_csv):
-            self.notify("Agents CSV not found. Create agents first.", severity="error")
-            log.write_line(f"[X] Agents CSV not found: {agents_csv}")
+        profile = self._require_profile(log)
+        if not profile:
+            return
+
+        selected_agents = self._get_selected_agents()
+        if not selected_agents:
+            self.notify("Select at least one agent to start the daemon", severity="error")
+            log.write_line("[X] No agents selected. Choose agents in Simulation Setup.")
             return
 
         log.write_line("")
@@ -673,6 +894,8 @@ class SimulationScreen(Screen):
         log.write_line("[>] Starting daemon simulation...")
         log.write_line(f"    Interval: {interval}s, Calls: {calls_min}-{calls_max}")
         log.write_line(f"    Threads: {threads}, Ops weight: {ops_weight}%")
+        log.write_line(f"    Profile: {profile.metadata.name}")
+        log.write_line(f"    Agents: {len(selected_agents)} selected")
         log.write_line("=" * 40)
 
         # Create config
@@ -687,13 +910,13 @@ class SimulationScreen(Screen):
 
         # Create daemon
         self.daemon = DaemonRunner(
-            agents_csv=agents_csv,
-            profile=state.current_profile,
+            agents=selected_agents,
+            profile=profile,
         )
 
         if self.daemon.get_agent_count() == 0:
-            self.notify("No agents found in CSV", severity="error")
-            log.write_line("[X] No agents found in CSV file")
+            self.notify("No agents available to run", severity="error")
+            log.write_line("[X] No agents available to run")
             return
 
         log.write_line(f"[+] Loaded {self.daemon.get_agent_count()} agents")

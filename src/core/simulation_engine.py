@@ -1,5 +1,5 @@
 """
-Unified simulation engine for Azure AI Foundry Agent Toolkit.
+Unified simulation engine for Microsoft Foundry Agent Toolkit.
 
 Provides a unified interface for running:
 - Agent operation simulations

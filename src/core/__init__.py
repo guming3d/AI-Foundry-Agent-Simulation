@@ -1,5 +1,5 @@
 """
-Core engine modules for Azure AI Foundry Agent Toolkit.
+Core engine modules for Microsoft Foundry Agent Toolkit.
 
 This module contains the business logic for:
 - Azure SDK client management

@@ -24,7 +24,7 @@ LOGO = """
  / ___ \\ | |  |  _| (_) | |_| | | | | (_| | |  | |_| |
 /_/   \\_\\___| |_|  \\___/ \\__,_|_| |_|\\__,_|_|   \\__, |
                                                 |___/
-      Control-Plane Batch Agent Operation
+      Microsoft Foundry Bootstrap
 """
 
 
@@ -58,7 +58,7 @@ class HomeScreen(Screen):
     def compose(self) -> ComposeResult:
         yield Container(
             Static(LOGO, id="logo"),
-            Static("Welcome to Azure AI Foundry Control-Plane Batch Agent Operation", id="welcome"),
+            Static("Welcome to Microsoft Foundry Bootstrap", id="welcome"),
 
             # Navigation buttons
             Horizontal(
