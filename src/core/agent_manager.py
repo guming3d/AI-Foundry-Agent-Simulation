@@ -10,9 +10,11 @@ Provides CRUD operations for AI agents:
 
 import csv
 import random
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict, Any, TYPE_CHECKING
 from pathlib import Path
-from azure.ai.projects.models import PromptAgentDefinition
+
+if TYPE_CHECKING:
+    from azure.ai.projects.models import PromptAgentDefinition
 
 from .azure_client import get_project_client
 from . import config
@@ -99,6 +101,14 @@ Please assist users with tasks related to your area of expertise while maintaini
         Raises:
             Exception: If agent creation fails
         """
+        try:
+            from azure.ai.projects.models import PromptAgentDefinition
+        except ImportError as exc:
+            raise ImportError(
+                "PromptAgentDefinition is unavailable. Install azure-ai-projects>=2.0.0b3 "
+                "to use agent creation."
+            ) from exc
+
         client = get_project_client()
 
         agent = client.agents.create_version(

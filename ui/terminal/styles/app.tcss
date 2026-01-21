@@ -12,10 +12,10 @@ Screen {
     scrollbar-color: $primary;
     scrollbar-color-hover: $primary-lighten-1;
     scrollbar-color-active: $primary-lighten-1;
-    scrollbar-background: $panel;
-    scrollbar-background-hover: $panel;
-    scrollbar-background-active: $panel;
-    scrollbar-corner-color: $panel;
+    scrollbar-background: $background;
+    scrollbar-background-hover: $background;
+    scrollbar-background-active: $background;
+    scrollbar-corner-color: $background;
 }
 
 /* Title styles */
@@ -57,7 +57,7 @@ Screen {
     padding: 1 2;
     margin-bottom: 1;
     border: solid $primary;
-    background: $surface-darken-1;
+    background: $background;
 }
 
 #welcome {
@@ -80,7 +80,7 @@ Screen {
     margin: 1 0;
     padding: 1;
     border: solid $primary;
-    background: $panel;
+    background: $background;
 }
 
 #status-panel .info-text {
@@ -108,14 +108,14 @@ Screen {
     max-height: 70%;
     margin: 0;
     border: solid $primary;
-    background: $surface;
+    background: $background;
 }
 
 .status-bar {
     dock: bottom;
     height: 1;
     padding: 0 1;
-    background: $primary-darken-2;
+    background: $background;
     color: $text;
 }
 
@@ -140,7 +140,7 @@ Screen {
     height: 1fr;
     min-height: 8;
     border: solid $primary;
-    background: $surface;
+    background: $background;
 }
 
 #profile-details-panel {
@@ -155,7 +155,7 @@ Screen {
     height: auto;
     padding: 1;
     border: solid $secondary;
-    background: $surface;
+    background: $background;
 }
 
 /* Agent wizard screen */
@@ -170,14 +170,14 @@ Screen {
     max-height: 12;
     margin: 0 0 1 0;
     border: solid $success;
-    background: $surface;
+    background: $background;
 }
 
 #existing-agents-summary {
     color: $text-muted;
     padding: 0 1;
     border-left: solid $success;
-    background: $surface;
+    background: $background;
 }
 
 #delete-buttons {
@@ -195,7 +195,7 @@ Screen {
     padding: 0 1;
     margin-bottom: 1;
     border-left: solid $warning;
-    background: $surface;
+    background: $background;
 }
 
 .section-header-with-button {
@@ -222,7 +222,7 @@ Screen {
     margin: 0 0 1 0;
     padding: 1;
     border: solid $secondary;
-    background: $panel;
+    background: $background;
 }
 
 #config-inputs Vertical {
@@ -243,7 +243,7 @@ Screen {
     margin: 0 0 1 0;
     padding: 1;
     border: solid $secondary;
-    background: $panel;
+    background: $background;
     height: auto;
 }
 
@@ -259,7 +259,7 @@ Screen {
     max-height: 14;
     margin: 0 0 1 0;
     border: solid $primary;
-    background: $surface;
+    background: $background;
 }
 
 .info-text {
@@ -272,7 +272,7 @@ Screen {
     min-height: 6;
     max-height: 15;
     border: solid $primary;
-    background: $surface;
+    background: $background;
 }
 
 /* Simulation screen - base styles only, detailed styles in screen's DEFAULT_CSS */
@@ -285,14 +285,14 @@ Screen {
     height: auto;
     padding: 1;
     border: solid $primary;
-    background: $panel;
+    background: $background;
     margin-bottom: 1;
 }
 
 #log-panel {
     height: 1fr;
     border: solid $primary;
-    background: $panel;
+    background: $background;
 }
 
 #sim-log {
@@ -311,7 +311,7 @@ Screen {
 .metric-box {
     padding: 1;
     border: solid $primary;
-    background: $surface;
+    background: $background;
     align: center middle;
     text-align: center;
 }
@@ -331,7 +331,7 @@ Screen {
     margin-bottom: 2;
     padding: 1;
     border: solid $secondary;
-    background: $panel;
+    background: $background;
 }
 
 .results-header {
@@ -396,7 +396,7 @@ DataTable {
 }
 
 DataTable > .datatable--header {
-    background: $panel;
+    background: $background;
     color: $secondary;
     text-style: bold;
 }
@@ -407,11 +407,11 @@ DataTable > .datatable--cursor {
 }
 
 DataTable > .datatable--even-row {
-    background: $surface;
+    background: $background;
 }
 
 DataTable > .datatable--odd-row {
-    background: $surface-darken-1;
+    background: $background;
 }
 
 /* Progress bars */
@@ -448,7 +448,7 @@ Toast {
     margin: 1 0;
     padding: 1;
     border: solid $primary;
-    background: $surface-darken-1;
+    background: $background;
 }
 
 .metric-row {
@@ -556,7 +556,7 @@ Button.-error:hover {
 /* Input fields */
 Input {
     margin: 0;
-    background: $surface;
+    background: $background;
     border: solid $primary;
 }
 
@@ -566,7 +566,7 @@ Input:focus {
 
 /* Select widgets */
 Select {
-    background: $surface;
+    background: $background;
     border: solid $primary;
 }
 

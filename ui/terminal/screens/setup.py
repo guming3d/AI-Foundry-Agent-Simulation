@@ -32,7 +32,7 @@ class SetupScreen(Screen):
         max-width: 100;
         height: auto;
         border: solid $accent;
-        background: $surface;
+        background: $background;
         padding: 2;
     }
 
@@ -73,7 +73,7 @@ class SetupScreen(Screen):
         border: solid $primary;
         padding: 1;
         margin: 1 0;
-        background: $boost;
+        background: $background;
     }
     """
 

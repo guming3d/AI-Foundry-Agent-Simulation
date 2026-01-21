@@ -42,7 +42,7 @@ class SimulationScreen(Screen):
         padding: 1;
         margin-bottom: 1;
         border: solid $secondary;
-        background: $panel;
+        background: $background;
     }
 
     .config-section-title {
@@ -82,7 +82,7 @@ class SimulationScreen(Screen):
         height: 6;
         min-height: 4;
         border: solid $secondary;
-        background: $surface;
+        background: $background;
         margin-bottom: 0;
     }
 
@@ -116,7 +116,7 @@ class SimulationScreen(Screen):
         padding: 1;
         margin-bottom: 1;
         border: solid $accent;
-        background: $panel;
+        background: $background;
     }
 
     #sim-type {
@@ -129,7 +129,7 @@ class SimulationScreen(Screen):
         padding: 1;
         margin-bottom: 1;
         border: solid $primary;
-        background: $panel;
+        background: $background;
     }
 
     #onetime-log-section {
@@ -140,7 +140,7 @@ class SimulationScreen(Screen):
     #onetime-log {
         height: 1fr;
         border: solid $primary;
-        background: $panel;
+        background: $background;
     }
 
     /* Daemon simulation tab */
@@ -154,7 +154,7 @@ class SimulationScreen(Screen):
         padding: 1;
         margin-bottom: 1;
         border: solid $accent;
-        background: $panel;
+        background: $background;
     }
 
     #daemon-status {
@@ -175,7 +175,7 @@ class SimulationScreen(Screen):
         padding: 1;
         margin-bottom: 1;
         border: solid $primary;
-        background: $panel;
+        background: $background;
     }
 
     #metrics-grid {
@@ -188,7 +188,7 @@ class SimulationScreen(Screen):
     .metric-box {
         padding: 1;
         border: solid $secondary;
-        background: $surface;
+        background: $background;
         height: auto;
         align: center middle;
         text-align: center;
@@ -212,7 +212,7 @@ class SimulationScreen(Screen):
     #daemon-log {
         height: 1fr;
         border: solid $primary;
-        background: $panel;
+        background: $background;
     }
 
     /* Results tab */
@@ -220,7 +220,7 @@ class SimulationScreen(Screen):
         margin-bottom: 1;
         padding: 1;
         border: solid $secondary;
-        background: $panel;
+        background: $background;
     }
 
     .results-header {

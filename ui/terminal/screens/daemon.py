@@ -53,7 +53,7 @@ class DaemonScreen(Screen):
         padding: 0 1;
         margin: 1 0;
         border: solid $secondary;
-        background: $panel;
+        background: $background;
     }
 
     #daemon-profile {
@@ -64,7 +64,7 @@ class DaemonScreen(Screen):
         height: 8;
         min-height: 6;
         border: solid $secondary;
-        background: $surface;
+        background: $background;
         margin-bottom: 1;
     }
 
@@ -99,7 +99,7 @@ class DaemonScreen(Screen):
         padding: 0 1;
         margin: 1 0;
         border: solid $primary;
-        background: $panel;
+        background: $background;
     }
 
     #metrics-grid {
@@ -137,7 +137,7 @@ class DaemonScreen(Screen):
     #daemon-log {
         height: 1fr;
         border: solid $secondary;
-        background: $panel;
+        background: $background;
     }
     """
 
