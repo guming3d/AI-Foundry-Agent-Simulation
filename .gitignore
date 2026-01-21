@@ -70,3 +70,12 @@ htmlcov/
 
 # sample
 samples/
+local/
+.env.test
+AGENTS.md
+foundry_logo_design.png
+foundry_logo_design.png.crdownload:sec.endpointdlp
+foundry_logo_design.png:Zone.Identifier
+product-icon-Microsoft-Foundry-48x48.svg
+screenshot.png
+ui/terminal/screens/simulation.py.backup
