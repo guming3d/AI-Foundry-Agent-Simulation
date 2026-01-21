@@ -49,60 +49,68 @@ class AgentWizardScreen(Screen):
         yield Static("Agent Creation Wizard", id="title", classes="screen-title")
 
         yield VerticalScroll(
-            # Existing Agents Section
-            Button("Refresh [R]", id="btn-refresh-existing", variant="default"),
-            Static(id="existing-agents-summary", classes="info-text"),
-            DataTable(id="existing-agents-table"),
-            Horizontal(
-                Button("Select All [S]", id="btn-select-all", variant="primary"),
-                Button("Deselect All [U]", id="btn-deselect-all", variant="primary"),
-                Button("Use Selected [Enter]", id="btn-use-selected", variant="success"),
-                Button("Delete Selected", id="btn-delete-selected", variant="warning"),
-                Button("Delete All [D]", id="btn-delete-all", variant="error"),
-                id="delete-buttons",
+            Vertical(
+                Horizontal(
+                    Static("Existing Agents", classes="section-title"),
+                    Button("Refresh [R]", id="btn-refresh-existing", variant="default"),
+                    classes="section-header-with-button",
+                ),
+                Static(id="existing-agents-summary", classes="info-text"),
+                DataTable(id="existing-agents-table"),
+                Horizontal(
+                    Button("Select All [S]", id="btn-select-all", variant="primary"),
+                    Button("Deselect All [U]", id="btn-deselect-all", variant="primary"),
+                    Button("Use Selected [Enter]", id="btn-use-selected", variant="success"),
+                    Button("Delete Selected", id="btn-delete-selected", variant="warning"),
+                    Button("Delete All [D]", id="btn-delete-all", variant="error"),
+                    id="delete-buttons",
+                ),
+                Static(id="delete-status", classes="info-text"),
+                id="existing-agents-panel",
             ),
-            Static(id="delete-status", classes="info-text"),
-
-            # Configuration Section
-            Static("Current Configuration:", classes="section-title"),
-            Static(id="config-summary", classes="info-text"),
-            Horizontal(
-                Button("Select Profile [P]", id="btn-profile", variant="default"),
-                Button("Select Models [M]", id="btn-models", variant="default"),
-                id="config-buttons",
-            ),
-
-            Horizontal(
-                Vertical(
-                    Static("Organizations:", classes="label"),
-                    Input(value="1", id="org-count", type="integer"),
-                    id="org-input",
+            Vertical(
+                Static("Create New Agents", classes="section-title"),
+                Horizontal(
+                    Button("Select Profile [P]", id="btn-profile", variant="default"),
+                    Button("Select Models [M]", id="btn-models", variant="default"),
+                    id="config-buttons",
                 ),
                 Vertical(
-                    Static("Agents per type:", classes="label"),
-                    Input(value="1", id="agent-count", type="integer"),
-                    id="agent-input",
+                    Static("Current Configuration:", classes="section-title"),
+                    Static(id="config-summary", classes="info-text"),
+                    classes="config-summary-panel"
                 ),
-                id="config-inputs",
-            ),
-            Static(id="total-agents", classes="info-text"),
 
+                Horizontal(
+                    Vertical(
+                        Static("Organizations:", classes="label"),
+                        Input(value="1", id="org-count", type="integer"),
+                        id="org-input",
+                    ),
+                    Vertical(
+                        Static("Agents per type:", classes="label"),
+                        Input(value="1", id="agent-count", type="integer"),
+                        id="agent-input",
+                    ),
+                    id="config-inputs",
+                ),
+                Static(id="total-agents", classes="info-text"),
+                Horizontal(
+                    Button("Create Agents [C]", id="btn-create", variant="primary"),
+                    id="button-bar",
+                ),
+                Static("Tip: Use Daemon for continuous production traffic simulation", classes="info-text"),
+                Static("Progress:", classes="section-title"),
+                ProgressBar(id="progress-bar", total=100, show_eta=False),
+                Static(id="progress-status", classes="info-text"),
+                Static("Recently Created Agents:", classes="section-title"),
+                DataTable(id="agents-table"),
+                id="create-agents-panel",
+            ),
             Horizontal(
-                Button("Create Agents [C]", id="btn-create", variant="primary"),
                 Button("Back", id="btn-back"),
-                id="button-bar",
+                id="wizard-footer",
             ),
-            Static("Tip: Use Daemon for continuous production traffic simulation", classes="info-text"),
-
-            # Progress Section
-            Static("Progress:", classes="section-title"),
-            ProgressBar(id="progress-bar", total=100, show_eta=False),
-            Static(id="progress-status", classes="info-text"),
-
-            # Recently Created Agents
-            Static("Recently Created Agents:", classes="section-title"),
-            DataTable(id="agents-table"),
-
             id="wizard-container",
         )
 

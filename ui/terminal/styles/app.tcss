@@ -227,6 +227,13 @@ Screen {
     background: $background;
 }
 
+.config-summary-panel {
+    margin: 0 0 1 0;
+    padding: 1;
+    border: solid $primary;
+    background: $background;
+}
+
 #config-inputs Vertical {
     width: 1fr;
     padding: 0 1;
@@ -241,7 +248,9 @@ Screen {
 }
 
 #existing-workflows-panel,
-#create-workflows-panel {
+#create-workflows-panel,
+#existing-agents-panel,
+#create-agents-panel {
     margin: 0 0 1 0;
     padding: 1;
     border: solid $secondary;
