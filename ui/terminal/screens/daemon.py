@@ -170,7 +170,7 @@ class DaemonScreen(Screen):
         )
 
         yield Vertical(
-            Static("Simulation Setup", classes="section-title"),
+            Static("p", classes="section-title"),
             Horizontal(
                 Static("Profile:", classes="input-label"),
                 Select([], id="daemon-profile", allow_blank=True),

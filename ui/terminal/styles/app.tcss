@@ -166,11 +166,22 @@ Screen {
     height: 1fr;
 }
 
+#wizard-scroll {
+    height: 1fr;
+}
+
+#wizard-footer,
+#workflow-footer {
+    height: auto;
+    align: left middle;
+    padding: 0 0 1 0;
+}
+
 #existing-agents-table {
     height: auto;
-    min-height: 6;
+    min-height: 4;
     max-height: 12;
-    margin: 0 0 1 0;
+    margin: 0;
     border: solid $success;
     background: $background;
 }
@@ -184,7 +195,7 @@ Screen {
 
 #delete-buttons {
     height: auto;
-    margin: 0 0 1 0;
+    margin: 0;
     align: left middle;
 }
 
@@ -195,7 +206,7 @@ Screen {
 #delete-status {
     color: $text-muted;
     padding: 0 1;
-    margin-bottom: 1;
+    margin-bottom: 0;
     border-left: solid $warning;
     background: $background;
 }
@@ -221,15 +232,15 @@ Screen {
 }
 
 #config-inputs {
-    margin: 0 0 1 0;
-    padding: 1;
+    margin: 0;
+    padding: 0 1;
     border: solid $secondary;
     background: $background;
 }
 
 .config-summary-panel {
-    margin: 0 0 1 0;
-    padding: 1;
+    margin: 0;
+    padding: 0 1;
     border: solid $primary;
     background: $background;
 }
@@ -245,12 +256,48 @@ Screen {
 
 #workflow-container {
     padding: 0 1;
+    height: 1fr;
+}
+
+#workflow-scroll {
+    height: 1fr;
+}
+
+#evaluation-container {
+    padding: 0 1;
+    height: 1fr;
+}
+
+#evaluation-scroll {
+    height: 1fr;
+}
+
+#evaluation-footer {
+    height: auto;
+    align: left middle;
+    padding: 0 0 1 0;
 }
 
 #existing-workflows-panel,
-#create-workflows-panel,
+#create-workflows-panel {
+    margin: 0 0 1 0;
+    padding: 1;
+    border: solid $secondary;
+    background: $background;
+    height: auto;
+}
+
 #existing-agents-panel,
 #create-agents-panel {
+    margin: 0;
+    padding: 0 1;
+    border: solid $secondary;
+    background: $background;
+    height: auto;
+}
+
+#existing-evaluations-panel,
+#create-evaluations-panel {
     margin: 0 0 1 0;
     padding: 1;
     border: solid $secondary;
@@ -273,6 +320,17 @@ Screen {
     background: $background;
 }
 
+#existing-evaluations-table,
+#evaluation-templates-table,
+#evaluation-agents-table {
+    height: auto;
+    min-height: 4;
+    max-height: 12;
+    margin: 0 0 1 0;
+    border: solid $primary;
+    background: $background;
+}
+
 .info-text {
     color: $text-muted;
     padding: 0 1;
@@ -280,19 +338,200 @@ Screen {
 
 #agents-table {
     height: auto;
-    min-height: 6;
+    min-height: 4;
     max-height: 15;
     border: solid $primary;
     background: $background;
 }
 
-/* Simulation screen - base styles only, detailed styles in screen's DEFAULT_CSS */
-#execution-panel {
+/* Simulation screen */
+SimulationScreen {
+    layout: vertical;
+    padding: 0 1;
+}
+
+SimulationScreen .config-section {
+    height: auto;
+    padding: 1;
+    margin-bottom: 1;
+    border: solid $secondary;
+    background: $background;
+}
+
+SimulationScreen .config-section-title {
+    text-style: bold;
+    color: $primary;
+    margin-bottom: 1;
+}
+
+SimulationScreen .config-row {
+    height: auto;
+    margin-bottom: 1;
+}
+
+SimulationScreen .config-row:last-of-type {
+    margin-bottom: 0;
+}
+
+SimulationScreen #sim-setup {
+    height: auto;
+    margin-bottom: 0;
+    padding: 0 1;
+}
+
+SimulationScreen #sim-setup .config-section-title {
+    margin-bottom: 0;
+}
+
+SimulationScreen #sim-setup .config-row {
+    margin-bottom: 0;
+}
+
+SimulationScreen #sim-profile {
+    width: 1fr;
+}
+
+SimulationScreen #sim-agents-table {
+    height: 6;
+    min-height: 4;
+    border: solid $secondary;
+    background: $background;
+    margin-bottom: 0;
+}
+
+SimulationScreen .input-label {
+    width: 14;
+    padding-right: 1;
+}
+
+SimulationScreen .input-field {
+    width: 12;
+}
+
+SimulationScreen .button-row {
+    height: auto;
+    padding: 1 0;
+    align: center middle;
+}
+
+SimulationScreen .button-row Button {
+    margin: 0 1;
+}
+
+SimulationScreen #onetime-config {
+    height: auto;
+    margin-bottom: 1;
+}
+
+SimulationScreen #onetime-type-section {
+    height: auto;
+    padding: 1;
+    margin-bottom: 1;
+    border: solid $accent;
+    background: $background;
+}
+
+SimulationScreen #sim-type {
+    width: 100%;
+    margin-top: 1;
+}
+
+SimulationScreen #onetime-progress-section {
+    height: auto;
+    padding: 1;
+    margin-bottom: 1;
+    border: solid $primary;
+    background: $background;
+}
+
+SimulationScreen #onetime-log-section {
+    height: 1fr;
+    min-height: 8;
+}
+
+SimulationScreen #onetime-log {
+    height: 1fr;
+    border: solid $primary;
+    background: $background;
+}
+
+SimulationScreen #daemon-config {
+    height: auto;
+    margin-bottom: 1;
+}
+
+SimulationScreen #daemon-status-section {
+    height: auto;
+    padding: 1;
+    margin-bottom: 1;
+    border: solid $accent;
+    background: $background;
+}
+
+SimulationScreen #daemon-status {
+    text-style: bold;
+    text-align: center;
+}
+
+SimulationScreen .status-running {
+    color: $success;
+}
+
+SimulationScreen .status-stopped {
+    color: $error;
+}
+
+SimulationScreen #daemon-metrics-section {
+    height: auto;
+    padding: 1;
+    margin-bottom: 1;
+    border: solid $primary;
+    background: $background;
+}
+
+SimulationScreen #metrics-grid {
+    grid-size: 3;
+    grid-columns: 1fr 1fr 1fr;
+    grid-gutter: 1;
+    height: auto;
+}
+
+SimulationScreen .metric-box {
+    padding: 1;
+    border: solid $secondary;
+    background: $background;
+    height: auto;
+    align: center middle;
+    text-align: center;
+}
+
+SimulationScreen .metric-header {
+    color: $text-muted;
+    text-style: bold;
+}
+
+SimulationScreen .metric-value {
+    color: $accent;
+    text-style: bold;
+}
+
+SimulationScreen #daemon-log-section {
+    height: 1fr;
+    min-height: 8;
+}
+
+SimulationScreen #daemon-log {
+    height: 1fr;
+    border: solid $primary;
+    background: $background;
+}
+
+SimulationScreen #execution-panel {
     margin-top: 1;
     height: 1fr;
 }
 
-#progress-panel {
+SimulationScreen #progress-panel {
     height: auto;
     padding: 1;
     border: solid $primary;
@@ -300,52 +539,25 @@ Screen {
     margin-bottom: 1;
 }
 
-#log-panel {
+SimulationScreen #log-panel {
     height: 1fr;
     border: solid $primary;
     background: $background;
 }
 
-#sim-log {
+SimulationScreen #sim-log {
     height: 1fr;
     border: none;
 }
 
-/* Daemon Metrics Dashboard */
-#metrics-grid {
-    grid-size: 3;
-    grid-columns: 1fr 1fr 1fr;
-    grid-gutter: 1;
-    height: auto;
-}
-
-.metric-box {
-    padding: 1;
-    border: solid $primary;
-    background: $background;
-    align: center middle;
-    text-align: center;
-}
-
-.metric-header {
-    color: $text-muted;
-    text-style: bold;
-}
-
-.metric-value {
-    color: $accent;
-    text-style: bold;
-}
-
-/* Results section styling */
-.results-section {
-    margin-bottom: 2;
+SimulationScreen .results-section {
+    margin-bottom: 1;
     padding: 1;
     border: solid $secondary;
     background: $background;
 }
 
-.results-header {
+SimulationScreen .results-header {
     text-align: center;
     background: $background;
     color: $secondary;
@@ -355,22 +567,22 @@ Screen {
     border: solid $secondary;
 }
 
-.summary-text {
+SimulationScreen .summary-text {
     padding: 1;
     margin-bottom: 1;
     border-bottom: solid $panel;
 }
 
-.table-container {
+SimulationScreen .table-container {
     height: auto;
 }
 
-.table-box {
+SimulationScreen .table-box {
     width: 1fr;
     margin: 0 1;
 }
 
-.table-title {
+SimulationScreen .table-title {
     text-style: bold;
     color: $accent;
     margin-bottom: 1;

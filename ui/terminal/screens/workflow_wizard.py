@@ -39,71 +39,73 @@ class WorkflowWizardScreen(Screen):
     def compose(self) -> ComposeResult:
         yield Static("Workflow Builder", id="title", classes="screen-title")
 
-        yield VerticalScroll(
-            Vertical(
-                Horizontal(
-                    Static("Existing Workflows", classes="section-title"),
-                    Button("Refresh", id="btn-refresh-existing-workflows", variant="default"),
-                    classes="section-header-with-button",
-                ),
-                Static(id="existing-workflows-summary", classes="info-text"),
-                DataTable(id="existing-workflows-table"),
-                id="existing-workflows-panel",
-            ),
-            Vertical(
-                Horizontal(
-                    Static("Create New Workflows", classes="section-title"),
-                    Button("Refresh Templates [R]", id="btn-refresh-templates", variant="default"),
-                    classes="section-header-with-button",
-                ),
-                Static(id="templates-status", classes="info-text"),
-                DataTable(id="workflow-templates-table"),
-                Horizontal(
-                    Button("Select All [S]", id="btn-select-all", variant="primary"),
-                    Button("Deselect All [U]", id="btn-deselect-all", variant="primary"),
-                    id="template-buttons",
-                ),
-                Static("Current Configuration:", classes="section-title"),
-                Static(id="config-summary", classes="info-text"),
-                Horizontal(
-                    Button("Select Profile [P]", id="btn-profile", variant="default"),
-                    Button("Select Models [M]", id="btn-models", variant="default"),
-                    id="config-buttons",
-                ),
-                Horizontal(
-                    Vertical(
-                        Static("Organizations:", classes="label"),
-                        Input(value="1", id="org-count", type="integer"),
-                        id="org-input",
+        yield Vertical(
+            VerticalScroll(
+                Vertical(
+                    Horizontal(
+                        Static("Existing Workflows", classes="section-title"),
+                        Button("Refresh", id="btn-refresh-existing-workflows", variant="default"),
+                        classes="section-header-with-button",
                     ),
-                    Vertical(
-                        Static("Workflows per template:", classes="label"),
-                        Input(value="1", id="workflow-count", type="integer"),
-                        id="workflow-input",
+                    Static(id="existing-workflows-summary", classes="info-text"),
+                    DataTable(id="existing-workflows-table"),
+                    id="existing-workflows-panel",
+                ),
+                Vertical(
+                    Horizontal(
+                        Static("Create New Workflows", classes="section-title"),
+                        Button("Refresh Templates [R]", id="btn-refresh-templates", variant="default"),
+                        classes="section-header-with-button",
                     ),
-                    id="config-inputs",
+                    Static(id="templates-status", classes="info-text"),
+                    DataTable(id="workflow-templates-table"),
+                    Horizontal(
+                        Button("Select All [S]", id="btn-select-all", variant="primary"),
+                        Button("Deselect All [U]", id="btn-deselect-all", variant="primary"),
+                        id="template-buttons",
+                    ),
+                    Static("Current Configuration:", classes="section-title"),
+                    Static(id="config-summary", classes="info-text"),
+                    Horizontal(
+                        Button("Select Profile [P]", id="btn-profile", variant="default"),
+                        Button("Select Models [M]", id="btn-models", variant="default"),
+                        id="config-buttons",
+                    ),
+                    Horizontal(
+                        Vertical(
+                            Static("Organizations:", classes="label"),
+                            Input(value="1", id="org-count", type="integer"),
+                            id="org-input",
+                        ),
+                        Vertical(
+                            Static("Workflows per template:", classes="label"),
+                            Input(value="1", id="workflow-count", type="integer"),
+                            id="workflow-input",
+                        ),
+                        id="config-inputs",
+                    ),
+                    Static(id="total-workflows", classes="info-text"),
+                    Horizontal(
+                        Button("Create Workflows [C]", id="btn-create", variant="primary"),
+                        id="button-bar",
+                    ),
+                    Static(
+                        "Tip: Workflows are created as workflow agents and reference new prompt agents.",
+                        classes="info-text",
+                    ),
+                    Static("Progress:", classes="section-title"),
+                    ProgressBar(id="progress-bar", total=100, show_eta=False),
+                    Static(id="progress-status", classes="info-text"),
+                    Static("Recently Created Workflows:", classes="section-title"),
+                    DataTable(id="workflows-table"),
+                    id="create-workflows-panel",
                 ),
-                Static(id="total-workflows", classes="info-text"),
-                Horizontal(
-                    Button("Create Workflows [C]", id="btn-create", variant="primary"),
-                    id="button-bar",
-                ),
-                Static(
-                    "Tip: Workflows are created as workflow agents and reference new prompt agents.",
-                    classes="info-text",
-                ),
-                Static("Progress:", classes="section-title"),
-                ProgressBar(id="progress-bar", total=100, show_eta=False),
-                Static(id="progress-status", classes="info-text"),
-                Static("Recently Created Workflows:", classes="section-title"),
-                DataTable(id="workflows-table"),
-                id="create-workflows-panel",
+                id="workflow-scroll",
             ),
             Horizontal(
                 Button("Back", id="btn-back"),
                 id="workflow-footer",
             ),
-
             id="workflow-container",
         )
 

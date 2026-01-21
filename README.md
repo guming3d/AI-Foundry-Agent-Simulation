@@ -6,7 +6,7 @@ A comprehensive toolkit for batch creation, testing, and management of AI agents
 
 - **Batch Agent Operations**: Create and manage 100+ AI agents simultaneously with multi-threaded processing
 - **Terminal Interface**: Full-featured Textual UI for interactive management
-- **Industry Templates**: Pre-configured profiles for Retail, Financial Services, Healthcare, and Manufacturing with specialized agent types
+- **Industry Templates**: Pre-configured profiles for Retail, Financial Services, Healthcare, Manufacturing, Logistics & Transportation, Energy & Utilities, and Telecommunications with specialized agent types
 - **Model Management**: Discover existing models and deploy new ones through Microsoft Foundry Control Plane
 - **Code Generation**: Automatically generate production-ready simulation scripts from templates
 - **Metrics & Visualization**: Real-time performance tracking with Plotly-powered dashboards
@@ -91,6 +91,9 @@ python main.py generate retail -o output/retail_code
 | **financial_services** | FraudDetection, RiskAssessment, ComplianceReview, CustomerService, PortfolioAnalysis |
 | **healthcare** | PatientIntake, ClinicalDecisionSupport, BillingAssistant, AppointmentScheduler |
 | **manufacturing** | QualityControl, PredictiveMaintenance, SupplyChainOptimizer, SafetyCompliance |
+| **logistics_transportation** | DispatchCoordinator, RouteOptimizer, FleetManager, ShipmentTracking |
+| **energy_utilities** | GridDispatcher, OutageCoordinator, LoadForecaster, MarketOperations |
+| **telecommunications** | NetworkMonitoring, IncidentManager, ProvisioningSpecialist, FraudPrevention |
 
 ## Environment Setup
 
