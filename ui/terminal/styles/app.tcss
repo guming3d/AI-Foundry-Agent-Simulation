@@ -52,11 +52,11 @@ Screen {
 
 #logo {
     text-align: center;
-    color: $primary;
+    color: $secondary;
     text-style: bold;
     padding: 1 2;
     margin-bottom: 1;
-    border: solid $primary;
+    border: solid $secondary;
     background: $background;
 }
 
@@ -70,6 +70,7 @@ Screen {
 #nav-buttons {
     margin: 1 0;
     align: center middle;
+    height: 0.1fr;
 }
 
 #nav-buttons Button {
@@ -81,6 +82,7 @@ Screen {
     padding: 1;
     border: solid $primary;
     background: $background;
+    height: 0.3fr;
 }
 
 #status-panel .info-text {

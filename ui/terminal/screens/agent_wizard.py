@@ -50,11 +50,7 @@ class AgentWizardScreen(Screen):
 
         yield VerticalScroll(
             # Existing Agents Section
-            Horizontal(
-                Static("Existing Agents in Azure:", classes="section-title"),
-                Button("Refresh [R]", id="btn-refresh-existing", variant="default"),
-                classes="section-header-with-button",
-            ),
+            Button("Refresh [R]", id="btn-refresh-existing", variant="default"),
             Static(id="existing-agents-summary", classes="info-text"),
             DataTable(id="existing-agents-table"),
             Horizontal(
