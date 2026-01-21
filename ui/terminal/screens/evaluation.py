@@ -5,7 +5,7 @@ Evaluation screen for running sample evaluations against agents.
 from textual.app import ComposeResult
 from textual.screen import Screen
 from textual.widgets import Static, Button, DataTable, ProgressBar, Log, Select
-from textual.containers import Horizontal, VerticalScroll
+from textual.containers import Horizontal, VerticalScroll, Vertical
 from textual import work
 
 from ui.shared.state_manager import get_state_manager
@@ -35,6 +35,7 @@ class EvaluationScreen(Screen):
         self.agent_row_keys = {}
         self.is_loading_agents = False
         self.is_loading_models = False
+        self.is_loading_evaluations = False
         self.evaluation_running = False
         self.agents = []
         self.models = []
@@ -46,34 +47,57 @@ class EvaluationScreen(Screen):
             classes="description",
         )
 
-        yield VerticalScroll(
-            Static("Evaluation Templates", classes="section-title"),
-            DataTable(id="evaluation-templates-table"),
-            Horizontal(
-                Button("Select All Templates", id="btn-select-all-templates", variant="primary"),
-                Button("Clear Templates", id="btn-clear-templates", variant="default"),
+        yield Vertical(
+            VerticalScroll(
+                Vertical(
+                    Horizontal(
+                        Static("Existing Evaluations", classes="section-title"),
+                        classes="section-header-with-button",
+                    ),
+                    Static(id="existing-evaluations-summary", classes="info-text"),
+                    DataTable(id="existing-evaluations-table"),
+                    id="existing-evaluations-panel",
+                ),
+                Vertical(
+                    Horizontal(
+                        Static("Create New Evaluation", classes="section-title"),
+                        classes="section-header-with-button",
+                    ),
+                    Static("Evaluation Templates", classes="section-title"),
+                    DataTable(id="evaluation-templates-table"),
+                    Horizontal(
+                        Button("Select All Templates", id="btn-select-all-templates", variant="primary"),
+                        Button("Clear Templates", id="btn-clear-templates", variant="default"),
+                    ),
+                    Static("Evaluation Model", classes="section-title"),
+                    Horizontal(
+                        Select([], id="evaluation-model", allow_blank=True),
+                        Button("Refresh Models", id="btn-refresh-models", variant="primary"),
+                    ),
+                    Static("Agents", classes="section-title"),
+                    DataTable(id="evaluation-agents-table"),
+                    Horizontal(
+                        Button("Refresh Agents [R]", id="btn-refresh-agents", variant="primary"),
+                        Button("Select All Agents", id="btn-select-all-agents", variant="default"),
+                        Button("Clear Agents", id="btn-clear-agents", variant="default"),
+                    ),
+                    Horizontal(
+                        Button("Run Evaluations [Enter]", id="btn-run", variant="success"),
+                        id="evaluation-run-buttons",
+                    ),
+                    Static("Progress", classes="section-title"),
+                    ProgressBar(id="evaluation-progress", total=100, show_eta=False),
+                    Static("Ready", id="evaluation-status", classes="info-text"),
+                    Static("Execution Log", classes="section-title"),
+                    Log(id="evaluation-log", auto_scroll=True),
+                    id="create-evaluations-panel",
+                ),
+                id="evaluation-scroll",
             ),
-            Static("Evaluation Model", classes="section-title"),
             Horizontal(
-                Select([], id="evaluation-model", allow_blank=True),
-                Button("Refresh Models", id="btn-refresh-models", variant="primary"),
-            ),
-            Static("Agents", classes="section-title"),
-            DataTable(id="evaluation-agents-table"),
-            Horizontal(
-                Button("Refresh Agents [R]", id="btn-refresh-agents", variant="primary"),
-                Button("Select All Agents", id="btn-select-all-agents", variant="default"),
-                Button("Clear Agents", id="btn-clear-agents", variant="default"),
-            ),
-            Horizontal(
-                Button("Run Evaluations [Enter]", id="btn-run", variant="success"),
                 Button("Back [Esc]", id="btn-back"),
+                id="evaluation-footer",
             ),
-            Static("Progress", classes="section-title"),
-            ProgressBar(id="evaluation-progress", total=100, show_eta=False),
-            Static("Ready", id="evaluation-status", classes="info-text"),
-            Static("Execution Log", classes="section-title"),
-            Log(id="evaluation-log", auto_scroll=True),
             id="evaluation-container",
         )
 
@@ -85,10 +109,18 @@ class EvaluationScreen(Screen):
         agents_table = self.query_one("#evaluation-agents-table", DataTable)
         agents_table.add_columns("Sel", "Name", "Model")
         agents_table.cursor_type = "row"
+        existing_table = self.query_one("#existing-evaluations-table", DataTable)
+        existing_table.add_columns("Template", "Agent", "Status", "Run ID", "Report")
+        existing_table.cursor_type = "row"
 
         self._load_templates()
+        self._load_existing_evaluations()
         self.action_refresh_models()
         self.action_refresh_agents()
+
+    def on_screen_resume(self) -> None:
+        """Refresh evaluation history when returning to the screen."""
+        self._load_existing_evaluations()
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """Handle button presses."""
@@ -138,6 +170,87 @@ class EvaluationScreen(Screen):
         """Load evaluation templates."""
         self.templates = self.template_loader.list_templates()
         self._populate_templates_table()
+
+    def _load_existing_evaluations(self) -> None:
+        """Load evaluation runs from state."""
+        if self.is_loading_evaluations:
+            return
+        self.refresh_evaluations_async()
+
+    @work(thread=True)
+    def refresh_evaluations_async(self) -> None:
+        """Load evaluation runs from the project in a background thread."""
+        self.is_loading_evaluations = True
+        self.app.call_from_thread(self._update_existing_evaluations_summary, "Loading evaluations...")
+
+        try:
+            engine = EvaluationEngine()
+            remote_runs = engine.list_recent_runs()
+            local_runs = list(reversed(get_state_manager().state.evaluation_runs))
+            merged = self._merge_evaluation_runs(remote_runs, local_runs)
+            summary = f"{len(merged)} evaluation run(s) in this project"
+            self.app.call_from_thread(self._render_existing_evaluations, merged, summary)
+        except Exception as exc:
+            local_runs = list(reversed(get_state_manager().state.evaluation_runs))
+            summary = f"{len(local_runs)} evaluation run(s) in this session"
+            self.app.call_from_thread(self._render_existing_evaluations, local_runs, summary)
+            self.app.call_from_thread(
+                self.notify,
+                f"Unable to load project evaluations: {exc}",
+                severity="warning",
+            )
+        finally:
+            self.is_loading_evaluations = False
+
+    def _render_existing_evaluations(self, runs, summary_message: str) -> None:
+        """Render the existing evaluations table."""
+        table = self.query_one("#existing-evaluations-table", DataTable)
+        table.clear()
+
+        if not runs:
+            self._update_existing_evaluations_summary("No evaluations yet")
+            return
+
+        for run in runs:
+            run_id = run.get("run_id") or "N/A"
+            run_id_display = f"{run_id[:12]}..." if len(run_id) > 12 else run_id
+            report_status = "Yes" if run.get("report_url") else "No"
+            evaluation_name = run.get("evaluation_name") or run.get("evaluation_id") or "N/A"
+            table.add_row(
+                evaluation_name,
+                run.get("agent_name", "N/A"),
+                run.get("run_status", "Unknown"),
+                run_id_display,
+                report_status,
+            )
+
+        self._update_existing_evaluations_summary(summary_message)
+
+    def _merge_evaluation_runs(self, primary_runs, secondary_runs):
+        """Merge run lists, keeping the newest entries first."""
+        merged = []
+        seen = set()
+        combined = (primary_runs or []) + (secondary_runs or [])
+        for run in combined:
+            run_id = run.get("run_id")
+            key = run_id or (run.get("evaluation_id"), run.get("agent_name"))
+            if key in seen:
+                continue
+            seen.add(key)
+            merged.append(run)
+        merged.sort(key=self._run_sort_key, reverse=True)
+        return merged
+
+    def _run_sort_key(self, run):
+        created_at = run.get("created_at")
+        if isinstance(created_at, (int, float)):
+            return created_at
+        return 0
+
+    def _update_existing_evaluations_summary(self, message: str) -> None:
+        """Update the existing evaluations summary."""
+        summary = self.query_one("#existing-evaluations-summary", Static)
+        summary.update(message)
 
     def _populate_templates_table(self) -> None:
         """Render templates table."""
@@ -290,6 +403,7 @@ class EvaluationScreen(Screen):
             )
             for run_summary in results:
                 self.app.call_from_thread(get_state_manager().add_evaluation_run, run_summary)
+            self.app.call_from_thread(self._load_existing_evaluations)
             self.app.call_from_thread(self._update_status, "Evaluations completed")
             self.app.call_from_thread(self.notify, "Evaluations completed")
         except Exception as exc:

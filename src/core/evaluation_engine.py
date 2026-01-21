@@ -538,6 +538,78 @@ class EvaluationEngine:
                 break
         return items
 
+    def list_recent_runs(
+        self,
+        max_evals: int = 20,
+        runs_per_eval: int = 10,
+    ) -> List[Dict[str, Any]]:
+        """List recent evaluation runs across the project."""
+        openai_client = get_openai_client()
+        evals_page = openai_client.evals.list(order="desc", limit=max_evals)
+        eval_items = getattr(evals_page, "data", None)
+        if eval_items is None:
+            eval_items = list(evals_page)
+
+        runs: List[Dict[str, Any]] = []
+        for eval_item in eval_items:
+            eval_dict = self._as_dict(eval_item)
+            eval_id = eval_dict.get("id")
+            if not eval_id:
+                continue
+            eval_name = eval_dict.get("name") or eval_id
+
+            run_page = openai_client.evals.runs.list(eval_id=eval_id, order="desc", limit=runs_per_eval)
+            run_items = getattr(run_page, "data", None)
+            if run_items is None:
+                run_items = list(run_page)
+
+            for run in run_items:
+                run_dict = self._as_dict(run)
+                run_name = run_dict.get("name") or ""
+                agent_name = self._extract_agent_name(run_dict.get("data_source"))
+                if not agent_name:
+                    agent_name = self._parse_agent_from_run_name(run_name)
+                runs.append(
+                    {
+                        "evaluation_id": eval_name,
+                        "evaluation_name": eval_name,
+                        "eval_id": eval_id,
+                        "agent_name": agent_name or "Unknown",
+                        "run_id": run_dict.get("id"),
+                        "run_status": run_dict.get("status") or "Unknown",
+                        "report_url": run_dict.get("report_url"),
+                        "created_at": run_dict.get("created_at") or 0,
+                    }
+                )
+
+        runs.sort(key=lambda run: run.get("created_at") or 0, reverse=True)
+        return runs
+
+    def _extract_agent_name(self, data_source: Any) -> Optional[str]:
+        """Extract agent name from a data source object."""
+        if not data_source:
+            return None
+        if isinstance(data_source, dict):
+            target = data_source.get("target")
+            if isinstance(target, dict):
+                name = target.get("name") or target.get("agent_name")
+                if name:
+                    return name
+        target = getattr(data_source, "target", None)
+        if isinstance(target, dict):
+            return target.get("name") or target.get("agent_name")
+        if hasattr(target, "name"):
+            return getattr(target, "name")
+        return None
+
+    def _parse_agent_from_run_name(self, run_name: str) -> Optional[str]:
+        """Parse agent name from a run name when formatted as '<eval> - <agent>'."""
+        if not run_name:
+            return None
+        if " - " not in run_name:
+            return None
+        return run_name.split(" - ", 1)[1].strip() or None
+
     def _as_dict(self, value: Any) -> Dict[str, Any]:
         """Convert SDK objects to plain dicts."""
         if isinstance(value, dict):
