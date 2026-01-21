@@ -13,6 +13,9 @@ from textual import work
 
 from ui.shared.state_manager import get_state
 from src.core.agent_manager import AgentManager
+from src.core.model_manager import ModelManager
+from src.core.workflow_manager import WorkflowManager
+from src.core import config
 from .theme_select import ThemeSelectScreen
 from ui.terminal.preferences import get_preferences
 
@@ -41,7 +44,9 @@ class HomeScreen(Screen):
     def __init__(self):
         super().__init__()
         self.azure_agent_count = 0
-        self.is_loading_agents = False
+        self.workflow_count = 0
+        self.deployed_models: list[str] = []
+        self.is_loading_project_stats = False
 
     def action_go_agents(self) -> None:
         self.app.push_screen("agents")
@@ -73,11 +78,10 @@ class HomeScreen(Screen):
             Vertical(
                 Static("Current Status:", classes="section-title"),
                 Static(id="status-models", classes="info-text"),
-                Static(id="status-profile", classes="info-text"),
-                Static(id="status-agents-azure", classes="info-text"),
-                Static(id="status-agents-session", classes="info-text"),
-                Static(id="status-workflows-session", classes="info-text"),
+                Static(id="status-workflows", classes="info-text"),
+                Static(id="status-agents", classes="info-text"),
                 Static(id="status-evaluations", classes="info-text"),
+                Static(id="status-daemon", classes="info-text"),
                 id="status-panel",
             ),
 
@@ -95,78 +99,108 @@ class HomeScreen(Screen):
     def on_mount(self) -> None:
         """Update status on mount."""
         self._update_status()
-        self._load_azure_agent_count()
+        self._load_project_stats()
 
     def on_screen_resume(self) -> None:
         """Update status when returning to this screen."""
         self._update_status()
-        self._load_azure_agent_count()
+        self._load_project_stats()
 
     def _update_status(self) -> None:
         """Update the status display."""
         state = get_state()
 
         models_status = self.query_one("#status-models", Static)
-        models_count = len(state.selected_models)
-        if models_count:
-            models_status.update(f"  Models: {models_count} selected")
+        if self.is_loading_project_stats and not self.deployed_models:
+            models_status.update("  Deployed Models: Loading...")
+        elif self.deployed_models:
+            models_status.update(
+                f"  Deployed Models: {self._format_model_list(self.deployed_models)}"
+            )
         else:
-            models_status.update("  Models: None selected")
+            models_status.update("  Deployed Models: None found")
 
-        profile_status = self.query_one("#status-profile", Static)
-        if state.current_profile:
-            profile_status.update(f"  Profile: {state.current_profile.metadata.name}")
+        workflows_status = self.query_one("#status-workflows", Static)
+        if self.is_loading_project_stats and self.workflow_count == 0:
+            workflows_status.update("  Workflows: Loading...")
         else:
-            profile_status.update("  Profile: None selected")
+            workflows_status.update(f"  Workflows: {self.workflow_count} total")
 
-        # Azure agents status
-        azure_status = self.query_one("#status-agents-azure", Static)
-        if self.is_loading_agents:
-            azure_status.update("  Agents in Azure: Loading...")
-        elif self.azure_agent_count > 0:
-            azure_status.update(f"  Agents in Azure: {self.azure_agent_count} existing")
+        agents_status = self.query_one("#status-agents", Static)
+        if self.is_loading_project_stats and self.azure_agent_count == 0:
+            agents_status.update("  Agents: Loading...")
         else:
-            azure_status.update("  Agents in Azure: 0 (no agents deployed)")
-
-        # Session agents status
-        session_status = self.query_one("#status-agents-session", Static)
-        session_count = len(state.created_agents)
-        if session_count:
-            session_status.update(f"  Agents in Session: {session_count} created this session")
-        else:
-            session_status.update("  Agents in Session: None created")
-
-        workflows_status = self.query_one("#status-workflows-session", Static)
-        workflows_count = len(state.created_workflows)
-        if workflows_count:
-            workflows_status.update(f"  Workflows in Session: {workflows_count} created this session")
-        else:
-            workflows_status.update("  Workflows in Session: None created")
+            agents_status.update(f"  Agents: {self.azure_agent_count} total")
 
         evaluations_status = self.query_one("#status-evaluations", Static)
-        evaluation_count = len(state.evaluation_runs)
-        if evaluation_count:
-            evaluations_status.update(f"  Evaluations: {evaluation_count} run(s) this session")
-        else:
-            evaluations_status.update("  Evaluations: None run yet")
+        evaluations_status.update(
+            f"  Evaluations: {self._count_evaluation_results()} total"
+        )
+
+        daemon_status = self.query_one("#status-daemon", Static)
+        daemon_status.update(
+            f"  Simulation Daemon: {'Running' if state.daemon_running else 'Stopped'}"
+        )
+
+    def _format_model_list(self, models: list[str], max_items: int = 4) -> str:
+        """Format a model list for compact display."""
+        display_models = models[:max_items]
+        extra_count = len(models) - len(display_models)
+        formatted = ", ".join(display_models) if display_models else "None found"
+        if extra_count > 0:
+            formatted = f"{formatted} (+{extra_count} more)"
+        return formatted
+
+    def _count_evaluation_results(self) -> int:
+        """Count evaluation result files stored locally."""
+        results_dir = config.EVALUATIONS_RESULTS_DIR
+        try:
+            if not results_dir.exists():
+                return 0
+            return sum(
+                1
+                for path in results_dir.iterdir()
+                if path.is_file() and path.suffix == ".json"
+            )
+        except Exception:
+            return 0
 
     @work(thread=True)
-    def _load_azure_agent_count(self) -> None:
-        """Load the count of existing agents from Azure in background."""
-        if self.is_loading_agents:
+    def _load_project_stats(self) -> None:
+        """Load the project stats (models, workflows, agents) in background."""
+        if self.is_loading_project_stats:
             return
 
-        self.is_loading_agents = True
+        self.is_loading_project_stats = True
         self.app.call_from_thread(self._update_status)
 
         try:
-            manager = AgentManager()
-            agents = manager.list_agents()
-            self.azure_agent_count = len(agents)
+            try:
+                model_manager = ModelManager()
+                models = model_manager.list_available_models()
+                self.deployed_models = [model.name for model in models]
+            except Exception:
+                self.deployed_models = []
+
+            try:
+                workflow_manager = WorkflowManager()
+                workflows = workflow_manager.list_workflows()
+                self.workflow_count = len(workflows)
+            except Exception:
+                self.workflow_count = 0
+
+            try:
+                manager = AgentManager()
+                agents = manager.list_agents()
+                self.azure_agent_count = len(agents)
+            except Exception:
+                self.azure_agent_count = 0
         except Exception:
+            self.deployed_models = []
+            self.workflow_count = 0
             self.azure_agent_count = 0
         finally:
-            self.is_loading_agents = False
+            self.is_loading_project_stats = False
             self.app.call_from_thread(self._update_status)
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
