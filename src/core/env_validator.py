@@ -77,19 +77,22 @@ class EnvValidator:
         else:
             guide += "1. Your .env file exists but needs configuration\n\n"
 
-        guide += "2. Add your Microsoft Foundry project endpoint:\n"
+        guide += "2. Sign in with Azure CLI to enable credentials:\n"
+        guide += "   $ az login\n\n"
+
+        guide += "3. Add your Microsoft Foundry project endpoint:\n"
         guide += "   PROJECT_ENDPOINT=https://your-project.services.ai.azure.com/api/projects/your-project\n\n"
 
-        guide += "3. How to find your project endpoint:\n"
+        guide += "4. How to find your project endpoint:\n"
         guide += "   a) Go to https://ai.azure.com\n"
         guide += "   b) Open your AI Foundry project\n"
         guide += "   c) Go to Settings → Project details\n"
         guide += "   d) Copy the 'Project endpoint' URL\n\n"
 
-        guide += "4. Required format:\n"
+        guide += "5. Required format:\n"
         guide += "   PROJECT_ENDPOINT=https://[your-project].services.ai.azure.com/api/projects/[project-id]\n\n"
 
-        guide += "5. Save the .env file and restart the application\n"
+        guide += "6. Save the .env file and restart the application\n"
 
         return guide
 

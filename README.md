@@ -24,7 +24,7 @@ source .venv/bin/activate  # Linux/Mac
 # 2. Install dependencies
 pip install -r requirements.txt
 
-# 3. Configure Azure credentials
+# 3. Authenticate with Azure CLI (required for all operations)
 az login
 cp .env.example .env  # Edit with your PROJECT_ENDPOINT
 
@@ -102,6 +102,8 @@ Create `.env` from the example:
 ```env
 PROJECT_ENDPOINT=https://your-project.services.ai.azure.com/api/projects/your-project
 ```
+
+Authentication uses Azure CLI credentials via `DefaultAzureCredential`, so run `az login` before using the CLI or TUI.
 
 ## License
 
