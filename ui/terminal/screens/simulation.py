@@ -52,7 +52,7 @@ class SimulationScreen(Screen):
     def compose(self) -> ComposeResult:
         yield Static("Simulation Dashboard", id="title", classes="screen-title")
 
-        with Vertical(id="sim-setup", classes="config-section"):
+        with Vertical(id="sim-setup", classes="config-section-top"):
             yield Static("Simulation Setup", classes="config-section-title")
             with Horizontal(classes="config-row"):
                 yield Static("Profile:", classes="input-label")
@@ -103,7 +103,7 @@ class SimulationScreen(Screen):
                     yield Button("Start Simulation", id="btn-onetime-run", variant="primary")
                     yield Button("Stop", id="btn-onetime-stop", variant="error")
                     yield Button("Export Results", id="btn-onetime-export", variant="success")
-                    yield Button("Back to Home", id="btn-back-onetime", variant="default")
+                yield Button("Back to Home", id="btn-back-onetime", variant="default")
 
                 # Progress
                 with Vertical(id="onetime-progress-section"):
@@ -115,6 +115,10 @@ class SimulationScreen(Screen):
                 with Vertical(id="onetime-log-section"):
                     yield Static("Execution Log", classes="config-section-title")
                     yield Log(id="onetime-log", auto_scroll=True)
+
+                # Back button at bottom of results
+                with Horizontal(classes="button-row"):
+                    yield Button("Back to Home", id="btn-back-results", variant="default")
 
             # Tab 2: Long-Running Daemon
             with TabPane("Long-Running Daemon", id="tab-daemon"):
@@ -155,7 +159,7 @@ class SimulationScreen(Screen):
                 with Horizontal(classes="button-row"):
                     yield Button("Start Daemon", id="btn-daemon-start", variant="primary")
                     yield Button("Stop Daemon", id="btn-daemon-stop", variant="error")
-                    yield Button("Back to Home", id="btn-back-daemon", variant="default")
+                    # yield Button("Back to Home", id="btn-back-daemon", variant="default")
 
                 # Real-time Metrics
                 with Vertical(id="daemon-metrics-section"):
@@ -193,6 +197,9 @@ class SimulationScreen(Screen):
                 with Vertical(id="daemon-log-section"):
                     yield Static("Daemon Log", classes="config-section-title")
                     yield Log(id="daemon-log", auto_scroll=True)
+                                # Back button at bottom of results
+                with Horizontal(classes="button-row"):
+                    yield Button("Back to Home", id="btn-back-results", variant="default")
 
             # Tab 3: Results
             with TabPane("Results", id="tab-results"):
@@ -223,9 +230,9 @@ class SimulationScreen(Screen):
                                 yield Static("Model Comparison", classes="table-title")
                                 yield DataTable(id="guard-models-table")
 
-                    # Back button at bottom of results
-                    with Horizontal(classes="button-row"):
-                        yield Button("Back to Home", id="btn-back-results", variant="default")
+                # Back button at bottom of results
+                with Horizontal(classes="button-row"):
+                    yield Button("Back to Home", id="btn-back-results", variant="default")
 
     def on_mount(self) -> None:
         """Initialize the screen."""

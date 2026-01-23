@@ -350,6 +350,14 @@ SimulationScreen {
     padding: 0 1;
 }
 
+SimulationScreen .config-section-top {
+    height: 0.3fr;
+    padding: 1;
+    margin-bottom: 1;
+    border: solid $secondary;
+    background: $background;
+}
+
 SimulationScreen .config-section {
     height: auto;
     padding: 1;
@@ -357,6 +365,8 @@ SimulationScreen .config-section {
     border: solid $secondary;
     background: $background;
 }
+
+
 
 SimulationScreen .config-section-title {
     text-style: bold;
@@ -366,7 +376,7 @@ SimulationScreen .config-section-title {
 
 SimulationScreen .config-row {
     height: auto;
-    margin-bottom: 1;
+    margin-bottom: 0;
 }
 
 SimulationScreen .config-row:last-of-type {
