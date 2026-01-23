@@ -5,6 +5,10 @@ Allows users to run continuous background simulations that mimic
 production traffic patterns to AI agents.
 """
 
+from collections import deque
+from datetime import datetime, timedelta
+import time
+
 from textual.app import ComposeResult
 from textual.screen import Screen
 from textual.widgets import Static, Button, Input, Log, Select, DataTable
@@ -13,6 +17,7 @@ from textual import work
 from textual.timer import Timer
 
 from ui.shared.state_manager import get_state_manager, get_state
+from ui.terminal.widgets.rpm_chart import RPMChart
 from src.core.daemon_runner import DaemonRunner, DaemonConfig
 from src.core.agent_manager import AgentManager
 from src.models.agent import CreatedAgent
@@ -134,6 +139,30 @@ class DaemonScreen(Screen):
         padding: 0 1;
     }
 
+    #rpm-panel {
+        height: auto;
+        padding: 0 1;
+        margin: 1 0;
+    }
+
+    #rpm-subcharts {
+        height: auto;
+    }
+
+    #rpm-subcharts RPMChart {
+        width: 1fr;
+    }
+
+    RPMChart.requests-chart-large {
+        height: 16;
+        min-height: 16;
+    }
+
+    RPMChart.requests-chart-small {
+        height: 12;
+        min-height: 12;
+    }
+
     #daemon-log {
         height: 1fr;
         border: solid $secondary;
@@ -153,6 +182,20 @@ class DaemonScreen(Screen):
         self.selected_agent_names = set()
         self.agent_row_keys = {}
         self.is_loading_agents = False
+        self.bucket_seconds = 5.0
+        self.max_buckets = 120
+        self.req_labels = deque(maxlen=self.max_buckets)
+        self.req_buckets_total = deque(maxlen=self.max_buckets)
+        self.req_buckets_ops = deque(maxlen=self.max_buckets)
+        self.req_buckets_guard = deque(maxlen=self.max_buckets)
+        self._bucket_deadline: float | None = None
+        self._bucket_label_time: datetime | None = None
+        self._bucket_total = 0
+        self._bucket_ops = 0
+        self._bucket_guard = 0
+        self._last_total_calls: int | None = None
+        self._last_total_ops: int | None = None
+        self._last_total_guard: int | None = None
 
     def action_go_back(self) -> None:
         """Go back to previous screen."""
@@ -271,6 +314,35 @@ class DaemonScreen(Screen):
         )
 
         yield Vertical(
+            Static("Request Rate (5s buckets)", classes="section-title"),
+            RPMChart(
+                "Total Requests / 5s",
+                id="req-total",
+                accent="cyan",
+                unit="req/5s",
+                classes="requests-chart-large",
+            ),
+            Horizontal(
+                RPMChart(
+                    "Ops / 5s",
+                    id="req-ops",
+                    accent="green",
+                    unit="req/5s",
+                    classes="requests-chart-small",
+                ),
+                RPMChart(
+                    "Guard / 5s",
+                    id="req-guard",
+                    accent="yellow",
+                    unit="req/5s",
+                    classes="requests-chart-small",
+                ),
+                id="rpm-subcharts",
+            ),
+            id="rpm-panel",
+        )
+
+        yield Vertical(
             Static("Log:", classes="section-title"),
             Log(id="daemon-log", auto_scroll=True),
             id="log-panel",
@@ -291,6 +363,7 @@ class DaemonScreen(Screen):
         self.action_refresh_agents()
         self._update_status_indicator(False)
         self._check_prerequisites()
+        self._reset_requests_dashboard()
 
         # Start metrics refresh timer
         self.metrics_timer = self.set_interval(1.0, self._refresh_metrics)
@@ -341,6 +414,7 @@ class DaemonScreen(Screen):
 
     def _update_metrics_display(self, metrics: dict) -> None:
         """Update the metrics display widgets."""
+        self._update_requests_dashboard(metrics)
         self.query_one("#metric-total-calls", Static).update(str(metrics.get("total_calls", 0)))
         self.query_one("#metric-success-rate", Static).update(f"{metrics.get('success_rate', 0):.1f}%")
         self.query_one("#metric-latency", Static).update(f"{metrics.get('avg_latency_ms', 0):.0f}ms")
@@ -350,6 +424,96 @@ class DaemonScreen(Screen):
         self.query_one("#metric-batches", Static).update(str(metrics.get("batches_completed", 0)))
         self.query_one("#metric-runtime", Static).update(metrics.get("runtime", "0s"))
         self.query_one("#metric-load-profile", Static).update(metrics.get("current_load_profile", "normal"))
+
+    def _reset_requests_dashboard(self) -> None:
+        """Clear 5s bucket history and reset chart display."""
+        self.req_labels.clear()
+        self.req_buckets_total.clear()
+        self.req_buckets_ops.clear()
+        self.req_buckets_guard.clear()
+        self._bucket_deadline = None
+        self._bucket_label_time = None
+        self._bucket_total = 0
+        self._bucket_ops = 0
+        self._bucket_guard = 0
+        self._last_total_calls = None
+        self._last_total_ops = None
+        self._last_total_guard = None
+        self.query_one("#req-total", RPMChart).set_series([], labels=[], subtitle="0 req/5s • 0.0 rpm")
+        self.query_one("#req-ops", RPMChart).set_series([], labels=[], subtitle="0 req/5s • 0.0 rpm")
+        self.query_one("#req-guard", RPMChart).set_series([], labels=[], subtitle="0 req/5s • 0.0 rpm")
+
+    def _update_requests_dashboard(self, metrics: dict) -> None:
+        total_calls = int(metrics.get("total_calls", 0) or 0)
+        total_ops = int(metrics.get("total_operations", 0) or 0)
+        total_guard = int(metrics.get("total_guardrails", 0) or 0)
+
+        now = time.monotonic()
+        if self._bucket_deadline is None:
+            self._bucket_deadline = now + self.bucket_seconds
+            self._bucket_label_time = datetime.now().replace(microsecond=0) + timedelta(seconds=self.bucket_seconds)
+            self._last_total_calls = total_calls
+            self._last_total_ops = total_ops
+            self._last_total_guard = total_guard
+            return
+
+        delta_calls = total_calls - (self._last_total_calls or 0)
+        delta_ops = total_ops - (self._last_total_ops or 0)
+        delta_guard = total_guard - (self._last_total_guard or 0)
+
+        self._last_total_calls = total_calls
+        self._last_total_ops = total_ops
+        self._last_total_guard = total_guard
+
+        if delta_calls < 0 or delta_ops < 0 or delta_guard < 0:
+            self._reset_requests_dashboard()
+            self._bucket_deadline = now + self.bucket_seconds
+            self._bucket_label_time = datetime.now().replace(microsecond=0) + timedelta(seconds=self.bucket_seconds)
+            self._last_total_calls = total_calls
+            self._last_total_ops = total_ops
+            self._last_total_guard = total_guard
+            return
+
+        self._bucket_total += delta_calls
+        self._bucket_ops += delta_ops
+        self._bucket_guard += delta_guard
+
+        if now < (self._bucket_deadline or 0):
+            return
+
+        while self._bucket_deadline is not None and now >= self._bucket_deadline:
+            bucket_end = self._bucket_label_time or datetime.now().replace(microsecond=0)
+            self.req_labels.append(bucket_end.strftime("%H:%M:%S"))
+            self.req_buckets_total.append(self._bucket_total)
+            self.req_buckets_ops.append(self._bucket_ops)
+            self.req_buckets_guard.append(self._bucket_guard)
+            self._bucket_total = 0
+            self._bucket_ops = 0
+            self._bucket_guard = 0
+            self._bucket_deadline += self.bucket_seconds
+            self._bucket_label_time = bucket_end + timedelta(seconds=self.bucket_seconds)
+
+        labels = list(self.req_labels)
+        rpm_multiplier = 60.0 / self.bucket_seconds
+        last_total = self.req_buckets_total[-1] if self.req_buckets_total else 0
+        last_ops = self.req_buckets_ops[-1] if self.req_buckets_ops else 0
+        last_guard = self.req_buckets_guard[-1] if self.req_buckets_guard else 0
+
+        self.query_one("#req-total", RPMChart).set_series(
+            list(self.req_buckets_total),
+            labels=labels,
+            subtitle=f"{last_total} req/5s • {last_total * rpm_multiplier:.1f} rpm",
+        )
+        self.query_one("#req-ops", RPMChart).set_series(
+            list(self.req_buckets_ops),
+            labels=labels,
+            subtitle=f"{last_ops} req/5s • {last_ops * rpm_multiplier:.1f} rpm",
+        )
+        self.query_one("#req-guard", RPMChart).set_series(
+            list(self.req_buckets_guard),
+            labels=labels,
+            subtitle=f"{last_guard} req/5s • {last_guard * rpm_multiplier:.1f} rpm",
+        )
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """Handle button presses."""
@@ -533,6 +697,7 @@ class DaemonScreen(Screen):
             self.notify("Daemon is already running", severity="warning")
             return
 
+        self._reset_requests_dashboard()
         log = self.query_one("#daemon-log", Log)
 
         # Validate configuration
@@ -633,6 +798,7 @@ class DaemonScreen(Screen):
 
         # Show final metrics
         metrics = self.daemon.get_metrics()
+        self._update_metrics_display(metrics)
         log.write_line(f"Final Statistics:")
         log.write_line(f"  Total Calls: {metrics.get('total_calls', 0)}")
         log.write_line(f"  Success Rate: {metrics.get('success_rate', 0):.1f}%")

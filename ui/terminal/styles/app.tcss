@@ -499,6 +499,32 @@ SimulationScreen #daemon-metrics-section {
     background: $background;
 }
 
+SimulationScreen #daemon-rpm-section {
+    height: auto;
+    padding: 1;
+    margin-bottom: 1;
+    border: solid $secondary;
+    background: $background;
+}
+
+SimulationScreen #daemon-rpm-subcharts {
+    height: auto;
+}
+
+SimulationScreen #daemon-rpm-subcharts RPMChart {
+    width: 1fr;
+}
+
+SimulationScreen RPMChart.requests-chart-large {
+    height: 16;
+    min-height: 16;
+}
+
+SimulationScreen RPMChart.requests-chart-small {
+    height: 12;
+    min-height: 12;
+}
+
 SimulationScreen #metrics-grid {
     grid-size: 3;
     grid-columns: 1fr 1fr 1fr;
