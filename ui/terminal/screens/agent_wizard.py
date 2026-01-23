@@ -23,6 +23,8 @@ from src.models.agent import CreatedAgent
 class AgentWizardScreen(Screen):
     """Screen for creating agents from industry profiles."""
 
+    EXISTING_SELECTION_COLUMN_KEY = "sel"
+
     BINDINGS = [
         ("escape", "app.pop_screen()", "Back"),
         ("c", "create_agents", "Create Agents"),
@@ -124,7 +126,13 @@ class AgentWizardScreen(Screen):
 
         # Setup existing agents table with cursor for selection
         existing_table = self.query_one("#existing-agents-table", DataTable)
-        existing_table.add_columns("Sel", "Name", "Azure ID", "Version", "Model")
+        existing_table.add_columns(
+            ("Sel", self.EXISTING_SELECTION_COLUMN_KEY),
+            ("Name", "name"),
+            ("Azure ID", "azure_id"),
+            ("Version", "version"),
+            ("Model", "model"),
+        )
         existing_table.cursor_type = "row"
 
         self._update_config_summary()
@@ -241,9 +249,10 @@ class AgentWizardScreen(Screen):
         table.clear()
         self.agent_row_keys.clear()
 
-        for agent in agents:
+        for index, agent in enumerate(agents):
             agent_name = agent.get("name", "Unknown")
             is_selected = agent_name in self.selected_agent_names
+            row_key = agent.get("id") or f"{agent_name}-{index}"
 
             row_key = table.add_row(
                 "[X]" if is_selected else "[ ]",
@@ -251,9 +260,23 @@ class AgentWizardScreen(Screen):
                 agent.get("id", "N/A")[:20] + "..." if len(agent.get("id", "")) > 20 else agent.get("id", "N/A"),
                 str(agent.get("version", "N/A")),
                 agent.get("model", "N/A"),
+                key=row_key,
             )
 
             self.agent_row_keys[agent_name] = row_key
+
+    def _update_existing_row_selection(self, agent_name: str, is_selected: bool) -> None:
+        """Update the selection indicator for a single existing agent row."""
+        row_key = self.agent_row_keys.get(agent_name)
+        if row_key is None:
+            return
+
+        table = self.query_one("#existing-agents-table", DataTable)
+        table.update_cell(
+            row_key,
+            self.EXISTING_SELECTION_COLUMN_KEY,
+            "[X]" if is_selected else "[ ]",
+        )
 
     def _update_existing_summary(self, message: str) -> None:
         """Update the existing agents summary."""
@@ -312,24 +335,48 @@ class AgentWizardScreen(Screen):
             self.notify("Invalid input values", severity="error")
             return
 
+        agent_types = len(state.current_profile.agent_types)
+        if agent_types == 0:
+            self.notify("Selected profile has no agent types", severity="warning")
+            return
+
         self.is_creating = True
         progress = self.query_one("#progress-bar", ProgressBar)
-        status = self.query_one("#progress-status", Static)
-
-        total = org_count * agent_count * len(state.current_profile.agent_types)
+        total = org_count * agent_count * agent_types
         progress.update(total=total, progress=0)
+        self._update_creation_status_text("Starting agent creation...")
 
+        self.create_agents_async(
+            profile=state.current_profile,
+            agent_count=agent_count,
+            org_count=org_count,
+            models=list(state.selected_models),
+        )
+
+    @work(thread=True)
+    def create_agents_async(
+        self,
+        profile,
+        agent_count: int,
+        org_count: int,
+        models: list,
+    ) -> None:
+        """Create agents in a background thread with progress updates."""
         def progress_callback(current, total_count, message):
-            progress.update(progress=current)
-            status.update(message)
+            self.app.call_from_thread(
+                self._update_creation_progress,
+                current,
+                total_count,
+                message,
+            )
 
         try:
-            manager = AgentManager(models=state.selected_models)
+            manager = AgentManager(models=models)
             result = manager.create_agents_from_profile(
-                profile=state.current_profile,
+                profile=profile,
                 agent_count=agent_count,
                 org_count=org_count,
-                models=state.selected_models,
+                models=models,
                 progress_callback=progress_callback,
             )
 
@@ -338,18 +385,23 @@ class AgentWizardScreen(Screen):
             csv_path = str(config.CREATED_AGENTS_CSV)
 
             # Update state
-            get_state_manager().set_created_agents(result.created, csv_path)
+            self.app.call_from_thread(
+                get_state_manager().set_created_agents,
+                result.created,
+                csv_path
+            )
 
             # Refresh tables
-            self._load_created_agents()
-            self.action_refresh_existing()
+            self.app.call_from_thread(self._load_created_agents)
+            self.app.call_from_thread(self.action_refresh_existing)
 
-            status.update(f"Created {len(result.created)} agents, {len(result.failed)} failed")
-            self.notify(f"Successfully created {len(result.created)} agents")
+            status_message = f"Created {len(result.created)} agents, {len(result.failed)} failed"
+            self.app.call_from_thread(self._update_creation_status_text, status_message)
+            self.app.call_from_thread(self.notify, f"Successfully created {len(result.created)} agents")
 
         except Exception as e:
-            status.update(f"Error: {e}")
-            self.notify(f"Error creating agents: {e}", severity="error")
+            self.app.call_from_thread(self._update_creation_status_text, f"Error: {e}")
+            self.app.call_from_thread(self.notify, f"Error creating agents: {e}", severity="error")
 
         finally:
             self.is_creating = False
@@ -377,11 +429,11 @@ class AgentWizardScreen(Screen):
             # Toggle selection
             if agent_name in self.selected_agent_names:
                 self.selected_agent_names.discard(agent_name)
+                self._update_existing_row_selection(agent_name, False)
             else:
                 self.selected_agent_names.add(agent_name)
+                self._update_existing_row_selection(agent_name, True)
 
-            # Refresh the table to update all checkbox indicators
-            self._populate_existing_table(self.existing_agents)
             self._update_delete_status()
 
     def _update_delete_status(self) -> None:
@@ -405,8 +457,8 @@ class AgentWizardScreen(Screen):
         for agent in self.existing_agents:
             agent_name = agent.get("name", "Unknown")
             self.selected_agent_names.add(agent_name)
+            self._update_existing_row_selection(agent_name, True)
 
-        self._populate_existing_table(self.existing_agents)
         self._update_delete_status()
         self.notify(f"Selected all {len(self.selected_agent_names)} agent(s)")
 
@@ -418,7 +470,9 @@ class AgentWizardScreen(Screen):
 
         count = len(self.selected_agent_names)
         self.selected_agent_names.clear()
-        self._populate_existing_table(self.existing_agents)
+        for agent in self.existing_agents:
+            agent_name = agent.get("name", "Unknown")
+            self._update_existing_row_selection(agent_name, False)
         self._update_delete_status()
         self.notify(f"Deselected all {count} agent(s)")
 
@@ -557,6 +611,18 @@ class AgentWizardScreen(Screen):
         """Update delete status text."""
         status = self.query_one("#delete-status", Static)
         status.update(escape(message))
+
+    def _update_creation_status_text(self, message: str) -> None:
+        """Update agent creation status text."""
+        status = self.query_one("#progress-status", Static)
+        status.update(escape(message))
+
+    def _update_creation_progress(self, current: int, total: int, message: str) -> None:
+        """Update progress bar and status for agent creation."""
+        progress = self.query_one("#progress-bar", ProgressBar)
+        progress.update(total=total, progress=current)
+        label = message or "Creating agents"
+        self._update_creation_status_text(f"{label} ({current}/{total})")
 
     def action_delete_all_agents(self) -> None:
         """Delete all agents with confirmation."""
