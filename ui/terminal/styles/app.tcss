@@ -418,6 +418,16 @@ SimulationScreen .input-field {
     width: 12;
 }
 
+SimulationScreen #daemon-config Select {
+    width: 1fr;
+    min-width: 50;
+}
+
+SimulationScreen #daemon-config .config-row {
+    height: auto;
+    margin-bottom: 1;
+}
+
 SimulationScreen .button-row {
     height: auto;
     padding: 1 0;

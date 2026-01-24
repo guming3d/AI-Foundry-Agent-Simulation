@@ -53,16 +53,35 @@ class DaemonScreen(Screen):
         margin: 0 1;
     }
 
-    #daemon-setup {
+    #config-row {
         height: auto;
-        padding: 0 1;
-        margin: 1 0;
+        padding: 1;
+        margin: 0 0 1 0;
         border: solid $secondary;
         background: $background;
     }
 
-    #daemon-profile {
+    #config-row Horizontal {
+        height: auto;
+        margin-bottom: 1;
+    }
+
+    #config-row Select {
         width: 1fr;
+        min-width: 50;
+    }
+
+    #daemon-setup {
+        height: auto;
+        padding: 0 1;
+        margin: 0 0 1 0;
+        border: solid $secondary;
+        background: $background;
+    }
+
+    #daemon-setup Horizontal {
+        height: auto;
+        margin-bottom: 1;
     }
 
     #daemon-agents-table {
@@ -71,26 +90,6 @@ class DaemonScreen(Screen):
         border: solid $secondary;
         background: $background;
         margin-bottom: 1;
-    }
-
-    #config-row {
-        height: auto;
-        max-height: 8;
-        padding: 0 1;
-    }
-
-    #config-panel {
-        width: 1fr;
-        height: auto;
-        padding: 0 1;
-    }
-
-    #config-panel Horizontal {
-        height: auto;
-    }
-
-    #config-panel Input {
-        width: 10;
     }
 
     .input-label {
@@ -213,12 +212,56 @@ class DaemonScreen(Screen):
         )
 
         yield Vertical(
-            Static("p", classes="section-title"),
+            Static("Configuration", classes="section-title"),
             Horizontal(
                 Static("Profile:", classes="input-label"),
-                Select([], id="daemon-profile", allow_blank=True),
-                Button("Refresh Profiles", id="btn-refresh-profiles", variant="default"),
+                Select([], id="daemon-profile", allow_blank=False),
             ),
+            Horizontal(
+                Static("Traffic Rate:", classes="input-label"),
+                Select(
+                    [
+                        ("Light - 60 calls/min", "light"),
+                        ("Medium - 200 calls/min (Recommended)", "medium"),
+                        ("Heavy - 500 calls/min", "heavy"),
+                        ("Stress - 1000 calls/min", "stress"),
+                    ],
+                    value="medium",
+                    id="traffic-rate",
+                    allow_blank=False,
+                ),
+            ),
+            Horizontal(
+                Static("Test Type:", classes="input-label"),
+                Select(
+                    [
+                        ("Operations Only - Test agent responses", "operations"),
+                        ("Guardrails Only - Test safety filters", "guardrails"),
+                        ("Both - Mixed workload (Recommended)", "both"),
+                    ],
+                    value="both",
+                    id="test-type",
+                    allow_blank=False,
+                ),
+            ),
+            Horizontal(
+                Static("Load Profile:", classes="input-label"),
+                Select(
+                    [
+                        ("Auto - Based on current time (Recommended)", "auto"),
+                        ("Peak - High traffic simulation", "peak"),
+                        ("Normal - Standard traffic", "normal"),
+                        ("Off-Peak - Low traffic simulation", "off_peak"),
+                    ],
+                    value="auto",
+                    id="load-profile",
+                    allow_blank=False,
+                ),
+            ),
+            id="config-row",
+        )
+
+        yield Vertical(
             Static("Agents", classes="section-title"),
             DataTable(id="daemon-agents-table"),
             Horizontal(
@@ -227,40 +270,6 @@ class DaemonScreen(Screen):
                 Button("Clear", id="btn-clear-agents", variant="default"),
             ),
             id="daemon-setup",
-        )
-
-        yield Horizontal(
-            Vertical(
-                Horizontal(
-                    Static("Interval (s):", classes="input-label"),
-                    Input(value="60", id="interval", type="integer"),
-                ),
-                Horizontal(
-                    Static("Min Calls:", classes="input-label"),
-                    Input(value="5", id="calls-min", type="integer"),
-                ),
-                Horizontal(
-                    Static("Max Calls:", classes="input-label"),
-                    Input(value="15", id="calls-max", type="integer"),
-                ),
-                id="config-panel",
-            ),
-            Vertical(
-                Horizontal(
-                    Static("Threads:", classes="input-label"),
-                    Input(value="3", id="threads", type="integer"),
-                ),
-                Horizontal(
-                    Static("Delay (s):", classes="input-label"),
-                    Input(value="0.5", id="delay"),
-                ),
-                Horizontal(
-                    Static("Ops Weight %:", classes="input-label"),
-                    Input(value="80", id="ops-weight", type="integer"),
-                ),
-                id="config-panel-2",
-            ),
-            id="config-row",
         )
 
         yield Vertical(
@@ -455,7 +464,6 @@ class DaemonScreen(Screen):
             self._last_total_calls = total_calls
             self._last_total_ops = total_ops
             self._last_total_guard = total_guard
-            return
 
         delta_calls = total_calls - (self._last_total_calls or 0)
         delta_ops = total_ops - (self._last_total_ops or 0)
@@ -472,15 +480,15 @@ class DaemonScreen(Screen):
             self._last_total_calls = total_calls
             self._last_total_ops = total_ops
             self._last_total_guard = total_guard
-            return
+            delta_calls = 0
+            delta_ops = 0
+            delta_guard = 0
 
         self._bucket_total += delta_calls
         self._bucket_ops += delta_ops
         self._bucket_guard += delta_guard
 
-        if now < (self._bucket_deadline or 0):
-            return
-
+        # Check if bucket deadline passed and finalize completed buckets
         while self._bucket_deadline is not None and now >= self._bucket_deadline:
             bucket_end = self._bucket_label_time or datetime.now().replace(microsecond=0)
             self.req_labels.append(bucket_end.strftime("%H:%M:%S"))
@@ -493,26 +501,38 @@ class DaemonScreen(Screen):
             self._bucket_deadline += self.bucket_seconds
             self._bucket_label_time = bucket_end + timedelta(seconds=self.bucket_seconds)
 
+        # Build series with historical data plus current live bucket
         labels = list(self.req_labels)
+        series_total = list(self.req_buckets_total)
+        series_ops = list(self.req_buckets_ops)
+        series_guard = list(self.req_buckets_guard)
+
+        # Append live in-progress bucket as the last point
+        live_label = (self._bucket_label_time or datetime.now().replace(microsecond=0)).strftime("%H:%M:%S")
+        labels.append(live_label)
+        series_total.append(self._bucket_total)
+        series_ops.append(self._bucket_ops)
+        series_guard.append(self._bucket_guard)
+
         rpm_multiplier = 60.0 / self.bucket_seconds
-        last_total = self.req_buckets_total[-1] if self.req_buckets_total else 0
-        last_ops = self.req_buckets_ops[-1] if self.req_buckets_ops else 0
-        last_guard = self.req_buckets_guard[-1] if self.req_buckets_guard else 0
+        live_total = self._bucket_total
+        live_ops = self._bucket_ops
+        live_guard = self._bucket_guard
 
         self.query_one("#req-total", RPMChart).set_series(
-            list(self.req_buckets_total),
+            series_total,
             labels=labels,
-            subtitle=f"{last_total} req/5s • {last_total * rpm_multiplier:.1f} rpm",
+            subtitle=f"{live_total} req/5s • {live_total * rpm_multiplier:.1f} rpm",
         )
         self.query_one("#req-ops", RPMChart).set_series(
-            list(self.req_buckets_ops),
+            series_ops,
             labels=labels,
-            subtitle=f"{last_ops} req/5s • {last_ops * rpm_multiplier:.1f} rpm",
+            subtitle=f"{live_ops} req/5s • {live_ops * rpm_multiplier:.1f} rpm",
         )
         self.query_one("#req-guard", RPMChart).set_series(
-            list(self.req_buckets_guard),
+            series_guard,
             labels=labels,
-            subtitle=f"{last_guard} req/5s • {last_guard * rpm_multiplier:.1f} rpm",
+            subtitle=f"{live_guard} req/5s • {live_guard * rpm_multiplier:.1f} rpm",
         )
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
@@ -525,8 +545,6 @@ class DaemonScreen(Screen):
             self.action_select_all_agents()
         elif button_id == "btn-clear-agents":
             self.action_clear_agents()
-        elif button_id == "btn-refresh-profiles":
-            self._load_profiles()
         elif button_id == "btn-start":
             self.action_start_daemon()
         elif button_id == "btn-stop":
@@ -592,8 +610,17 @@ class DaemonScreen(Screen):
 
         if self.selected_profile_id and any(opt[1] == self.selected_profile_id for opt in options):
             select.value = self.selected_profile_id
-        else:
-            select.value = None
+        elif options:
+            # Auto-select first profile if none selected
+            first_profile_id = options[0][1]
+            select.value = first_profile_id
+            try:
+                profile = self.template_loader.load_template(first_profile_id)
+                self.selected_profile_id = first_profile_id
+                self.selected_profile = profile
+                get_state_manager().set_profile(profile, first_profile_id)
+            except Exception:
+                pass
 
     def action_refresh_agents(self) -> None:
         """Refresh the agents list from the project."""
@@ -691,6 +718,57 @@ class DaemonScreen(Screen):
             return None
         return self.selected_profile
 
+    def _get_traffic_config(self, rate: str) -> dict:
+        """Convert traffic rate selection to technical parameters.
+
+        Thread calculation: For target RPM with avg API latency of ~3s,
+        we need: threads >= (calls_per_batch * avg_latency) / interval
+        """
+        configs = {
+            "light": {  # 60 calls/min (1/sec)
+                "interval": 10,
+                "calls_min": 10,
+                "calls_max": 10,
+                "threads": 5,
+                "delay": 0.1,
+                "label": "Light (60 calls/min)",
+            },
+            "medium": {  # 200 calls/min (~3/sec)
+                "interval": 10,
+                "calls_min": 33,
+                "calls_max": 33,
+                "threads": 15,
+                "delay": 0.05,
+                "label": "Medium (200 calls/min)",
+            },
+            "heavy": {  # 500 calls/min (~8/sec)
+                "interval": 10,
+                "calls_min": 83,
+                "calls_max": 83,
+                "threads": 30,
+                "delay": 0.02,
+                "label": "Heavy (500 calls/min)",
+            },
+            "stress": {  # 1000 calls/min (~17/sec)
+                "interval": 10,
+                "calls_min": 167,
+                "calls_max": 167,
+                "threads": 60,
+                "delay": 0.01,
+                "label": "Stress (1000 calls/min)",
+            },
+        }
+        return configs.get(rate, configs["medium"])
+
+    def _get_test_type_config(self, test_type: str) -> dict:
+        """Convert test type selection to operations weight."""
+        configs = {
+            "operations": {"ops_weight": 100, "label": "Operations Only"},
+            "guardrails": {"ops_weight": 0, "label": "Guardrails Only"},
+            "both": {"ops_weight": 70, "label": "Both (70% Ops / 30% Guard)"},
+        }
+        return configs.get(test_type, configs["both"])
+
     def action_start_daemon(self) -> None:
         """Start the daemon simulation."""
         if self.daemon and self.daemon.is_running:
@@ -700,18 +778,29 @@ class DaemonScreen(Screen):
         self._reset_requests_dashboard()
         log = self.query_one("#daemon-log", Log)
 
-        # Validate configuration
-        try:
-            interval = int(self.query_one("#interval", Input).value or "60")
-            calls_min = int(self.query_one("#calls-min", Input).value or "5")
-            calls_max = int(self.query_one("#calls-max", Input).value or "15")
-            threads = int(self.query_one("#threads", Input).value or "3")
-            delay = float(self.query_one("#delay", Input).value or "0.5")
-            ops_weight = int(self.query_one("#ops-weight", Input).value or "80")
-        except ValueError:
-            self.notify("Invalid configuration values", severity="error")
-            log.write_line("[X] Invalid configuration values")
-            return
+        # Get user selections
+        traffic_rate = self.query_one("#traffic-rate", Select).value or "medium"
+        test_type = self.query_one("#test-type", Select).value or "both"
+        load_profile = self.query_one("#load-profile", Select).value or "auto"
+
+        # Convert to technical parameters
+        traffic_config = self._get_traffic_config(traffic_rate)
+        test_config = self._get_test_type_config(test_type)
+
+        interval = traffic_config["interval"]
+        calls_min = traffic_config["calls_min"]
+        calls_max = traffic_config["calls_max"]
+        threads = traffic_config["threads"]
+        delay = traffic_config["delay"]
+        ops_weight = test_config["ops_weight"]
+
+        # Load profile labels
+        load_profile_labels = {
+            "auto": "Auto (time-based)",
+            "peak": "Peak (manual)",
+            "normal": "Normal (manual)",
+            "off_peak": "Off-Peak (manual)",
+        }
 
         profile = self._require_profile(log)
         if not profile:
@@ -726,10 +815,9 @@ class DaemonScreen(Screen):
         log.write_line("")
         log.write_line("=" * 50)
         log.write_line("[>] Starting daemon simulation...")
-        log.write_line(f"    Interval: {interval}s")
-        log.write_line(f"    Calls per batch: {calls_min}-{calls_max}")
-        log.write_line(f"    Threads: {threads}, Delay: {delay}s")
-        log.write_line(f"    Operations weight: {ops_weight}%")
+        log.write_line(f"    Traffic: {traffic_config['label']}")
+        log.write_line(f"    Test Type: {test_config['label']}")
+        log.write_line(f"    Load Profile: {load_profile_labels.get(load_profile, load_profile)}")
         log.write_line(f"    Profile: {profile.metadata.name}")
         log.write_line(f"    Agents: {len(selected_agents)} selected")
         log.write_line("=" * 50)
@@ -742,6 +830,7 @@ class DaemonScreen(Screen):
             threads=threads,
             delay=delay,
             operations_weight=ops_weight,
+            load_profile_override=load_profile,
         )
 
         # Create daemon runner
