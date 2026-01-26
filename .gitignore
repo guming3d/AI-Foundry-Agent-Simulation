@@ -74,6 +74,7 @@ local/
 .env.test
 AGENTS.md
 CLAUDE.md
+EXECPLAN.md
 foundry_logo_design.png
 foundry_logo_design.png.crdownload:sec.endpointdlp
 foundry_logo_design.png:Zone.Identifier
