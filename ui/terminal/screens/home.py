@@ -11,8 +11,8 @@ from textual.widgets import Static, Button
 from textual.containers import Container, Vertical, Horizontal
 from textual import work
 
-from ui.shared.state_manager import get_state
 from src.core.agent_manager import AgentManager
+from src.core.daemon_service import DaemonService
 from src.core.model_manager import ModelManager
 from src.core.workflow_manager import WorkflowManager
 from src.core import config
@@ -20,7 +20,7 @@ from .theme_select import ThemeSelectScreen
 from ui.terminal.preferences import get_preferences
 
 
-LOGO = """
+LOGO = r"""
 ______  _______                                ____________     __________                   _________                   
 ___   |/  /__(_)__________________________________  __/_  /_    ___  ____/_________  ______________  /___________  __    
 __  /|_/ /__  /_  ___/_  ___/  __ \_  ___/  __ \_  /_ _  __/    __  /_   _  __ \  / / /_  __ \  __  /__  ___/_  / / /    
@@ -52,6 +52,7 @@ class HomeScreen(Screen):
         self.workflow_count = 0
         self.deployed_models: list[str] = []
         self.is_loading_project_stats = False
+        self.daemon_service = DaemonService()
 
     def action_go_agents(self) -> None:
         self.app.push_screen("agents")
@@ -113,8 +114,6 @@ class HomeScreen(Screen):
 
     def _update_status(self) -> None:
         """Update the status display."""
-        state = get_state()
-
         models_status = self.query_one("#status-models", Static)
         if self.is_loading_project_stats and not self.deployed_models:
             models_status.update("  Deployed Models: Loading...")
@@ -143,8 +142,9 @@ class HomeScreen(Screen):
         )
 
         daemon_status = self.query_one("#status-daemon", Static)
+        daemon_running = self.daemon_service.is_running()
         daemon_status.update(
-            f"  Simulation Daemon: {'Running' if state.daemon_running else 'Stopped'}"
+            f"  Simulation Daemon: {'Running' if daemon_running else 'Stopped'}"
         )
 
     def _format_model_list(self, models: list[str], max_items: int = 4) -> str:

@@ -198,9 +198,6 @@ class AgentToolkitApp(App):
                     screen.engine.stop()
                     screen.simulation_active = False
                     screen.engine = None
-            elif isinstance(screen, DaemonScreen):
-                if screen.daemon and screen.daemon.is_running:
-                    screen.daemon.stop()
 
     async def on_unmount(self) -> None:
         """Called when the app is being unmounted - cleanup."""

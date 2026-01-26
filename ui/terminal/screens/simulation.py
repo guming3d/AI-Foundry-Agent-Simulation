@@ -19,7 +19,8 @@ from textual.timer import Timer
 from ui.shared.state_manager import get_state_manager, get_state
 from ui.terminal.widgets.rpm_chart import RPMChart
 from src.core.simulation_engine import SimulationEngine, SimulationConfig
-from src.core.daemon_runner import DaemonRunner, DaemonConfig
+from src.core.daemon_runner import DaemonConfig
+from src.core.daemon_service import DaemonService
 from src.core import config
 from src.core.agent_manager import AgentManager
 from src.models.agent import CreatedAgent
@@ -39,7 +40,9 @@ class SimulationScreen(Screen):
         super().__init__()
         self.engine = None
         self.simulation_active = False
-        self.daemon: DaemonRunner = None
+        self.daemon_service = DaemonService()
+        self._daemon_running = False
+        self._history_seeded = False
         self.metrics_timer: Timer = None
         self.template_loader = TemplateLoader()
         self.profiles = []
@@ -175,16 +178,15 @@ class SimulationScreen(Screen):
                             allow_blank=False,
                         )
                     with Horizontal(classes="config-row"):
-                        yield Static("Load Profile:", classes="input-label")
+                        yield Static("Variance:", classes="input-label")
                         yield Select(
                             [
-                                ("Auto - Based on current time (Recommended)", "auto"),
-                                ("Peak - High traffic simulation", "peak"),
-                                ("Normal - Standard traffic", "normal"),
-                                ("Off-Peak - Low traffic simulation", "off_peak"),
+                                ("Low - +/-10%", "10"),
+                                ("Medium - +/-20% (Recommended)", "20"),
+                                ("High - +/-50%", "50"),
                             ],
-                            value="auto",
-                            id="daemon-load-profile",
+                            value="20",
+                            id="daemon-traffic-variance",
                             allow_blank=False,
                         )
 
@@ -202,14 +204,32 @@ class SimulationScreen(Screen):
                             yield Static("Total Calls", classes="metric-header")
                             yield Static("0", id="metric-total-calls", classes="metric-value")
                         with Vertical(classes="metric-box"):
+                            yield Static("Target/min", classes="metric-header")
+                            yield Static("0.0", id="metric-target-calls-per-min", classes="metric-value")
+                        with Vertical(classes="metric-box"):
                             yield Static("Success Rate", classes="metric-header")
                             yield Static("0%", id="metric-success-rate", classes="metric-value")
                         with Vertical(classes="metric-box"):
                             yield Static("Avg Latency", classes="metric-header")
                             yield Static("0ms", id="metric-latency", classes="metric-value")
                         with Vertical(classes="metric-box"):
+                            yield Static("P95 Latency", classes="metric-header")
+                            yield Static("0ms", id="metric-p95-latency", classes="metric-value")
+                        with Vertical(classes="metric-box"):
                             yield Static("Calls/min", classes="metric-header")
                             yield Static("0", id="metric-calls-per-min", classes="metric-value")
+                        with Vertical(classes="metric-box"):
+                            yield Static("Started/min", classes="metric-header")
+                            yield Static("0", id="metric-started-calls-per-min", classes="metric-value")
+                        with Vertical(classes="metric-box"):
+                            yield Static("Inflight", classes="metric-header")
+                            yield Static("0", id="metric-inflight", classes="metric-value")
+                        with Vertical(classes="metric-box"):
+                            yield Static("Queue", classes="metric-header")
+                            yield Static("0", id="metric-queue-depth", classes="metric-value")
+                        with Vertical(classes="metric-box"):
+                            yield Static("Dropped", classes="metric-header")
+                            yield Static("0", id="metric-dropped-calls", classes="metric-value")
                         with Vertical(classes="metric-box"):
                             yield Static("Operations", classes="metric-header")
                             yield Static("0", id="metric-operations", classes="metric-value")
@@ -223,8 +243,17 @@ class SimulationScreen(Screen):
                             yield Static("Runtime", classes="metric-header")
                             yield Static("0s", id="metric-runtime", classes="metric-value")
                         with Vertical(classes="metric-box"):
-                            yield Static("Load Profile", classes="metric-header")
-                            yield Static("normal", id="metric-load-profile", classes="metric-value")
+                            yield Static("Variance", classes="metric-header")
+                            yield Static("+/-20%", id="metric-load-profile", classes="metric-value")
+                        with Vertical(classes="metric-box"):
+                            yield Static("Last Update", classes="metric-header")
+                            yield Static("N/A", id="metric-last-update", classes="metric-value")
+                        with Vertical(classes="metric-box"):
+                            yield Static("Heartbeat Age", classes="metric-header")
+                            yield Static("N/A", id="metric-heartbeat-age", classes="metric-value")
+                        with Vertical(classes="metric-box"):
+                            yield Static("Daemon PID", classes="metric-header")
+                            yield Static("N/A", id="metric-daemon-pid", classes="metric-value")
 
                 with Vertical(id="daemon-rpm-section"):
                     yield Static("Request Rate (5s buckets)", classes="config-section-title")
@@ -310,8 +339,27 @@ class SimulationScreen(Screen):
         self._setup_results_tables()
         self._load_results()
         self._reset_requests_dashboard()
+        self._sync_daemon_status()
         # Start metrics refresh timer
         self.metrics_timer = self.set_interval(1.0, self._refresh_daemon_metrics)
+
+    def _sync_daemon_status(self) -> None:
+        """Sync daemon status/metrics from the background service."""
+        running = self.daemon_service.is_running()
+        self._daemon_running = running
+        self._update_daemon_status(running)
+        if running:
+            metrics = self.daemon_service.read_metrics()
+            if metrics:
+                history = self.daemon_service.read_history(limit=self.max_buckets + 1)
+                if history:
+                    self._seed_requests_dashboard_from_history_samples(history, metrics)
+                    self._history_seeded = True
+                self._update_daemon_metrics(metrics)
+                get_state_manager().update_daemon_metrics(metrics)
+            get_state_manager().start_daemon()
+        else:
+            get_state_manager().stop_daemon()
 
     def _init_onetime_log(self) -> None:
         """Initialize the one-time simulation log."""
@@ -343,6 +391,7 @@ class SimulationScreen(Screen):
         log.write_line("    - Higher load during business hours")
         log.write_line("    - Lower load during off-peak times")
         log.write_line("    - Randomized call counts per batch")
+        log.write_line("    - Continues running after exiting the UI")
         log.write_line("")
 
         if not self.selected_profile:
@@ -772,17 +821,18 @@ class SimulationScreen(Screen):
 
     def action_start_daemon(self) -> None:
         """Start the daemon simulation."""
-        if self.daemon and self.daemon.is_running:
+        if self.daemon_service.is_running():
             self.notify("Daemon is already running", severity="warning")
             return
 
         self._reset_requests_dashboard()
+        self._history_seeded = False
         log = self.query_one("#daemon-log", Log)
 
         # Get user selections
         traffic_rate = self.query_one("#daemon-traffic-rate", Select).value or "medium"
         test_type = self.query_one("#daemon-test-type", Select).value or "both"
-        load_profile = self.query_one("#daemon-load-profile", Select).value or "auto"
+        variance_value = self.query_one("#daemon-traffic-variance", Select).value or "20"
 
         # Convert to technical parameters
         traffic_config = self._get_traffic_config(traffic_rate)
@@ -795,16 +845,13 @@ class SimulationScreen(Screen):
         delay = traffic_config["delay"]
         ops_weight = test_config["ops_weight"]
 
-        # Load profile labels
-        load_profile_labels = {
-            "auto": "Auto (time-based)",
-            "peak": "Peak (manual)",
-            "normal": "Normal (manual)",
-            "off_peak": "Off-Peak (manual)",
-        }
+        try:
+            variance_pct = int(variance_value)
+        except ValueError:
+            variance_pct = 20
 
         profile = self._require_profile(log)
-        if not profile:
+        if not profile or not self.selected_profile_id:
             return
 
         selected_agents = self._get_selected_agents()
@@ -818,10 +865,20 @@ class SimulationScreen(Screen):
         log.write_line("[>] Starting daemon simulation...")
         log.write_line(f"    Traffic: {traffic_config['label']}")
         log.write_line(f"    Test Type: {test_config['label']}")
-        log.write_line(f"    Load Profile: {load_profile_labels.get(load_profile, load_profile)}")
+        log.write_line(f"    Variance: +/-{variance_pct}%")
         log.write_line(f"    Profile: {profile.metadata.name}")
         log.write_line(f"    Agents: {len(selected_agents)} selected")
         log.write_line("=" * 40)
+
+        # Convert base calls to bounded randomness.
+        def apply_variance(base: int, pct: int) -> tuple[int, int]:
+            pct = max(0, min(90, int(pct)))
+            lo = max(1, int(base * (100 - pct) / 100))
+            hi = max(lo, int(base * (100 + pct) / 100))
+            return lo, hi
+
+        base_calls = calls_max
+        calls_min, calls_max = apply_variance(base_calls, variance_pct)
 
         # Create config
         daemon_config = DaemonConfig(
@@ -831,42 +888,30 @@ class SimulationScreen(Screen):
             threads=threads,
             delay=delay,
             operations_weight=ops_weight,
-            load_profile_override=load_profile,
+            traffic_variance_pct=variance_pct,
         )
 
-        # Create daemon
-        self.daemon = DaemonRunner(
-            agents=selected_agents,
-            profile=profile,
+        log.write_line(f"[+] Loaded {len(selected_agents)} agents")
+
+        ok, message = self.daemon_service.start(
+            daemon_config,
+            selected_agents,
+            self.selected_profile_id,
+            profile.metadata.name,
         )
-
-        if self.daemon.get_agent_count() == 0:
-            self.notify("No agents available to run", severity="error")
-            log.write_line("[X] No agents available to run")
-            return
-
-        log.write_line(f"[+] Loaded {self.daemon.get_agent_count()} agents")
-
-        # Callbacks
-        def log_callback(message: str):
-            self.app.call_from_thread(self._log_daemon, message)
-
-        def metrics_callback(metrics: dict):
-            self.app.call_from_thread(self._update_daemon_metrics, metrics)
-
-        # Start
-        if self.daemon.start(daemon_config, log_callback=log_callback, metrics_callback=metrics_callback):
+        if ok:
             self._update_daemon_status(True)
+            self._daemon_running = True
             get_state_manager().start_daemon()
             self.notify("Daemon started")
             log.write_line("[+] Daemon started successfully")
         else:
-            self.notify("Failed to start daemon", severity="error")
-            log.write_line("[X] Failed to start daemon")
+            self.notify(message, severity="error")
+            log.write_line(f"[X] {message}")
 
     def action_stop_daemon(self) -> None:
         """Stop the daemon simulation."""
-        if not self.daemon or not self.daemon.is_running:
+        if not self.daemon_service.is_running():
             self.notify("Daemon is not running", severity="warning")
             return
 
@@ -874,25 +919,27 @@ class SimulationScreen(Screen):
         log.write_line("")
         log.write_line("[>] Stopping daemon...")
 
-        self.daemon.stop()
-        self._update_daemon_status(False)
-        get_state_manager().stop_daemon()
-
-        # Final stats
-        metrics = self.daemon.get_metrics()
-        self._update_daemon_metrics(metrics)
-        log.write_line("[+] Daemon stopped")
-        log.write_line("=" * 40)
-        log.write_line(f"Final: {metrics.get('total_calls', 0)} calls, "
-                      f"{metrics.get('success_rate', 0):.1f}% success, "
-                      f"Runtime: {metrics.get('runtime', '0s')}")
-        log.write_line("=" * 40)
-
-        self.notify("Daemon stopped")
-
-    def _log_daemon(self, msg: str) -> None:
-        """Write to daemon log."""
-        self.query_one("#daemon-log", Log).write_line(msg)
+        ok, message = self.daemon_service.stop()
+        if ok:
+            self._daemon_running = False
+            self._update_daemon_status(False)
+            get_state_manager().stop_daemon()
+            metrics = self.daemon_service.read_metrics()
+            if metrics:
+                self._update_daemon_metrics(metrics)
+            log.write_line("[+] Daemon stopped")
+            log.write_line("=" * 40)
+            if metrics:
+                log.write_line(
+                    f"Final: {metrics.get('total_calls', 0)} calls, "
+                    f"{metrics.get('success_rate', 0):.1f}% success, "
+                    f"Runtime: {metrics.get('runtime', '0s')}"
+                )
+            log.write_line("=" * 40)
+            self.notify("Daemon stopped")
+        else:
+            self.notify(message, severity="error")
+            log.write_line(f"[X] {message}")
 
     def _update_daemon_status(self, is_running: bool) -> None:
         """Update daemon status display."""
@@ -908,23 +955,68 @@ class SimulationScreen(Screen):
 
     def _refresh_daemon_metrics(self) -> None:
         """Refresh daemon metrics periodically."""
-        if self.daemon and self.daemon.is_running:
-            metrics = self.daemon.get_metrics()
-            self._update_daemon_metrics(metrics)
-            get_state_manager().update_daemon_metrics(metrics)
+        running = self.daemon_service.is_running()
+        if running:
+            if not self._daemon_running:
+                self._history_seeded = False
+            metrics = self.daemon_service.read_metrics()
+            if metrics:
+                if not self._history_seeded:
+                    history = self.daemon_service.read_history(limit=self.max_buckets + 1)
+                    if history:
+                        self._seed_requests_dashboard_from_history_samples(history, metrics)
+                        self._history_seeded = True
+                self._update_daemon_metrics(metrics)
+                get_state_manager().update_daemon_metrics(metrics)
+            if not self._daemon_running:
+                self._update_daemon_status(True)
+                self._daemon_running = True
+                get_state_manager().start_daemon()
+        elif self._daemon_running:
+            self._daemon_running = False
+            self._update_daemon_status(False)
+            get_state_manager().stop_daemon()
 
     def _update_daemon_metrics(self, metrics: dict) -> None:
         """Update daemon metrics display."""
         self._update_requests_dashboard(metrics)
         self.query_one("#metric-total-calls", Static).update(str(metrics.get("total_calls", 0)))
+        self.query_one("#metric-target-calls-per-min", Static).update(f"{metrics.get('target_calls_per_minute', 0):.1f}")
         self.query_one("#metric-success-rate", Static).update(f"{metrics.get('success_rate', 0):.1f}%")
         self.query_one("#metric-latency", Static).update(f"{metrics.get('avg_latency_ms', 0):.0f}ms")
+        self.query_one("#metric-p95-latency", Static).update(f"{metrics.get('p95_latency_ms', 0):.0f}ms")
         self.query_one("#metric-calls-per-min", Static).update(f"{metrics.get('calls_per_minute', 0):.1f}")
+        self.query_one("#metric-started-calls-per-min", Static).update(f"{metrics.get('started_calls_per_minute', 0):.1f}")
+        self.query_one("#metric-inflight", Static).update(str(metrics.get("inflight_calls", 0)))
+        self.query_one("#metric-queue-depth", Static).update(str(metrics.get("queue_depth", 0)))
+        self.query_one("#metric-dropped-calls", Static).update(str(metrics.get("dropped_calls", 0)))
         self.query_one("#metric-operations", Static).update(str(metrics.get("total_operations", 0)))
         self.query_one("#metric-guardrails", Static).update(str(metrics.get("total_guardrails", 0)))
         self.query_one("#metric-batches", Static).update(str(metrics.get("batches_completed", 0)))
         self.query_one("#metric-runtime", Static).update(metrics.get("runtime", "0s"))
-        self.query_one("#metric-load-profile", Static).update(metrics.get("current_load_profile", "normal"))
+        self.query_one("#metric-load-profile", Static).update(
+            metrics.get("traffic_variance") or metrics.get("current_load_profile", "+/-20%")
+        )
+        saved_at = metrics.get("saved_at")
+        self.query_one("#metric-last-update", Static).update(saved_at.split(".")[0] if saved_at else "N/A")
+        self.query_one("#metric-heartbeat-age", Static).update(self._format_heartbeat_age(saved_at))
+        self.query_one("#metric-daemon-pid", Static).update(str(metrics.get("pid") or "N/A"))
+
+    def _format_heartbeat_age(self, saved_at: str | None) -> str:
+        """Human-friendly age since last daemon metrics flush."""
+        if not saved_at:
+            return "N/A"
+        try:
+            last = datetime.fromisoformat(saved_at)
+        except Exception:
+            return "N/A"
+        age_s = max(0, int((datetime.now() - last).total_seconds()))
+        if age_s < 60:
+            return f"{age_s}s"
+        age_m = age_s // 60
+        if age_m < 60:
+            return f"{age_m}m"
+        return f"{age_m // 60}h {age_m % 60}m"
 
     def _reset_requests_dashboard(self) -> None:
         """Clear 5s bucket history and reset chart display."""
@@ -943,6 +1035,54 @@ class SimulationScreen(Screen):
         self.query_one("#req-total", RPMChart).set_series([], labels=[], subtitle="0 req/5s • 0.0 rpm")
         self.query_one("#req-ops", RPMChart).set_series([], labels=[], subtitle="0 req/5s • 0.0 rpm")
         self.query_one("#req-guard", RPMChart).set_series([], labels=[], subtitle="0 req/5s • 0.0 rpm")
+
+    def _seed_requests_dashboard_from_history_samples(self, history: list[dict], metrics: dict) -> None:
+        """Seed the requests chart from persisted daemon history samples."""
+        if not history:
+            return
+
+        self.req_labels.clear()
+        self.req_buckets_total.clear()
+        self.req_buckets_ops.clear()
+        self.req_buckets_guard.clear()
+
+        prev = None
+        for sample in history[-self.max_buckets:]:
+            total_calls = int(sample.get("total_calls", 0) or 0)
+            total_ops = int(sample.get("total_operations", 0) or 0)
+            total_guard = int(sample.get("total_guardrails", 0) or 0)
+            if prev is None:
+                prev = {
+                    "total_calls": total_calls,
+                    "total_operations": total_ops,
+                    "total_guardrails": total_guard,
+                }
+                continue
+
+            delta_calls = max(0, total_calls - prev["total_calls"])
+            delta_ops = max(0, total_ops - prev["total_operations"])
+            delta_guard = max(0, total_guard - prev["total_guardrails"])
+            timestamp = sample.get("timestamp", "")
+            label = timestamp.split("T")[-1].split(".")[0] if timestamp else ""
+            self.req_labels.append(label or datetime.now().strftime("%H:%M:%S"))
+            self.req_buckets_total.append(delta_calls)
+            self.req_buckets_ops.append(delta_ops)
+            self.req_buckets_guard.append(delta_guard)
+            prev = {
+                "total_calls": total_calls,
+                "total_operations": total_ops,
+                "total_guardrails": total_guard,
+            }
+
+        self._bucket_deadline = time.monotonic() + self.bucket_seconds
+        self._bucket_label_time = datetime.now().replace(microsecond=0) + timedelta(seconds=self.bucket_seconds)
+        self._bucket_total = 0
+        self._bucket_ops = 0
+        self._bucket_guard = 0
+        self._last_total_calls = metrics.get("total_calls", 0)
+        self._last_total_ops = metrics.get("total_operations", 0)
+        self._last_total_guard = metrics.get("total_guardrails", 0)
+        self._update_requests_dashboard(metrics)
 
     def _update_requests_dashboard(self, metrics: dict) -> None:
         total_calls = int(metrics.get("total_calls", 0) or 0)
