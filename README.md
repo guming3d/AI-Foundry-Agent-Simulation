@@ -2,6 +2,18 @@
 
 A comprehensive toolkit for batch creation, testing, and management of AI agents at scale using Microsoft Foundry Control Plane features. Supports industry-specific templates, parallel agent operations, and real-time metrics collection through an intuitive Terminal interface.
 
+## Screenshots
+
+![Main screen](assets/screenshot-main.png)
+
+| Agents | Workflows |
+|---|---|
+| ![Agents](assets/screenshot-agent.png) | ![Workflows](assets/screenshot-workflow.png) |
+
+| Evaluations | Simulate |
+|---|---|
+| ![Evaluations](assets/screenshot-evaluation.png) | ![Simulate](assets/screenshot-simulation.png) |
+
 ## Features
 
 - **Batch Agent Operations**: Create and manage 100+ AI agents simultaneously with multi-threaded processing
