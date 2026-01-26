@@ -61,7 +61,7 @@ Expected output includes `compileall` success with no syntax errors.
 
 ## Validation and Acceptance
 
-Start the TUI (`python main.py tui`), navigate to the Evaluations screen, select two sample evaluations and two agents, and run them. The status log should show progress and finish with a results file path under `results/evaluations/`.
+Start the TUI (`python main.py`), navigate to the Evaluations screen, select two sample evaluations and two agents, and run them. The status log should show progress and finish with a results file path under `results/evaluations/`.
 
 Acceptance is met when users can create multiple evaluation runs in a single action and apply those evaluations to selected agents in the TUI.
 

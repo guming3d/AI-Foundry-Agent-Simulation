@@ -5,7 +5,8 @@ Microsoft Foundry Bootstrap
 Main entry point for running the toolkit via CLI and TUI.
 
 Usage:
-    python main.py tui          # Launch Textual TUI
+    python main.py              # Launch Textual TUI (default)
+    python main.py tui          # Launch Textual TUI (explicit)
     python main.py generate     # Generate code from template
     python main.py list         # List available templates
 """
@@ -144,7 +145,8 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  python main.py tui                    # Launch terminal UI
+  python main.py                        # Launch terminal UI (default)
+  python main.py tui                    # Launch terminal UI (explicit)
   python main.py list                   # List available templates
   python main.py generate retail        # Generate code for retail template
   python main.py create retail -n 2     # Create 2 agents per type
@@ -175,7 +177,7 @@ Examples:
 
     args = parser.parse_args()
 
-    if args.command == "tui":
+    if args.command in (None, "tui"):
         run_tui()
     elif args.command == "list":
         list_templates()

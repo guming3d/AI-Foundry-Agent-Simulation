@@ -29,7 +29,7 @@ az login
 cp .env.example .env  # Edit with your PROJECT_ENDPOINT
 
 # 4. Launch the toolkit
-python main.py tui    # Terminal UI
+python main.py        # Terminal UI
 ```
 
 ## Project Structure
@@ -71,7 +71,7 @@ python main.py tui    # Terminal UI
 
 ```bash
 # Terminal UI
-python main.py tui
+python main.py
 
 # List templates
 python main.py list
