@@ -43,8 +43,49 @@ def _write_json_atomic(path: Path, payload: Dict[str, Any]) -> None:
     tmp_path.replace(path)
 
 
+def _linux_process_state(pid: int) -> Optional[str]:
+    stat_path = Path(f"/proc/{pid}/stat")
+    try:
+        data = stat_path.read_text(encoding="utf-8")
+    except FileNotFoundError:
+        return None
+    except Exception:
+        return None
+
+    end = data.rfind(")")
+    if end == -1:
+        return None
+    idx = end + 2
+    if idx >= len(data):
+        return None
+    return data[idx]
+
+
+def _pid_is_zombie(pid: int) -> bool:
+    if pid <= 0:
+        return False
+    if sys.platform.startswith("linux"):
+        state = _linux_process_state(pid)
+        return state in {"Z", "X"}
+    return False
+
+
+def _try_reap_pid(pid: int) -> bool:
+    if pid <= 0 or not hasattr(os, "waitpid"):
+        return False
+    try:
+        waited_pid, _status = os.waitpid(pid, os.WNOHANG)
+    except ChildProcessError:
+        return False
+    except OSError:
+        return False
+    return waited_pid == pid
+
+
 def _pid_is_running(pid: int) -> bool:
     if pid <= 0:
+        return False
+    if _pid_is_zombie(pid):
         return False
     try:
         os.kill(pid, 0)
@@ -83,24 +124,40 @@ class DaemonService:
         if self.pid_path.exists():
             self.pid_path.unlink()
 
+    def _mark_stopped(self) -> None:
+        state = self.read_state()
+        if not state:
+            return
+        state["pid"] = 0
+        state["stopped_at"] = datetime.now().isoformat()
+        _write_json_atomic(self.state_path, state)
+
     def is_running(self) -> bool:
         pid = self._read_pid()
-        if pid and _pid_is_running(pid):
-            return True
         if pid:
+            if _pid_is_running(pid):
+                return True
+            if _pid_is_zombie(pid):
+                _try_reap_pid(pid)
             self._clear_pid()
 
         metrics = self.read_metrics()
         metrics_pid = int(metrics.get("pid", 0) or 0) if metrics else 0
-        if metrics_pid and _pid_is_running(metrics_pid):
-            self._write_pid(metrics_pid)
-            return True
+        if metrics_pid:
+            if _pid_is_running(metrics_pid):
+                self._write_pid(metrics_pid)
+                return True
+            if _pid_is_zombie(metrics_pid):
+                _try_reap_pid(metrics_pid)
 
         state = self.read_state()
         state_pid = int(state.get("pid", 0) or 0) if state else 0
-        if state_pid and _pid_is_running(state_pid):
-            self._write_pid(state_pid)
-            return True
+        if state_pid:
+            if _pid_is_running(state_pid):
+                self._write_pid(state_pid)
+                return True
+            if _pid_is_zombie(state_pid):
+                _try_reap_pid(state_pid)
         return False
 
     def read_metrics(self) -> Dict[str, Any]:
@@ -214,20 +271,28 @@ class DaemonService:
         if not pid:
             metrics = self.read_metrics()
             metrics_pid = int(metrics.get("pid", 0) or 0) if metrics else 0
+            state = self.read_state()
+            state_pid = int(state.get("pid", 0) or 0) if state else 0
             if metrics_pid and _pid_is_running(metrics_pid):
                 pid = metrics_pid
+            elif state_pid and _pid_is_running(state_pid):
+                pid = state_pid
+            elif metrics_pid and _pid_is_zombie(metrics_pid):
+                pid = metrics_pid
+            elif state_pid and _pid_is_zombie(state_pid):
+                pid = state_pid
+            else:
+                pid = metrics_pid or state_pid
+            if pid:
                 self._write_pid(pid)
             else:
-                state = self.read_state()
-                state_pid = int(state.get("pid", 0) or 0) if state else 0
-                if state_pid and _pid_is_running(state_pid):
-                    pid = state_pid
-                    self._write_pid(pid)
-                else:
-                    return False, "Daemon is not running"
+                return False, "Daemon is not running"
         if not _pid_is_running(pid):
+            if _pid_is_zombie(pid):
+                _try_reap_pid(pid)
             self._clear_pid()
-            return False, "Daemon is not running"
+            self._mark_stopped()
+            return True, "Daemon stopped"
 
         try:
             os.kill(pid, signal.SIGTERM)
@@ -237,7 +302,9 @@ class DaemonService:
         start = time.time()
         while time.time() - start < timeout:
             if not _pid_is_running(pid):
+                _try_reap_pid(pid)
                 self._clear_pid()
+                self._mark_stopped()
                 return True, "Daemon stopped"
             time.sleep(0.2)
 
@@ -248,7 +315,9 @@ class DaemonService:
 
         time.sleep(0.2)
         if not _pid_is_running(pid):
+            _try_reap_pid(pid)
             self._clear_pid()
+            self._mark_stopped()
             return True, "Daemon force-stopped"
 
         return False, "Timed out stopping daemon"
@@ -317,6 +386,11 @@ def run_daemon(state_path: Path) -> int:
     finally:
         log_handle.close()
         service._clear_pid()
+        state = _read_json(state_path)
+        if state:
+            state["pid"] = 0
+            state["stopped_at"] = datetime.now().isoformat()
+            _write_json_atomic(state_path, state)
 
     return 0
 
