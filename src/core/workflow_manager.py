@@ -817,3 +817,58 @@ class WorkflowManager:
 
     def _conversation_var(self, role_key: str) -> str:
         return f"Local.{role_key.title().replace('_', '')}ConversationId"
+
+    def delete_workflow(self, workflow_name: str) -> bool:
+        """
+        Delete a workflow agent.
+
+        Args:
+            workflow_name: Name of the workflow to delete
+
+        Returns:
+            True if deleted successfully, False otherwise
+        """
+        client = get_project_client()
+
+        try:
+            client.agents.delete(agent_name=workflow_name)
+            return True
+        except Exception as e:
+            print(f"Error deleting workflow {workflow_name}: {e}")
+            return False
+
+    def delete_all_workflows(self, progress_callback=None) -> Dict[str, Any]:
+        """
+        Delete all workflow agents in the project.
+
+        Args:
+            progress_callback: Optional callback(current, total, message) for progress updates
+
+        Returns:
+            Dictionary with deleted, failed lists and total count
+        """
+        workflows = self.list_workflows()
+        deleted = []
+        failed = []
+        total = len(workflows)
+
+        if progress_callback:
+            progress_callback(0, total, f"Found {total} workflows to delete...")
+
+        for i, workflow in enumerate(workflows):
+            workflow_name = workflow.get('name', '')
+            if progress_callback:
+                progress_callback(i + 1, total, f"Deleting {workflow_name}...")
+
+            if self.delete_workflow(workflow_name):
+                deleted.append(workflow)
+            else:
+                failed.append(workflow)
+
+        return {
+            "deleted": deleted,
+            "failed": failed,
+            "total": total,
+            "deleted_count": len(deleted),
+            "failed_count": len(failed),
+        }
