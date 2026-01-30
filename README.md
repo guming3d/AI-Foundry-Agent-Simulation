@@ -4,6 +4,20 @@ A comprehensive toolkit for batch creation, testing, and management of AI agents
 
 ## Screenshots
 
+### Web UI
+
+![Web UI Dashboard](assets/webui/webui_dashboard.jpg)
+
+| Batch Agent Creation | Batch Workflow Creation |
+|---|---|
+| ![Batch Agent Creation](assets/webui/webui_batch_agent_creation.jpg) | ![Batch Workflow Creation](assets/webui/webui_batch_workflow_creation.jpg) |
+
+| Agent Calling Simulation |
+|---|
+| ![Agent Calling Simulation](assets/webui/webui_agent_calling_simulation.jpg) |
+
+### Terminal UI
+
 ![Main screen](assets/screenshot-main.png)
 
 | Agents | Workflows |
