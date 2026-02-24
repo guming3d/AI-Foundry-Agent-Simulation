@@ -44,8 +44,10 @@ env/
 # Generated output
 output/
 results/
-*.csv
-*.json
+daemon_results/*.pid
+daemon_results/*.json
+frontend/node_modules/
+frontend/dist/
 
 # Log files
 *.log
